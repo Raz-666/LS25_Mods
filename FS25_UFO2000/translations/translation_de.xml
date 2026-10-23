@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <text name="ufo_name"><de>UFO 2000</de><en>UFO 2000</en></text>
+    <text name="brand_ufo2000"><de>UFO-Werke</de><en>UFO Works</en></text>
+    <text name="function_ufo"><de>Fluggerät</de><en>Aircraft</en></text>
+    <text name="typeDesc_ufo"><de>UFO 2000 – kleines Untertassen-Fluggerät</de><en>UFO 2000 - small saucer aircraft</en></text>
+    <text name="configuration_ufo_motor"><de>Antigravitations-Antrieb</de><en>Anti-gravity drive</en></text>
+
+    <text name="ufo_action_toggleHover"><de>Abheben / Landen</de><en>Take off / land</en></text>
+    <text name="ufo_action_ascend"><de>Steigen</de><en>Climb</en></text>
+    <text name="ufo_action_descend"><de>Sinken</de><en>Descend</en></text>
+    <text name="ufo_action_toggleBeam"><de>Traktorstrahl</de><en>Tractor beam</en></text>
+
+    <text name="input_ufo_toggleHover"><de>Abheben / Landen: %s</de><en>Take off / land: %s</en></text>
+    <text name="input_ufo_ascend"><de>Steigen: %s</de><en>Climb: %s</en></text>
+    <text name="input_ufo_descend"><de>Sinken: %s</de><en>Descend: %s</en></text>
+    <text name="input_ufo_toggleBeam"><de>Traktorstrahl: %s</de><en>Tractor beam: %s</en></text>
+</l10n>

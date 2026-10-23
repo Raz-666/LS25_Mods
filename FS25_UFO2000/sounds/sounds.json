@@ -1,0 +1,58 @@
+{
+  "sample_rate": 44100,
+  "files": {
+    "hoverIdle": {
+      "type": "loop",
+      "file": "hoverIdle.ogg",
+      "duration_s": 3.0,
+      "peak_dbfs": -2.85,
+      "native_rpm": 800,
+      "load": 0
+    },
+    "hoverMid": {
+      "type": "loop",
+      "file": "hoverMid.ogg",
+      "duration_s": 2.5,
+      "peak_dbfs": -2.85,
+      "native_rpm": 1600,
+      "load": 0
+    },
+    "hoverHigh": {
+      "type": "loop",
+      "file": "hoverHigh.ogg",
+      "duration_s": 2.0,
+      "peak_dbfs": -2.85,
+      "native_rpm": 2400,
+      "load": 0
+    },
+    "hoverLoad": {
+      "type": "loop",
+      "file": "hoverLoad.ogg",
+      "duration_s": 2.0,
+      "peak_dbfs": -2.85,
+      "native_rpm": 2000,
+      "load": 1
+    },
+    "hoverStart": {
+      "type": "once",
+      "file": "hoverStart.ogg",
+      "duration_s": 1.35,
+      "peak_dbfs": -1.94,
+      "duration": 1.35
+    },
+    "hoverStop": {
+      "type": "once",
+      "file": "hoverStop.ogg",
+      "duration_s": 1.1,
+      "peak_dbfs": -1.94,
+      "duration": 1.1
+    },
+    "greeting": {
+      "type": "once",
+      "file": "greeting.ogg",
+      "duration_s": 0.62,
+      "peak_dbfs": -3.1,
+      "duration": 0.62
+    }
+  }
+}
