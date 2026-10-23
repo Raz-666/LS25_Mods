@@ -556,7 +556,7 @@ Was davon technisch geht:
 | MP3-Datei | **nur als OGG** | FS25 lädt OGG Vorbis (und WAV). MP3 vorher umwandeln, Datei nach `sounds/`, Zeile in `sounds/distillerySounds.xml` ergänzen (bis 8 Titel, `bpm` steuert das Blinken). Läuft dann synchron für alle. |
 | Playlist | **ja** | Genau das ist die Titelliste: mehrere Einträge in derselben XML, am Pult umschaltbar. |
 | SoundCloud | **nein** | Lua im Spiel hat keine URL-/HTTP-Funktion; `createSample` nimmt nur Dateinamen. Ein Mod kann keinen SoundCloud-Link öffnen. Nur wenn ein direkter Audio-Stream-Link existiert, geht er über das Spielradio (nächste Zeile). |
-| Internetradio-URL | **nur über das Spielradio** | Sender in die Profildatei `streamingInternetRadios.xml` eintragen (`<streamingInternetRadio href="…"/>`, mp3/aac/m3u/pls). Dann schaltet die Taste `R` deinen Spieler auf das Spielradio um. **Das gilt pro Spieler** – die Club-PA läuft für alle anderen weiter. Echtes „ein Stream für die ganze Disco" ist von außen nicht möglich. |
+| Internetradio-URL | **nur über das Spielradio** | Sender in die Profildatei `streamingInternetRadios.xml` eintragen (`<streamingInternetRadio href="…"/>`, mp3/aac/m3u/pls) – Anleitung mit Pfaden und Beispiel in [`docs/streaming_radio.md`](docs/streaming_radio.md). Dann schaltet die Taste `R` deinen Spieler auf das Spielradio um. **Das gilt pro Spieler** – die Club-PA läuft für alle anderen weiter. Echtes „ein Stream für die ganze Disco" ist von außen nicht möglich. |
 
 Kurz: **synchron und für alle** ist die eingebaute Playlist. Externe Streams
 bleiben ein Angebot an den einzelnen Spieler über das Spielradio.

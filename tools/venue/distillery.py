@@ -58,13 +58,15 @@ PANEL_BOTTOM = 0.06     # margin below the last row
 
 
 def row_uvs(count=len(TRACKS)):
-    """UV rectangle (u0, v0, u1, v1) of every row of the playlist texture."""
+    """UV rectangle (u0, v_top, u1, v_bottom) of every row of the set list.
+
+    FS25 uses DirectX UVs: v = 0 is the top row of the texture, so the v of a
+    row grows downwards just like its pixel row.
+    """
     step = (1.0 - PANEL_TOP - PANEL_BOTTOM) / float(count)
     out = []
     for i in range(count):
-        v_top = 1.0 - (PANEL_TOP + i * step)
-        v_bottom = 1.0 - (PANEL_TOP + (i + 1) * step)
-        out.append((0.0, v_bottom, 1.0, v_top))
+        out.append((0.0, PANEL_TOP + i * step, 1.0, PANEL_TOP + (i + 1) * step))
     return out
 
 MATERIALS = [
@@ -168,11 +170,10 @@ def billboard(mesh, mat, centre, width, height, facing="+z", uv=None):
     # FS25 / DirectX UV convention: v = 0 is the TOP row of the texture, and
     # the corners are ordered bottom-left .. top-left, so the v values run the
     # other way round.
-    if uv is None:
-        u0, v0, u1, v1 = 0.0, 0.0, 1.0, 1.0
-    else:
-        u0, v0, u1, v1 = uv
-    quad(corners, mat, mesh, [(u0, v1), (u1, v1), (u1, v0), (u0, v0)])
+    u0, v_top, u1, v_bottom = (0.0, 0.0, 1.0, 1.0) if uv is None else uv
+    # corners are bottom-left, bottom-right, top-right, top-left
+    quad(corners, mat, mesh,
+         [(u0, v_bottom), (u1, v_bottom), (u1, v_top), (u0, v_top)])
 
 
 def horn(mesh, mat, pos, radius, depth, rot=(90, 0, 0), segments=16):
@@ -497,9 +498,9 @@ def light_rig_mesh():
             m.add("neonWhite", *place(cylinder(0.12, 0.0, 0.06, 14),
                                       translation=(x, MH - 1.02, z)))
             heads.append((x, MH - 1.05, z))
-    # laser bars at the back
-    for y in (3.2, 4.0):
-        m.add("neonPink", *place(box((0, 0, 0), (6.0, 0.06, 0.06)),
+    # laser bars above the set list board (the board ends at y = 4.1)
+    for y in (4.35, 4.95):
+        m.add("neonPink", *place(box((0, 0, 0), (7.6, 0.06, 0.06)),
                                  translation=(0.0, y, MZ0 + 0.55)))
     # neon strips on the walls, per light group
     gp, gc, ga = groups["Pink"], groups["Cyan"], groups["Amber"]
@@ -610,6 +611,11 @@ def playlist_mesh():
     slab(board, "steel", (PANEL_X, PANEL_Y, PANEL_Z - 0.05),
          (PANEL_W + 0.22, PANEL_H + 0.22, 0.10))
     row_h = PANEL_H * (1.0 - PANEL_TOP - PANEL_BOTTOM) / float(len(TRACKS))
+    # the title band above the rows ("DISTILLERY - DJ BOOTH")
+    header_h = PANEL_H * PANEL_TOP
+    billboard(board, "playlist",
+              (PANEL_X, PANEL_Y + PANEL_H * 0.5 - header_h * 0.5, PANEL_Z + 0.02),
+              PANEL_W, header_h, "+z", uv=(0.0, 0.0, 1.0, PANEL_TOP))
     top_y = PANEL_Y + PANEL_H * 0.5 - PANEL_H * PANEL_TOP
     for i, uv in enumerate(row_uvs()):
         cy = top_y - (i + 0.5) * row_h
