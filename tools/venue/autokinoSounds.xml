@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--
+  FS25_Autokino - films and their soundtracks.
+
+  Every <film> is a short cartoon made of `frames` textures that live in
+  textures/film/<key>_00.dds ... <key>_15.dds. `fps` is the playback rate and
+  `sound` points at one of the <sounds> below (a looping OGG). Add your own film
+  by dropping frames in and adding a <film> line - up to 6 films, 32 frames.
+-->
+<autokino volume="0.9" fps="6">
+    <sounds>
+        <film1 file="sounds/film1.ogg" loops="0" volumeScale="0.9"
+               innerRadius="10" outerRadius="70" priority="HIGH"
+               fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+        <film2 file="sounds/film2.ogg" loops="0" volumeScale="0.9"
+               innerRadius="10" outerRadius="70" priority="HIGH"
+               fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+        <film3 file="sounds/film3.ogg" loops="0" volumeScale="0.9"
+               innerRadius="10" outerRadius="70" priority="HIGH"
+               fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+    </sounds>
+
+    <films>
+        <film key="tractor" frames="16" sound="film1" title="l10n_autokino_film_tractor"/>
+        <film key="ufo" frames="16" sound="film2" title="l10n_autokino_film_ufo"/>
+        <film key="alien" frames="16" sound="film3" title="l10n_autokino_film_alien"/>
+    </films>
+</autokino>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--
+  FS25_Disco - the playlist.
+
+  Every entry is a normal base game sound sample: `file` is the OGG, `loops="0"`
+  means "forever".  `bpm` drives the neon blinking and `title` is the l10n key
+  announced on the HUD when the track changes.  You can add your own OGG files
+  here (16 or 44.1 kHz Vorbis, mono or stereo) - just copy them into sounds/ and
+  add another <musicN .../> line.  Up to 8 tracks are read by the script.
+-->
+<sounds volume="0.9">
+    <music1 file="sounds/disco.ogg" loops="0" bpm="118" title="l10n_disco_track_disco"
+            volumeScale="0.85" innerRadius="7" outerRadius="40" priority="HIGH"
+            fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+    <music2 file="sounds/techno.ogg" loops="0" bpm="132" title="l10n_disco_track_techno"
+            volumeScale="0.85" innerRadius="7" outerRadius="40" priority="HIGH"
+            fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+    <music3 file="sounds/chill.ogg" loops="0" bpm="92" title="l10n_disco_track_chill"
+            volumeScale="0.9" innerRadius="7" outerRadius="40" priority="HIGH"
+            fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+    <music4 file="sounds/country.ogg" loops="0" bpm="104" title="l10n_disco_track_country"
+            volumeScale="0.9" innerRadius="7" outerRadius="40" priority="HIGH"
+            fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+    <music5 file="sounds/spooky.ogg" loops="0" bpm="88" title="l10n_disco_track_spooky"
+            volumeScale="0.9" innerRadius="7" outerRadius="40" priority="HIGH"
+            fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+    <music6 file="sounds/western.ogg" loops="0" bpm="96" title="l10n_disco_track_western"
+            volumeScale="0.9" innerRadius="7" outerRadius="40" priority="HIGH"
+            fadeIn="0.8" fadeOut="1.2" supportsReverb="true"/>
+</sounds>
