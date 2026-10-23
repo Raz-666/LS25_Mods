@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<placeable type="chickenHusbandry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/placeable.xsd">
+    <annotation>
+        Baba Jaga's hut - a log cabin on one chicken leg, used as a small
+        chicken coop. Placeable husbandry with the base game chicken logic,
+        no Lua of its own, so it works on console as well.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_babajaga_name</name>
+        <image>store_babajaga.png</image>
+        <price>18500</price>
+        <functions>
+            <function>$l10n_function_babajaga</function>
+        </functions>
+        <lifetime>1000</lifetime>
+        <dailyUpkeep>12</dailyUpkeep>
+        <rotation>0</rotation>
+        <!-- Lizard is a base game brand, so the mod works on console too -->
+        <brand>LIZARD</brand>
+        <species>PLACEABLE</species>
+        <category>animalpens</category>
+        <brush>
+            <type>husbandry</type>
+            <category>animals</category>
+            <tab>chickens</tab>
+        </brush>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <storeIconRendering>
+            <settings cameraXRot="-18" cameraYRot="42" advancedBoundingBox="true"/>
+        </storeIconRendering>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>babaJaga.i3d</filename>
+        <boughtWithFarmland>true</boughtWithFarmland>
+        <canBeDeleted>true</canBeDeleted>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testArea1" endNode="testArea1End"/>
+        </testAreas>
+        <sounds>
+            <place template="smallImp"/>
+            <placeLayered template="chickenLayer"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearArea1" widthNode="clearArea1Width" heightNode="clearArea1Height"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="10" maxSlope="75" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelArea1" widthNode="levelArea1Width" heightNode="levelArea1Height" groundType="dirt"/>
+        </levelAreas>
+        <paintAreas>
+            <paintArea startNode="paintArea1" widthNode="paintArea1Width" heightNode="paintArea1Height" groundType="grass"/>
+        </paintAreas>
+    </leveling>
+
+    <indoorAreas>
+        <indoorArea startNode="indoorArea1" widthNode="indoorArea1Width" heightNode="indoorArea1Height"/>
+    </indoorAreas>
+
+    <foliageAreas>
+        <foliageArea startNode="foliageArea1" widthNode="foliageArea1Width" heightNode="foliageArea1Height" decoFoliage="grassShort"/>
+    </foliageAreas>
+
+    <triggerMarkers>
+        <triggerMarker node="markerFood" filename="$data/shared/assets/marker/markerIconFood.i3d"/>
+        <triggerMarker node="markerAnimals" filename="$data/shared/assets/marker/markerIconAnimals.i3d"/>
+    </triggerMarkers>
+
+    <tipOcclusionUpdateAreas>
+        <tipOcclusionUpdateArea startNode="tipOcclusionUpdateArea1" endNode="tipOcclusionUpdateArea1End"/>
+    </tipOcclusionUpdateAreas>
+
+    <ai>
+        <updateAreas>
+            <updateArea startNode="tipOcclusionUpdateArea1" endNode="tipOcclusionUpdateArea1End"/>
+        </updateAreas>
+    </ai>
+
+    <hotspots>
+        <hotspot type="CHICKEN" teleportNode="teleportNode"/>
+    </hotspots>
+
+    <infoTrigger triggerNode="infoTrigger"/>
+
+    <husbandry saveId="Animals_BABAYAGA" hasStatistics="true">
+        <animals type="CHICKEN" baseMaxNumAnimals="20" maxNumAnimals="60">
+            <!-- the game builds the navmesh itself: the fence contour is the
+                 border, the flat shape below the yard is the walkable floor -->
+            <navigation rootNode="navigationRootNode" shape="navigationMeshShape"/>
+            <loadingTrigger node="loadingTrigger"/>
+        </animals>
+
+        <food capacity="2500">
+            <unloadTrigger exactFillRootNode="foodFillRoot"/>
+            <foodPlaces>
+                <foodPlace node="foodPlace1"/>
+                <foodPlace node="foodPlace2"/>
+            </foodPlaces>
+        </food>
+
+        <pallets>
+            <palletSpawner fillTypes="EGG" maxNumPallets="6">
+                <palletTrigger node="palletTrigger"/>
+                <spawnPlaces>
+                    <spawnPlace startNode="palletArea1" endNode="palletArea1End"/>
+                </spawnPlaces>
+            </palletSpawner>
+        </pallets>
+
+        <fence xmlFilename="$data/placeables/brandless/fences/husbandries/chickenNetFence/chickenNetFence.xml">
+            <sections>
+                <section segmentId="SEGMENT">
+                    <node node="fence1Node1"/>
+                    <node node="fence1Node2"/>
+                    <node node="fence1Node3"/>
+                    <node node="fence1Node4"/>
+                    <node node="fence1Node1"/>
+                </section>
+            </sections>
+        </fence>
+    </husbandry>
+
+    <!-- I3D_MAPPINGS -->
+    <i3dMappings>
+        <i3dMapping id="babaJaga" node="0>"/>
+        <i3dMapping id="hutMesh" node="0>0"/>
+        <i3dMapping id="legMesh" node="0>1"/>
+        <i3dMapping id="detailMesh" node="0>2"/>
+        <i3dMapping id="babaJagaHutCol" node="0>3"/>
+        <i3dMapping id="babaJagaRoofCol" node="0>4"/>
+        <i3dMapping id="babaJagaLegCol" node="0>5"/>
+        <i3dMapping id="foodFillRoot" node="0>6"/>
+        <i3dMapping id="loadingTrigger" node="0>7"/>
+        <i3dMapping id="infoTrigger" node="0>8"/>
+        <i3dMapping id="palletTrigger" node="0>9"/>
+        <i3dMapping id="testArea1" node="0>10"/>
+        <i3dMapping id="testArea1End" node="0>10|0"/>
+        <i3dMapping id="clearArea1" node="0>11"/>
+        <i3dMapping id="clearArea1Width" node="0>11|0"/>
+        <i3dMapping id="clearArea1Height" node="0>11|1"/>
+        <i3dMapping id="levelArea1" node="0>12"/>
+        <i3dMapping id="levelArea1Width" node="0>12|0"/>
+        <i3dMapping id="levelArea1Height" node="0>12|1"/>
+        <i3dMapping id="paintArea1" node="0>13"/>
+        <i3dMapping id="paintArea1Width" node="0>13|0"/>
+        <i3dMapping id="paintArea1Height" node="0>13|1"/>
+        <i3dMapping id="foliageArea1" node="0>14"/>
+        <i3dMapping id="foliageArea1Width" node="0>14|0"/>
+        <i3dMapping id="foliageArea1Height" node="0>14|1"/>
+        <i3dMapping id="indoorArea1" node="0>15"/>
+        <i3dMapping id="indoorArea1Width" node="0>15|0"/>
+        <i3dMapping id="indoorArea1Height" node="0>15|1"/>
+        <i3dMapping id="tipOcclusionUpdateArea1" node="0>16"/>
+        <i3dMapping id="tipOcclusionUpdateArea1End" node="0>16|0"/>
+        <i3dMapping id="palletArea1" node="0>17"/>
+        <i3dMapping id="palletArea1End" node="0>17|0"/>
+        <i3dMapping id="teleportNode" node="0>18"/>
+        <i3dMapping id="navigationRootNode" node="0>19"/>
+        <i3dMapping id="navigationMeshShape" node="0>19|0"/>
+        <i3dMapping id="fence1Node1" node="0>20"/>
+        <i3dMapping id="fence1Node2" node="0>21"/>
+        <i3dMapping id="fence1Node3" node="0>22"/>
+        <i3dMapping id="fence1Node4" node="0>23"/>
+        <i3dMapping id="foodPlace1" node="0>24"/>
+        <i3dMapping id="foodPlace2" node="0>25"/>
+        <i3dMapping id="markerFood" node="0>26"/>
+        <i3dMapping id="markerAnimals" node="0>27"/>
+    </i3dMappings>
+    <!-- /I3D_MAPPINGS -->
+</placeable>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<i3D name="ufo4500" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
+  <Asset>
+    <Export program="tools/ufo/model.py (procedural FS25 pipeline)" version="1.0"/>
+  </Asset>
+  <Files>
+    <File fileId="1" filename="textures/hullPaint_diffuse.dds"/>
+    <File fileId="2" filename="textures/hullPaint_specular.dds"/>
+    <File fileId="3" filename="textures/hullMetal_diffuse.dds"/>
+    <File fileId="4" filename="textures/hullMetal_specular.dds"/>
+    <File fileId="5" filename="textures/cockpit_diffuse.dds"/>
+    <File fileId="6" filename="textures/cockpit_specular.dds"/>
+    <File fileId="7" filename="textures/glass_diffuse.dds"/>
+    <File fileId="8" filename="textures/glass_specular.dds"/>
+    <File fileId="9" filename="textures/lensGreen_diffuse.dds"/>
+    <File fileId="10" filename="textures/lensRed_diffuse.dds"/>
+    <File fileId="11" filename="textures/lensWhite_diffuse.dds"/>
+    <File fileId="12" filename="textures/alienSkin_diffuse.dds"/>
+    <File fileId="13" filename="textures/alienSkin_specular.dds"/>
+    <File fileId="14" filename="textures/eyeBlack_diffuse.dds"/>
+    <File fileId="15" filename="textures/beam_diffuse.dds"/>
+  </Files>
+  <Materials>
+    <Material name="collision" materialId="1" diffuseColor="0.6 0.1 0.6 1" specularColor="0.1 0.1 0.1"/>
+    <Material name="hullPaint" materialId="2">
+      <Texture fileId="1"/>
+      <Glossmap fileId="2"/>
+    </Material>
+    <Material name="hullMetal" materialId="3">
+      <Texture fileId="3"/>
+      <Glossmap fileId="4"/>
+    </Material>
+    <Material name="cockpit" materialId="4">
+      <Texture fileId="5"/>
+      <Glossmap fileId="6"/>
+    </Material>
+    <Material name="glass" materialId="5" alphaBlending="true">
+      <Texture fileId="7"/>
+      <Glossmap fileId="8"/>
+    </Material>
+    <Material name="lensGreen" materialId="6">
+      <Texture fileId="9"/>
+    </Material>
+    <Material name="lensRed" materialId="7">
+      <Texture fileId="10"/>
+    </Material>
+    <Material name="lensWhite" materialId="8">
+      <Texture fileId="11"/>
+    </Material>
+    <Material name="alienSkin" materialId="9">
+      <Texture fileId="12"/>
+      <Glossmap fileId="13"/>
+    </Material>
+    <Material name="eyeBlack" materialId="10">
+      <Texture fileId="14"/>
+    </Material>
+    <Material name="beam" materialId="11" alphaBlending="true">
+      <Texture fileId="15"/>
+    </Material>
+  </Materials>
+  <Shapes externalShapesFile="ufo4500.i3d.shapes">
+  </Shapes>
+  <Dynamics>
+  </Dynamics>
+  <Scene>
+            <Shape name="ufo_main_component1" shapeId="1" dynamic="true" compound="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" clipDistance="300" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="1">
+                <TransformGroup name="visual" translation="0 1.7 0" nodeId="2">
+                    <Shape name="hullMesh" shapeId="2" nodeId="3"/>
+                    <Shape name="domeGlass" shapeId="3" castsShadows="false" receiveShadows="true" nodeId="4"/>
+                    <TransformGroup name="leg0" translation="1.48956 0.375 0.86" rotation="0 -30 16" visibility="false" nodeId="5">
+                        <Shape name="leg0Mesh" shapeId="4" nodeId="6"/>
+                    </TransformGroup>
+                    <TransformGroup name="leg1" translation="-1.48956 0.375 0.86" rotation="0 -150 16" visibility="false" nodeId="7">
+                        <Shape name="leg1Mesh" shapeId="5" nodeId="8"/>
+                    </TransformGroup>
+                    <TransformGroup name="leg2" translation="-3.15959e-16 0.375 -1.72" rotation="0 -270 16" visibility="false" nodeId="9">
+                        <Shape name="leg2Mesh" shapeId="6" nodeId="10"/>
+                    </TransformGroup>
+                    <Shape name="consoleMesh" shapeId="7" nodeId="11"/>
+                    <TransformGroup name="driverSeatNode" translation="0 1.17 0.02" nodeId="12"/>
+                    <TransformGroup name="beaconNode" translation="0 3.02 0" nodeId="13">
+                        <Shape name="beaconMesh" shapeId="8" nodeId="14"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNode" translation="0 0.22 0" visibility="false" nodeId="15">
+                        <Shape name="beamMesh" shapeId="9" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="16"/>
+                    </TransformGroup>
+                    <TransformGroup name="groundRing" translation="0 0.05 0" visibility="false" scale="1 1 1" nodeId="17">
+                        <Shape name="groundRingMesh" shapeId="10" castsShadows="false" receiveShadows="false" nodeId="18"/>
+                    </TransformGroup>
+                    <Shape name="intakeChute" shapeId="11" nodeId="19"/>
+                    <Shape name="grainPipe" shapeId="12" nodeId="20"/>
+                    <TransformGroup name="cockpitBeacon1" translation="-0.44 1.62 0.30" nodeId="21"/>
+                    <TransformGroup name="cockpitBeacon2" translation="0.44 1.62 0.30" nodeId="22"/>
+                </TransformGroup>
+                <TransformGroup name="collisions" translation="0 1.7 0" nodeId="23">
+                    <Shape name="collisionDome" shapeId="13" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="24"/>
+                </TransformGroup>
+                <TransformGroup name="lights" translation="0 1.7 0" nodeId="25">
+                    <Light name="headLightLeft" translation="0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="26"/>
+                    <Light name="headLightRight" translation="-0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="27"/>
+                    <Light name="workLight" translation="0 0.30 0" rotation="-90 0 0" type="spot" color="0.65 1.0 0.85" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="60" coneAngle="88" dropOff="2" nodeId="28"/>
+                    <Light name="beamLight" translation="0 0.22 0" rotation="-90 0 0" type="spot" color="0.55 1.0 0.95" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="42" coneAngle="52" dropOff="1.5" nodeId="29"/>
+                    <Light name="beaconLight" translation="0 3.02 0" type="point" color="1 0.18 0.12" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="26" nodeId="30"/>
+                    <Light name="tailLight" translation="0 0.72 -2.20" type="point" color="1 0.25 0.15" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="8" nodeId="31"/>
+                </TransformGroup>
+                <Shape name="exactFillRootNode" shapeId="14" kinematic="true" compound="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="32"/>
+                <TransformGroup name="enterReferenceNode" translation="0 1.05 2.45" nodeId="33"/>
+                <TransformGroup name="exitPoint" translation="2.7 0.05 0.0" nodeId="34"/>
+                <TransformGroup name="soundMotor" translation="0 2.7 0" nodeId="35"/>
+                <TransformGroup name="outdoorCameraTarget" translation="0 2.85 0" nodeId="36">
+                    <Camera name="outdoorCamera" translation="0 0 -9" rotation="0 180 0" fov="45" nearClip="0.05" farClip="5000" nodeId="37"/>
+                </TransformGroup>
+                <TransformGroup name="indoorCameraTarget" translation="0 3.12 0.12" nodeId="38">
+                    <Camera name="indoorCamera" rotation="0 180 0" fov="60" nearClip="0.03" farClip="5000" nodeId="39"/>
+                </TransformGroup>
+                <TransformGroup name="attacherRotation" translation="0 1 2.3" nodeId="40">
+                    <TransformGroup name="attacherJoint" nodeId="41"/>
+                </TransformGroup>
+                <Shape name="pipeTip" shapeId="15" trigger="true" static="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x100000" castsShadows="false" receiveShadows="false" nonRenderable="true" translation="2.5 2.05 0.55" nodeId="42"/>
+                <TransformGroup name="dischargeNode" translation="2.5 2.05 0.55" nodeId="43"/>
+                <TransformGroup name="wheelFront" translation="0 0.55 1.85" nodeId="44"/>
+                <TransformGroup name="wheelRear" translation="0 0.55 -1.85" nodeId="45"/>
+                <TransformGroup name="wheelOutriggerLeft" translation="-1.95 0.55 0" nodeId="46"/>
+                <TransformGroup name="wheelOutriggerRight" translation="1.95 0.55 0" nodeId="47"/>
+            </Shape>
+  </Scene>
+</i3D>

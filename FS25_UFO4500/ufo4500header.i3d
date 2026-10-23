@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<i3D name="ufo4500header" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
+  <Asset>
+    <Export program="tools/ufo/model.py (procedural FS25 pipeline)" version="1.0"/>
+  </Asset>
+  <Files>
+    <File fileId="1" filename="textures/hullPaint_diffuse.dds"/>
+    <File fileId="2" filename="textures/hullPaint_specular.dds"/>
+    <File fileId="3" filename="textures/hullMetal_diffuse.dds"/>
+    <File fileId="4" filename="textures/hullMetal_specular.dds"/>
+    <File fileId="5" filename="textures/cockpit_diffuse.dds"/>
+    <File fileId="6" filename="textures/cockpit_specular.dds"/>
+    <File fileId="7" filename="textures/glass_diffuse.dds"/>
+    <File fileId="8" filename="textures/glass_specular.dds"/>
+    <File fileId="9" filename="textures/lensGreen_diffuse.dds"/>
+    <File fileId="10" filename="textures/lensRed_diffuse.dds"/>
+    <File fileId="11" filename="textures/lensWhite_diffuse.dds"/>
+    <File fileId="12" filename="textures/alienSkin_diffuse.dds"/>
+    <File fileId="13" filename="textures/alienSkin_specular.dds"/>
+    <File fileId="14" filename="textures/eyeBlack_diffuse.dds"/>
+    <File fileId="15" filename="textures/beam_diffuse.dds"/>
+  </Files>
+  <Materials>
+    <Material name="collision" materialId="1" diffuseColor="0.6 0.1 0.6 1" specularColor="0.1 0.1 0.1"/>
+    <Material name="hullPaint" materialId="2">
+      <Texture fileId="1"/>
+      <Glossmap fileId="2"/>
+    </Material>
+    <Material name="hullMetal" materialId="3">
+      <Texture fileId="3"/>
+      <Glossmap fileId="4"/>
+    </Material>
+    <Material name="cockpit" materialId="4">
+      <Texture fileId="5"/>
+      <Glossmap fileId="6"/>
+    </Material>
+    <Material name="glass" materialId="5" alphaBlending="true">
+      <Texture fileId="7"/>
+      <Glossmap fileId="8"/>
+    </Material>
+    <Material name="lensGreen" materialId="6">
+      <Texture fileId="9"/>
+    </Material>
+    <Material name="lensRed" materialId="7">
+      <Texture fileId="10"/>
+    </Material>
+    <Material name="lensWhite" materialId="8">
+      <Texture fileId="11"/>
+    </Material>
+    <Material name="alienSkin" materialId="9">
+      <Texture fileId="12"/>
+      <Glossmap fileId="13"/>
+    </Material>
+    <Material name="eyeBlack" materialId="10">
+      <Texture fileId="14"/>
+    </Material>
+    <Material name="beam" materialId="11" alphaBlending="true">
+      <Texture fileId="15"/>
+    </Material>
+  </Materials>
+  <Shapes externalShapesFile="ufo4500header.i3d.shapes">
+  </Shapes>
+  <Dynamics>
+  </Dynamics>
+  <Scene>
+            <TransformGroup name="ufo4500Header" nodeId="1">
+                <Shape name="headerMesh" shapeId="1" nodeId="2"/>
+                <TransformGroup name="reelNode" translation="0 0.42 0.98" nodeId="3">
+                    <Shape name="reelMesh" shapeId="2" nodeId="4"/>
+                </TransformGroup>
+                <TransformGroup name="augerNode" translation="0 -0.02 0.58" nodeId="5">
+                    <Shape name="augerMesh" shapeId="3" nodeId="6"/>
+                </TransformGroup>
+                <TransformGroup name="headerAttacher" nodeId="7"/>
+                <TransformGroup name="heightLeft" translation="-2.6 -0.85 1.00" nodeId="8"/>
+                <TransformGroup name="heightRight" translation="2.6 -0.85 1.00" nodeId="9"/>
+                <TransformGroup name="heightCenter" translation="0 -0.85 1.00" nodeId="10"/>
+                <TransformGroup name="groundRef" translation="0 -0.85 0.80" nodeId="11"/>
+                <TransformGroup name="areaStart" translation="-3 -0.85 0.45" nodeId="12"/>
+                <TransformGroup name="areaWidth" translation="3 -0.85 0.45" nodeId="13"/>
+                <TransformGroup name="areaHeight" translation="-3 -0.85 1.25" nodeId="14"/>
+                <Shape name="headerCollision" shapeId="4" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="15"/>
+            </TransformGroup>
+  </Scene>
+</i3D>

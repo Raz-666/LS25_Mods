@@ -275,11 +275,95 @@ keine `<actions>`, Marke `LIZARD` (Basisspiel). Damit sollte es den Konsolentest
 überstehen; einreichen musst du es selbst (Konto auf farming-simulator.com,
 TestRunner drüberlaufen lassen, ZIP hochladen).
 
-## 8. Ehrlicher Hinweis
+## 8. Mähdrescher: das UFO 4500 (+ 6-m-Schneidwerk)
+
+Das UFO 2500 macht Kornkreise – das **UFO 4500** erntet wirklich. Es sind zwei
+Shop-Artikel in einem Mod, weil das Grundspiel das bei jedem Mähdrescher so
+macht: der Drescher und sein Schneidwerk.
+
+| Teil | Preis | Was es ist |
+| --- | --- | --- |
+| **UFO 4500** | 185.000 | Untertasse als selbstfahrender Mähdrescher, 300 PS, 25 km/h, Korntank 15.000 l, Abtankrohr rechts, schwebt 1,70 m über dem Feld |
+| **UFO 4500 Schneidwerk** | 24.000 | 6 m breites Schneidwerk mit Haspel, passt nur an das UFO 4500 |
+
+![UFO 4500 mit Schneidwerk](docs/renders/ufo4500_header.png)
+
+**So erntest du**
+
+1. UFO 4500 kaufen, dann das Schneidwerk (kaufen oder mieten).
+2. Zum Schneidwerk fahren, Anbau **absenken**, rückwärts ran, bis es einrastet.
+3. Drescher **einschalten** – die Haspel dreht sich, das Schneidwerk senkt sich.
+4. Ins Getreide fahren. Das Korn landet im Tank (Füllstandsanzeige wie beim
+   Lexion), das Stroh bleibt als Schwad liegen.
+5. **Abtanken**: Anhänger neben das Rohr stellen, Rohr ausfahren (`X` bzw.
+   Gamepad-Schultertaste) – der Trigger sitzt am Rohrende.
+
+Geerntet werden Weizen, Gerste, Hafer, Raps, Mais, Sonnenblume, Sojabohne und
+Sorghum. Die beiden unsichtbaren breiten Räder tragen das UFO wie beim UFO 2500,
+das Schneidwerk hängt an einem normalen `cutter`-Anbau – deshalb funktionieren
+Gamepad-Steuerung, Kamera, Shop, Helfer und Abtanken ohne eine Zeile Lua.
+
+![UFO 4500 allein](docs/renders/ufo4500_hero.png)
+
+**Bauen und prüfen**
+
+```bash
+python tools/build_harvester_mod.py                 # Modell -> XML -> Bilder -> ZIP
+python tools/ufo/validate4500.py --xsd <schema-dir> # Prüfungen ohne Spiel
+```
+
+`validate4500.py` prüft unter anderem: kein Lua, keine `<actions>`, nur
+Grundspiel-Specializations, beide XML gegen die offiziellen XSD, alle
+i3d-Mappings, dass der Drescher wirklich ein `combine` mit 15.000-l-Tank ist,
+dass das Schneidwerk exakt 6 m Arbeitsbreite hat und dass die Untertasse 1,70 m
+über den unsichtbaren Rädern schwebt.
+
+## 9. Baba Jagas Hühnerhütte (Konsolen-tauglich)
+
+Ein aufstellbarer **Hühnerstall** der anderen Art: eine Blockhütte auf einem
+riesigen Hühnerbein, mit Schindeldach, krummem Schornstein, Laterne, zwei
+Futertrögen, Schild und einem eingelegten Hühnerhof.
+
+| | |
+| --- | --- |
+| Preis | 18.500 €, 12 €/Tag Unterhalt |
+| Hühner | 20 Plätze, ausbaubar bis 60 |
+| Futter | 2.500 l in zwei Trögen (Weizen u. a.) |
+| Eier | bis zu 6 Paletten am Palettenplatz |
+| Zaun | im Modell enthalten, als Grundspiel-Hühnernetz |
+| Shop | Tiergehege → Hühner |
+
+![Baba Jagas Hütte](docs/renders/babajaga_hero.png)
+
+**So benutzt du sie**
+
+1. Im Shop unter **Tiergehege** kaufen und aufstellen (Gelände wird geebnet,
+   Boden freigeräumt, Gras eingesät).
+2. Weizen in den Futter-Trigger vor den Trögen kippen – die Tröge füllen sich
+   sichtbar, die Hühner laufen automatisch hin.
+3. Hühner beim Tierhändler kaufen und einsetzen, Eier sammelst du am
+   Palettenplatz ab.
+
+**Warum das auf Konsole läuft:** Die Hütte ist ein ganz normaler
+`chickenHusbandry`-Placeable des Grundspiels, also dieselbe Technik wie der
+gekaufte Hühnerstall – kein Lua, keine eigenen Specializations, Marke Lizard.
+Der Zaun ist keine Zusatzdatei, sondern ein Kontur-Satz im Modell: aus den vier
+Eckpunkten baut das Spiel das Laufnetz für die Hühner selbst.
+
+Die Hütte **läuft nicht** durch die Gegend, sie steht auf ihrem Bein. Bewusst so:
+ein Bein mit Animation wäre ein eigenes Skript und damit auf Konsole nicht
+erlaubt.
+
+```bash
+python tools/build_babajaga_mod.py       # Modell -> Texturen -> XML -> ZIP
+python tools/babajaga/validate.py        # Prüfung ohne Spiel
+```
+
+## 10. Ehrlicher Hinweis
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit
-„UFO2000", „UFO2500" oder „Alien" zeigen die Stelle, dann bessere ich gezielt nach.
+„UFO2000", „UFO2500", „UFO4500", „BabaJaga" oder „Alien" zeigen die Stelle, dann bessere ich gezielt nach.
 
 Beim UFO 2500 sind drei Dinge die ersten Kandidaten für Feinschliff, falls es im
 Spiel komisch aussieht: die Fahrhöhe (Federn/Dämpfer der unsichtbaren Räder,
