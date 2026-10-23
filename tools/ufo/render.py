@@ -59,6 +59,9 @@ def collect(node, parent=np.eye(4), visible=True, out=None):
         t[:3, 3] = [float(v) for v in tr.split()]
     if ro:
         t[:3, :3] = _rot_matrix(*[float(v) for v in ro.split()])
+    sc = node.attrs.get("scale")
+    if sc:
+        t[:3, :3] = t[:3, :3] @ np.diag([float(v) for v in sc.split()])
     world = parent @ t
     vis = node.attrs.get("visibility", "true") != "false"
     if node.mesh is not None and vis:
@@ -97,8 +100,9 @@ def look_at(eye, target, up=(0, 1, 0)):
 
 
 def render(eye=(6.8, 3.2, 9.2), target=(0, 1.05, 0), size=1024, fov=38.0, ss=2,
-           background="sky", beam=False, return_alpha=False):
-    root = model.build_scene()
+           background="sky", beam=False, return_alpha=False, root=None):
+    if root is None:
+        root = model.build_scene()
     tris = collect(root)
 
     W = H = size * ss

@@ -57,26 +57,31 @@ SpecializationUtil = {
 world = { x = 0, y = 0.0, z = 0, pitch = 0, yaw = 0, roll = 0,
           vx = 0, vy = 0, vz = 0, terrainY = 0.0, visibility = {}, time = 0 }
 nodeIds = { leg0 = 11, leg1 = 12, leg2 = 13, beamNode = 20, beamLight = 21,
-            beaconLight = 22, alienNode = 23 }
+            beaconLight = 22, groundRing = 23, driverSeatNode = 24 }
 
 function getWorldTranslation(node) return world.x, world.y, world.z end
-function getTranslation(node)
-    if node == nodeIds.alienNode then return 0, 1.02, 0 end
-    return 0, 0, 0
-end
+function getTranslation(node) return 0, 0, 0 end
 function getRotation(node) return 0, 0, 16 end
 function getWorldRotation(node) return world.pitch, world.yaw, world.roll end
 function setRotation(node, a, b, c)
     if node == world.node then world.pitch, world.yaw, world.roll = a, b, c end
 end
 function setWorldTranslation(node, x, y, z) world.x, world.y, world.z = x, y, z end
-function setTranslation(node, x, y, z) end
+function setTranslation(node, x, y, z)
+    world.translation = world.translation or {}
+    world.translation[node] = { x, y, z }
+end
+function setScale(node, x, y, z)
+    world.scale = world.scale or {}
+    world.scale[node] = { x, y, z }
+end
 function setLinearVelocity(node, x, y, z) world.vx, world.vy, world.vz = x, y, z end
 function setAngularVelocity(node, x, y, z) end
 function setVisibility(node, v) world.visibility[node] = v end
 function getTerrainHeightAtWorldPos(terrain, x, y, z) return world.terrainY end
 
 math.clamp = function(v, a, b) return math.max(a, math.min(b, v)) end
+if math.atan2 == nil then math.atan2 = function(y, x) return math.atan(y, x) end end
 bit32 = { band = function(a, b)
     local r, bit = 0, 1
     while a > 0 and b > 0 do
@@ -87,7 +92,36 @@ bit32 = { band = function(a, b)
     return r
 end }
 g_terrainNode = 1
-g_currentMission = { time = 0, hud = { addHelpExtension = function() end } }
+g_currentMission = { time = 0, drawables = {},
+    hud = { addHelpExtension = function() end },
+    addDrawable = function(self, d) self.drawables[#self.drawables + 1] = d end,
+    removeDrawable = function(self, d)
+        for i = #self.drawables, 1, -1 do
+            if self.drawables[i] == d then table.remove(self.drawables, i) end
+        end
+    end,
+    addIngameNotification = function() end }
+FSBaseMission = { INGAME_NOTIFICATION_INFO = 1 }
+g_gui = { getIsGuiVisible = function() return false end }
+RenderText = { ALIGN_LEFT = 1, ALIGN_CENTER = 2 }
+setTextColor = function() end
+setTextAlignment = function() end
+renderText = function() end
+drawFilledRect = function() end
+drawOutlineRect = function() end
+
+-- density map mock: records the mown rectangles
+mown = { count = 0, area = 0 }
+FSDensityMapUtil = {
+    getFruitTypeIndexAtWorldPos = function(x, z) return 2, 4 end,
+    updateMowerArea = function(fruitIndex, x1, z1, x2, z1b, x1b, z2, limitToField)
+        local w = math.abs(x2 - x1)
+        local h = math.abs(z2 - z1)
+        mown.count = mown.count + 1
+        mown.area = mown.area + w * h
+        return 0, 0
+    end,
+}
 g_i18n = { getText = function(k) return k end }
 g_inputBinding = { setActionEventTextPriority = function() end, setActionEventText = function() end }
 GS_PRIO_HIGH, GS_PRIO_NORMAL = 3, 2
@@ -222,13 +256,13 @@ def main():
 
     # ---- climb with the ascend key ----------------------------------------
     lua.execute("""
-    vehicle.spec_ufo2000.inputVertical = 1
+    vehicle.spec_ufo2000.digitalUp = true
     for i = 1, 300 do
         world.time = world.time + 1/60
         g_currentMission.time = world.time * 1000
         callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
     end
-    vehicle.spec_ufo2000.inputVertical = 0
+    vehicle.spec_ufo2000.digitalUp = false
     """)
     y2 = lua.eval("world.y")
     ok &= check("climb key raises the craft", y2 > y + 10, "y=%.2f -> %.2f" % (y, y2))
@@ -267,31 +301,134 @@ def main():
     callEvent(vehicle, "onWriteUpdateStream", s, { getIsServer = function() return true end }, vehicle.dirtyFlags)
     callEvent(vehicle, "onReadUpdateStream", s, 0, { getIsServer = function() return true end })
     local s2 = newStream()
-    vehicle.spec_ufo2000.inputVertical = -1
+    vehicle.spec_ufo2000.axisValue = -1
     vehicle.spec_ufo2000.verticalDirty = true
     callEvent(vehicle, "onWriteUpdateStream", s2, { getIsServer = function() return false end }, 0)
-    vehicle.spec_ufo2000.inputVertical = 0
+    vehicle.spec_ufo2000.axisValue = 0
     callEvent(vehicle, "onReadUpdateStream", s2, 0, { getIsServer = function() return false end })
     """)
-    ok &= check("update stream round trip", lua.eval("vehicle.spec_ufo2000.inputVertical") == -1)
+    ok &= check("update stream round trip", abs(lua.eval("vehicle.spec_ufo2000.axisValue") + 1) < 0.01)
+    lua.execute("vehicle.spec_ufo2000.axisValue = 0")
 
     # ---- descend and land -------------------------------------------------
     lua.execute("""
     vehicle.spec_drivable.axisForward = 0
     vehicle.spec_drivable.axisSide = 0
-    vehicle.spec_ufo2000.inputVertical = -1
+    vehicle.spec_ufo2000.digitalDown = true
     for i = 1, 1500 do
         world.time = world.time + 1/60
         g_currentMission.time = world.time * 1000
         callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
         if not vehicle.spec_ufo2000.isHovering then break end
     end
-    vehicle.spec_ufo2000.inputVertical = 0
+    vehicle.spec_ufo2000.digitalDown = false
     """)
     ok &= check("landed back on the ground", lua.eval("vehicle.spec_ufo2000.isHovering") is False,
                 "y=%.2f" % lua.eval("world.y"))
-    ok &= check("beam switched off with landing state intact",
-                lua.eval("vehicle.spec_ufo2000.beamActive") is True)
+    ok &= check("beam switches off when landing",
+                lua.eval("vehicle.spec_ufo2000.beamActive") is False)
+
+    # ---- crop circle menu -------------------------------------------------
+    lua.execute("""
+    vehicle:setUFOBeamActive(false)
+    vehicle:setUFOIsHovering(true)
+    vehicle:setUFOAltitude(20)
+    for i = 1, 480 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    radius = lua.eval("vehicle:getUFOCircleRadius()")
+    alt = lua.eval("vehicle.spec_ufo2000.altitude")
+    expected = alt * math.tan(math.radians(34.0))
+    ok &= check("beam radius follows the altitude", abs(radius - expected) < 0.01,
+                "r=%.2f at %.1f m" % (radius, alt))
+
+    lua.execute("""
+    UFO2000.actionEventMenu(vehicle, "ufo_menu", 1, nil)
+    """)
+    ok &= check("menu opens", lua.eval("vehicle.spec_ufo2000.menuOpen") is True)
+    before = lua.eval("vehicle.spec_ufo2000.patternIndex")
+    lua.execute("UFO2000.actionEventAltitudeUp(vehicle, 'ufo_altitudeUp', 1, nil)")
+    after = lua.eval("vehicle.spec_ufo2000.patternIndex")
+    ok &= check("pattern can be picked in the menu", after == (before % 9) + 1,
+                "%d -> %d" % (before, after))
+    heightBefore = lua.eval("vehicle.spec_ufo2000.altitudeTarget")
+    ok &= check("menu keys do not change the altitude",
+                abs(lua.eval("vehicle.spec_ufo2000.altitudeTarget") - heightBefore) < 1e-9)
+
+    # selected pattern 1 = full circle: mown area has to be about pi r^2
+    lua.execute("vehicle:setUFOCirclePattern(1)")
+    lua.execute("""
+    mown.count, mown.area = 0, 0
+    UFO2000.actionEventBeam(vehicle, "ufo_menu", 1, nil)   -- menu was open: fires
+    """)
+    ok &= check("beam fires from the menu", lua.eval("vehicle.spec_ufo2000.beamActive") is True)
+    ok &= check("menu closes on fire", lua.eval("vehicle.spec_ufo2000.menuOpen") is False)
+    spans = lua.eval("#(vehicle.spec_ufo2000.drawQueue or {})")
+    ok &= check("pattern broken into slices", spans > 10, "%d slices" % spans)
+
+    lua.execute("""
+    for i = 1, 600 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+        if vehicle.spec_ufo2000.drawQueue == nil then break end
+    end
+    """)
+    area = lua.eval("mown.area")
+    cells = lua.eval("mown.count")
+    want = math.pi * radius * radius
+    ok &= check("mowing finished", lua.eval("vehicle.spec_ufo2000.drawQueue") is None,
+                "%d rectangles" % cells)
+    ok &= check("circle area matches pi r^2", abs(area - want) / want < 0.10,
+                "%.0f m2 vs %.0f m2" % (area, want))
+    ok &= check("progress reported to clients", lua.eval("vehicle.spec_ufo2000.drawProgress") == 1)
+
+    # ring pattern mows less than a filled circle
+    lua.execute("""
+    vehicle:setUFOCirclePattern(2)
+    mown.count, mown.area = 0, 0
+    vehicle:setUFOBeamActive(false)
+    vehicle:setUFOBeamActive(true)
+    for i = 1, 600 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+        if vehicle.spec_ufo2000.drawQueue == nil then break end
+    end
+    """)
+    ringArea = lua.eval("mown.area")
+    ok &= check("ring mows less than the filled circle", area * 0.5 < ringArea < area * 0.95,
+                "%.0f m2 vs %.0f m2" % (ringArea, area))
+
+    # the marker ring on the ground grows to the beam radius
+    lua.execute("""
+    g_currentMission.time = g_currentMission.time + 16
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ringScale = lua.eval("world.scale[%d]" % (23,))
+    ok &= check("ground ring scaled to the beam", ringScale is not None and
+                abs(ringScale[1] - radius) / radius < 0.05,
+                "scale=%.2f" % (ringScale[1] if ringScale else -1))
+
+    # ---- legs: fold in when flying, unfold when landing -------------------
+    lua.execute("""
+    vehicle.spec_ufo2000.digitalDown = true
+    for i = 1, 2000 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+        if not vehicle.spec_ufo2000.isHovering then break end
+    end
+    vehicle.spec_ufo2000.digitalDown = false
+    for i = 1, 400 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("landed", lua.eval("vehicle.spec_ufo2000.isHovering") is False,
+                "y=%.2f" % lua.eval("world.y"))
+    ok &= check("landing legs are deployed again", lua.eval("vehicle.spec_ufo2000.legsAlpha") < 0.02,
+                "alpha=%.3f" % lua.eval("vehicle.spec_ufo2000.legsAlpha"))
+    ok &= check("beam stopped on landing", lua.eval("world.visibility[20]") is False)
 
     # ---- overridden getCanMotorRun ---------------------------------------
     can = lua.eval("callOverwritten(vehicle, 'getCanMotorRun')")

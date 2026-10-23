@@ -76,37 +76,38 @@
                     <TransformGroup name="leg2" translation="-3.15959e-16 0.375 -1.72" rotation="0 -270 16" nodeId="9">
                         <Shape name="leg2Mesh" shapeId="6" nodeId="10"/>
                     </TransformGroup>
-                    <TransformGroup name="alienNode" translation="0 1.02 0" scale="1.12 1.12 1.12" nodeId="11">
-                        <Shape name="alienMesh" shapeId="7" nodeId="12"/>
+                    <Shape name="consoleMesh" shapeId="7" nodeId="11"/>
+                    <TransformGroup name="driverSeatNode" translation="0 1.17 0.02" nodeId="12"/>
+                    <TransformGroup name="beaconNode" translation="0 3.02 0" nodeId="13">
+                        <Shape name="beaconMesh" shapeId="8" nodeId="14"/>
                     </TransformGroup>
-                    <Shape name="consoleMesh" shapeId="8" nodeId="13"/>
-                    <TransformGroup name="beaconNode" translation="0 2.26 0" nodeId="14">
-                        <Shape name="beaconMesh" shapeId="9" nodeId="15"/>
+                    <TransformGroup name="beamNode" translation="0 0.22 0" visibility="false" nodeId="15">
+                        <Shape name="beamMesh" shapeId="9" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="16"/>
                     </TransformGroup>
-                    <TransformGroup name="beamNode" translation="0 0.25 0" visibility="false" nodeId="16">
-                        <Shape name="beamMesh" shapeId="10" castsShadows="false" receiveShadows="false" nodeId="17"/>
+                    <TransformGroup name="groundRing" translation="0 0.05 0" visibility="false" scale="1 1 1" nodeId="17">
+                        <Shape name="groundRingMesh" shapeId="10" castsShadows="false" receiveShadows="false" nodeId="18"/>
                     </TransformGroup>
                 </TransformGroup>
-                <TransformGroup name="collisions" nodeId="18">
-                    <Shape name="collisionDome" shapeId="11" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="19"/>
+                <TransformGroup name="collisions" nodeId="19">
+                    <Shape name="collisionDome" shapeId="11" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="20"/>
                 </TransformGroup>
-                <TransformGroup name="lights" nodeId="20">
-                    <Light name="headLightLeft" translation="0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="21"/>
-                    <Light name="headLightRight" translation="-0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="22"/>
-                    <Light name="workLight" translation="0 0.30 0" rotation="-90 0 0" type="spot" color="0.65 1.0 0.85" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="60" coneAngle="88" dropOff="2" nodeId="23"/>
-                    <Light name="beamLight" translation="0 0.22 0" rotation="-90 0 0" type="spot" color="0.55 1.0 0.95" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="42" coneAngle="52" dropOff="1.5" nodeId="24"/>
-                    <Light name="beaconLight" translation="0 2.30 0" type="point" color="1 0.18 0.12" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="26" nodeId="25"/>
-                    <Light name="tailLight" translation="0 0.72 -2.20" type="point" color="1 0.25 0.15" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="8" nodeId="26"/>
+                <TransformGroup name="lights" nodeId="21">
+                    <Light name="headLightLeft" translation="0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="22"/>
+                    <Light name="headLightRight" translation="-0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="23"/>
+                    <Light name="workLight" translation="0 0.30 0" rotation="-90 0 0" type="spot" color="0.65 1.0 0.85" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="60" coneAngle="88" dropOff="2" nodeId="24"/>
+                    <Light name="beamLight" translation="0 0.22 0" rotation="-90 0 0" type="spot" color="0.55 1.0 0.95" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="42" coneAngle="52" dropOff="1.5" nodeId="25"/>
+                    <Light name="beaconLight" translation="0 3.02 0" type="point" color="1 0.18 0.12" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="26" nodeId="26"/>
+                    <Light name="tailLight" translation="0 0.72 -2.20" type="point" color="1 0.25 0.15" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="8" nodeId="27"/>
                 </TransformGroup>
-                <Shape name="exactFillRootNode" shapeId="12" kinematic="true" compound="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="27"/>
-                <TransformGroup name="enterReferenceNode" translation="0 1.0 2.45" nodeId="28"/>
-                <TransformGroup name="exitPoint" translation="2.7 0.05 0.0" nodeId="29"/>
-                <TransformGroup name="soundMotor" translation="0 1.0 0.0" nodeId="30"/>
-                <TransformGroup name="outdoorCameraTarget" translation="0 1.15 0" nodeId="31">
-                    <Camera name="outdoorCamera" translation="0 0 -9" rotation="0 180 0" fov="45" nearClip="0.05" farClip="5000" nodeId="32"/>
+                <Shape name="exactFillRootNode" shapeId="12" kinematic="true" compound="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="28"/>
+                <TransformGroup name="enterReferenceNode" translation="0 1.05 2.45" nodeId="29"/>
+                <TransformGroup name="exitPoint" translation="2.7 0.05 0.0" nodeId="30"/>
+                <TransformGroup name="soundMotor" translation="0 1.0 0.0" nodeId="31"/>
+                <TransformGroup name="outdoorCameraTarget" translation="0 1.15 0" nodeId="32">
+                    <Camera name="outdoorCamera" translation="0 0 -9" rotation="0 180 0" fov="45" nearClip="0.05" farClip="5000" nodeId="33"/>
                 </TransformGroup>
-                <TransformGroup name="indoorCameraTarget" translation="0 1.42 0.12" nodeId="33">
-                    <Camera name="indoorCamera" rotation="0 180 0" fov="60" nearClip="0.03" farClip="5000" nodeId="34"/>
+                <TransformGroup name="indoorCameraTarget" translation="0 1.42 0.12" nodeId="34">
+                    <Camera name="indoorCamera" rotation="0 180 0" fov="60" nearClip="0.03" farClip="5000" nodeId="35"/>
                 </TransformGroup>
             </Shape>
   </Scene>

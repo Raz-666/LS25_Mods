@@ -50,9 +50,9 @@
     "greeting": {
       "type": "once",
       "file": "greeting.ogg",
-      "duration_s": 0.62,
-      "peak_dbfs": -3.1,
-      "duration": 0.62
+      "duration_s": 0.85,
+      "peak_dbfs": -3.74,
+      "duration": 0.85
     }
   }
 }

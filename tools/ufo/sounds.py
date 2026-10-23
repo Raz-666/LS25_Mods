@@ -27,29 +27,48 @@ def _t(dur):
     return np.arange(int(round(dur * FS))) / FS
 
 
-def hover_tone(dur, f0, harmonics=(1.0, 0.45, 0.22, 0.12, 0.07), wobble=1.0, noise=0.06, seed=0):
-    """Steady hover hum: detuned harmonic stack + slow wobble + airy noise."""
+def hover_tone(dur, f0, harmonics=(1.0, 0.30, 0.12), wobble=1.0, noise=0.035, seed=0,
+               bubbles=5, bubble_gain=0.35):
+    """Cute hovering hum: soft wub-wub with a slow pitch wobble and little
+    bubbles popping out of it (Simpsons / Futurama flying saucer vibes)."""
     t = _t(dur)
-    out = np.zeros_like(t)
     rng = np.random.default_rng(seed)
+
+    # two wobble rates, both snapped to whole cycles so the loop is seamless
+    lfo1 = np.sin(2 * np.pi * _quantise(5.1 * wobble, dur) * t)
+    lfo2 = np.sin(2 * np.pi * _quantise(11.7 * wobble, dur) * t + 0.7)
+    pitch_mod = 0.055 * lfo1 + 0.018 * lfo2
+    ph = 2 * np.pi * np.cumsum(f0 * (1.0 + pitch_mod)) / FS
+
+    out = np.zeros_like(t)
     for i, amp in enumerate(harmonics):
-        ratio = 1.0 + i * 0.0035 * (1 if i % 2 == 0 else -1)     # slight detune
-        f = _quantise(f0 * (i + 1) * ratio, dur)
-        phase = rng.random() * 2 * np.pi
-        out += amp * np.sin(2 * np.pi * f * t + phase)
-    # slow amplitude / pitch wobble, periodic in the loop
-    lfo_f = _quantise(4.6 * wobble, dur)
-    lfo = np.sin(2 * np.pi * lfo_f * t)
-    out *= 1.0 + 0.12 * lfo
-    # airy band-limited noise (smoothed white noise), periodic by mirroring
-    if noise > 0:
+        out += amp * np.sin((i + 1) * ph + rng.random() * 0.6)
+    out *= 1.0 + 0.10 * lfo1
+
+    # bubbles: short rising blips, evenly spread and loop-safe
+    if 0 < bubbles:
+        blip_len = min(0.09, dur / bubbles * 0.7)
+        for i in range(bubbles):
+            start = dur * (i + 0.5) / bubbles
+            i0 = int(start * FS)
+            n = int(blip_len * FS)
+            if i0 + n >= len(t):
+                continue
+            tt = np.arange(n) / FS
+            f = f0 * (2.1 + 0.6 * i % 3) * (1.0 + 2.4 * tt / blip_len)
+            env = np.sin(np.pi * tt / blip_len) ** 2
+            out[i0:i0 + n] += bubble_gain * env * np.sin(2 * np.pi * np.cumsum(f) / FS)
+
+    # a little air, band limited
+    if 0 < noise:
         w = rng.normal(size=len(t))
-        k = 41
+        k = 61
         kernel = np.hanning(k)
         kernel /= kernel.sum()
         w = np.convolve(np.concatenate([w, w[:k]]), kernel, mode="same")[:len(t)]
         w /= max(np.abs(w).max(), 1e-9)
-        out += noise * w * (1.0 + 0.3 * lfo)
+        out += noise * w * (1.0 + 0.3 * lfo1)
+
     out /= max(np.abs(out).max(), 1e-9)
     return out * 0.72
 
@@ -80,42 +99,47 @@ def sweep(dur, f_start, f_end, rise=True, seed=1, tail_tone=None, tail_level=0.7
     return out
 
 
-def greeting(dur=0.62, seed=2):
-    """Cute two-tone 'bii-buup' - the honk."""
+def greeting(dur=0.85, seed=2):
+    """Happy little alien jingle - the honk: bi-bu-ba-doo with vibrato."""
     t = _t(dur)
     out = np.zeros_like(t)
     rng = np.random.default_rng(seed)
-    notes = [(0.0, 0.22, 620.0, 900.0), (0.24, 0.38, 980.0, 640.0)]
+    # (start, length, f0, f1) - a rising, bubbly four note phrase
+    notes = [(0.00, 0.14, 700.0, 980.0),
+             (0.16, 0.12, 980.0, 1180.0),
+             (0.30, 0.16, 880.0, 1320.0),
+             (0.50, 0.30, 1320.0, 760.0)]
     for start, length, f0, f1 in notes:
         i0 = int(start * FS)
         i1 = min(len(t), i0 + int(length * FS))
         tt = np.arange(i1 - i0) / FS
         f = f0 + (f1 - f0) * (tt / max(tt[-1], 1e-6))
-        # vibrato makes it sound "alien"
-        f = f * (1.0 + 0.05 * np.sin(2 * np.pi * 7.0 * tt))
+        # fast cartoon vibrato
+        f = f * (1.0 + 0.07 * np.sin(2 * np.pi * 13.0 * tt))
         ph = 2 * np.pi * np.cumsum(f) / FS
-        env = np.minimum(1.0, tt / 0.02) * np.minimum(1.0, (tt[-1] - tt) / 0.06)
-        out[i0:i1] += env * (np.sin(ph) + 0.3 * np.sin(2 * ph) + 0.12 * np.sin(3 * ph))
+        env = np.minimum(1.0, tt / 0.012) * np.minimum(1.0, (tt[-1] - tt) / 0.05)
+        out[i0:i1] += env * (np.sin(ph) + 0.22 * np.sin(2 * ph) + 0.08 * np.sin(3 * ph))
     out /= max(np.abs(out).max(), 1e-9)
-    return out * 0.7
+    return out * 0.65
 
 
 SOUNDS = {
     # name: (generator, kind, meta)
-    "hoverIdle": (lambda: hover_tone(3.0, 42.0, wobble=0.6, seed=11), "loop",
+    "hoverIdle": (lambda: hover_tone(3.0, 96.0, wobble=0.45, seed=11, bubbles=4), "loop",
                   {"native_rpm": 800, "load": 0}),
-    "hoverMid": (lambda: hover_tone(2.5, 68.0, wobble=1.0, seed=12), "loop",
+    "hoverMid": (lambda: hover_tone(2.5, 132.0, wobble=0.8, seed=12, bubbles=5), "loop",
                  {"native_rpm": 1600, "load": 0}),
-    "hoverHigh": (lambda: hover_tone(2.0, 96.0, wobble=1.4, seed=13), "loop",
+    "hoverHigh": (lambda: hover_tone(2.0, 176.0, wobble=1.1, seed=13, bubbles=6), "loop",
                   {"native_rpm": 2400, "load": 0}),
-    "hoverLoad": (lambda: hover_tone(2.0, 84.0, harmonics=(1.0, 0.55, 0.3, 0.2, 0.12),
-                                     wobble=1.2, noise=0.10, seed=14), "loop",
+    "hoverLoad": (lambda: hover_tone(2.0, 150.0, harmonics=(1.0, 0.42, 0.2, 0.1),
+                                     wobble=1.0, noise=0.09, seed=14, bubbles=3,
+                                     bubble_gain=0.22), "loop",
                   {"native_rpm": 2000, "load": 1}),
     "hoverStart": (lambda: sweep(1.35, 150.0, 780.0, True, seed=21), "once",
                    {"duration": 1.35}),
     "hoverStop": (lambda: sweep(1.1, 760.0, 120.0, False, seed=22), "once",
                   {"duration": 1.1}),
-    "greeting": (greeting, "once", {"duration": 0.62}),
+    "greeting": (greeting, "once", {"duration": 0.85}),
 }
 
 

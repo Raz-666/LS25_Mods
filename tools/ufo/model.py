@@ -31,7 +31,7 @@ MATERIALS = [
 MAT_INDEX = {m["name"]: i + 1 for i, m in enumerate(MATERIALS)}
 
 HULL_R = 2.35            # outer radius of the saucer
-DOME_R = 0.98
+DOME_R = 1.58            # big glass dome, Simpsons style
 RIM_Y = 0.93
 HULL_Y = 0.30            # belly centre height
 
@@ -98,16 +98,26 @@ def hull_mesh():
 
 def antenna_beacon_mesh():
     m = Mesh()
-    m.add("lensRed", *sphere((0, 0, 0), 0.082, 16, 10, scale=(1, 1.05, 1)))
+    m.add("hullMetal", *cylinder(0.026, -0.30, 0.0, 10, caps=True))
+    m.add("lensRed", *sphere((0, 0, 0), 0.085, 16, 10, scale=(1, 1.05, 1)))
     return m
 
 
 def dome_mesh():
+    """Large bubble canopy - big enough to see the player character inside."""
     m = Mesh()
     m.add("glass", *lathe([
-        (DOME_R, 1.175), (0.97, 1.30), (0.90, 1.48), (0.76, 1.65),
-        (0.53, 1.79), (0.27, 1.88), (0.06, 1.915),
-    ], 48, close_ends=True))
+        (DOME_R, 1.155), (1.575, 1.38), (1.52, 1.69), (1.38, 2.02),
+        (1.16, 2.29), (0.86, 2.49), (0.52, 2.62), (0.22, 2.69), (0.06, 2.705),
+    ], 56, close_ends=True))
+    # inner frame ring at the base of the dome
+    m.add("hullMetal", *place(torus(DOME_R - 0.02, 0.045, 0, 56, 8), translation=(0, 1.17, 0)))
+    # bolted rim where the canopy meets the hull
+    for i in range(12):
+        a = TAU * i / 12
+        m.add("hullMetal", *place(sphere((0, 0, 0), 0.035, 8, 6),
+                                  translation=(DOME_R * 0.99 * math.cos(a), 1.19,
+                                               DOME_R * 0.99 * math.sin(a))))
     return m
 
 
@@ -148,53 +158,35 @@ def leg_nodes(parent):
     return nodes
 
 
-def alien_mesh():
-    """Cute little pilot; local origin is the seat."""
-    m = Mesh()
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.20, 20, 12, scale=(1.0, 1.15, 0.85)),
-                              translation=(0, 0.22, 0)))
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.19, 20, 12, scale=(1.0, 1.05, 0.95)),
-                              translation=(0, 0.53, 0.01)))
-    # big shiny eyes
-    for sx in (-1, 1):
-        m.add("eyeBlack", *place(sphere((0, 0, 0), 0.065, 14, 10, scale=(1.0, 1.3, 0.55)),
-                                 translation=(0.075 * sx, 0.55, 0.155)))
-        m.add("lensWhite", *place(sphere((0, 0, 0), 0.016, 8, 6),
-                                  translation=(0.093 * sx, 0.585, 0.205)))
-    # tiny smile
-    m.add("eyeBlack", *place(sphere((0, 0, 0), 0.035, 10, 6, scale=(1.7, 0.35, 0.5)),
-                             translation=(0, 0.455, 0.175)))
-    # antennae
-    for sx in (-1, 1):
-        m.add("alienSkin", *place(cylinder(0.009, 0.0, 0.12, 8, caps=True),
-                                  rot=(0, 0, -18 * sx), translation=(0.055 * sx, 0.66, 0)))
-        m.add("lensGreen", *place(sphere((0, 0, 0), 0.024, 10, 6),
-                                  translation=(0.092 * sx, 0.775, 0)))
-    # arms
-    for sx in (-1, 1):
-        m.add("alienSkin", *place(cylinder(0.045, 0, 0.20, 10, caps=True, top_radius=0.032),
-                                  rot=(70, 0, 30 * sx), translation=(0.17 * sx, 0.30, 0.02)))
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.045, 10, 6),
-                                  translation=(0.245 * sx, 0.22, 0.20)))
-    return m
-
-
 def cockpit_console_mesh():
     m = Mesh()
     for i in range(3):
         a = TAU * i / 3 + math.pi / 2
         m.add("hullMetal", *place(box((0, 0, 0), (0.26, 0.16, 0.06)),
                                   rot=(0, -math.degrees(a), 0),
-                                  translation=(0.64 * math.cos(a), 1.13, 0.64 * math.sin(a))))
+                                  translation=(0.92 * math.cos(a), 1.12, 0.92 * math.sin(a))))
         m.add("lensGreen", *place(box((0, 0, 0), (0.18, 0.09, 0.02)),
                                   rot=(0, -math.degrees(a), 0),
-                                  translation=(0.64 * math.cos(a), 1.17, 0.62 * math.sin(a))))
+                                  translation=(0.92 * math.cos(a), 1.16, 0.90 * math.sin(a))))
     return m
 
 
 def beam_mesh():
+    """Unit cone: apex at the hull, bottom radius 1 at y = -1.
+
+    The Lua script scales it every frame so that it always ends exactly on the
+    ground - the radius at the ground is the radius of the crop circle.
+    """
     m = Mesh()
-    m.add("beam", *open_cone(0.02, 0.40, -3.20, 1.95, 40))
+    m.add("beam", *open_cone(0.0, 0.035, -1.0, 1.0, 44))
+    return m
+
+
+def circle_ring_mesh():
+    """Unit radius marker ring, sits flat on the ground below the craft."""
+    m = Mesh()
+    m.add("lensGreen", *place(torus(1.0, 0.012, 0.0, 64, 6)))
+    m.add("lensGreen", *place(torus(0.94, 0.006, 0.0, 64, 6)))
     return m
 
 
@@ -203,7 +195,7 @@ def collision_meshes():
     main rigid body shape (node 0>, "ufo_main_component1")."""
     return [
         ("ufo_main_component1", cylinder(2.02, 0.0, 0.80, 16, caps=True)),
-        ("collisionDome", cylinder(0.92, 0.80, 1.90, 12, caps=True)),
+        ("collisionDome", cylinder(1.30, 0.80, 2.10, 16, caps=True)),
     ]
 
 
@@ -240,15 +232,22 @@ def build_scene():
                     materials=["glass"], castsShadows="false", receiveShadows="true"))
     leg_nodes(visual)
 
-    alien = visual.add(Node("TransformGroup", "alienNode", translation="0 1.02 0", scale="1.12 1.12 1.12"))
-    alien.add(Node("Shape", "alienMesh", alien_mesh()))
     visual.add(Node("Shape", "consoleMesh", cockpit_console_mesh()))
 
-    beacon = visual.add(Node("TransformGroup", "beaconNode", translation="0 2.26 0"))
+    # seat for the player character - the game puts the player's own character
+    # here (see <enterable><characterNode node="driverSeatNode"/></enterable>)
+    visual.add(Node("TransformGroup", "driverSeatNode", translation="0 1.17 0.02"))
+
+    beacon = visual.add(Node("TransformGroup", "beaconNode", translation="0 3.02 0"))
     beacon.add(Node("Shape", "beaconMesh", antenna_beacon_mesh(), materials=["lensRed"]))
 
-    beam = visual.add(Node("TransformGroup", "beamNode", translation="0 0.25 0", visibility="false"))
+    beam = visual.add(Node("TransformGroup", "beamNode", translation="0 0.22 0", visibility="false"))
     beam.add(Node("Shape", "beamMesh", beam_mesh(), materials=["beam"],
+                  castsShadows="false", receiveShadows="false", nonRenderable="false"))
+
+    ring = visual.add(Node("TransformGroup", "groundRing", translation="0 0.05 0",
+                           visibility="false", scale="1 1 1"))
+    ring.add(Node("Shape", "groundRingMesh", circle_ring_mesh(), materials=["lensGreen"],
                   castsShadows="false", receiveShadows="false"))
 
     collisions = body.add(Node("TransformGroup", "collisions"))
@@ -274,7 +273,7 @@ def build_scene():
     lights.add(Node("Light", "beamLight", translation="0 0.22 0", rotation="-90 0 0",
                     type="spot", color="0.55 1.0 0.95", emitDiffuse="true", emitSpecular="true",
                     castShadowMap="false", range="42", coneAngle="52", dropOff="1.5"))
-    lights.add(Node("Light", "beaconLight", translation="0 2.30 0",
+    lights.add(Node("Light", "beaconLight", translation="0 3.02 0",
                     type="point", color="1 0.18 0.12", emitDiffuse="true", emitSpecular="true",
                     castShadowMap="false", range="26"))
     lights.add(Node("Light", "tailLight", translation="0 0.72 -2.20",
@@ -289,7 +288,7 @@ def build_scene():
         "receiveShadows": "false", "nonRenderable": "true",
     }))
 
-    body.add(Node("TransformGroup", "enterReferenceNode", translation="0 1.0 2.45"))
+    body.add(Node("TransformGroup", "enterReferenceNode", translation="0 1.05 2.45"))
     body.add(Node("TransformGroup", "exitPoint", translation="2.7 0.05 0.0"))
     body.add(Node("TransformGroup", "soundMotor", translation="0 1.0 0.0"))
 
@@ -309,6 +308,7 @@ def build_scene():
 class Writer:
     def __init__(self, materials):
         self.materials = materials
+        self.material_index = {m["name"]: i + 1 for i, m in enumerate(materials)}
         self.files = []
         self.shape_xml = []
         self.node_id = 0
@@ -323,7 +323,7 @@ class Writer:
         return self.files.index(rel) + 1
 
     def material_id(self, name):
-        return MAT_INDEX[name]
+        return self.material_index[name]
 
     # -- geometry ----------------------------------------------------------
     def write_shape(self, node):
@@ -406,13 +406,13 @@ def _attrs(pairs):
     return " ".join('%s="%s"' % (k, v) for k, v in pairs)
 
 
-def write_i3d(root, out_path, materials=MATERIALS):
+def write_i3d(root, out_path, materials=MATERIALS, asset_name="ufo"):
     w = Writer(materials)
     scene_lines = w.write_node(root, 3, "0>")
     # materials first: they register the texture files
     mat_lines = []
     for mat in materials:
-        attrs = [("name", mat["name"]), ("materialId", str(MAT_INDEX[mat["name"]]))]
+        attrs = [("name", mat["name"]), ("materialId", str(w.material_index[mat["name"]]))]
         if mat.get("alpha"):
             attrs.append(("alphaBlending", "true"))
         children = []
@@ -430,10 +430,11 @@ def write_i3d(root, out_path, materials=MATERIALS):
         else:
             mat_lines.append("    <Material %s/>" % _attrs(attrs))
 
+    header = ('<i3D name="%s" version="1.6" ' % asset_name
+              + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+              + 'xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">')
     lines = ['<?xml version="1.0" encoding="iso-8859-1"?>',
-             '<i3D name="ufo" version="1.6" '
-             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-             'xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">',
+             header,
              "  <Asset>",
              '    <Export program="tools/ufo/model.py (procedural FS25 pipeline)" version="1.0"/>',
              "  </Asset>",

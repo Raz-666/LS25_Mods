@@ -28,7 +28,7 @@
     <base>
         <typeDesc>$l10n_typeDesc_ufo</typeDesc>
         <filename>ufo.i3d</filename>
-        <size width="4.7" length="4.7" height="2.3"/>
+        <size width="4.7" length="4.7" height="3.15"/>
         <speedLimit value="32"/>
         <components>
             <!-- one rigid body: the hull collision cylinder (r 2.02 m, 0.8 m tall) + the dome -->
@@ -51,6 +51,8 @@
     <enterable isTabbable="true">
         <exitPoint node="exitPoint"/>
         <enterReferenceNode node="enterReferenceNode" interactionRadius="5"/>
+        <!-- the player's own character sits under the glass dome -->
+        <characterNode node="driverSeatNode" cameraMinDistance="0.5"/>
         <cameras>
             <camera node="outdoorCamera" rotatable="true" rotateNode="outdoorCameraTarget" limit="true" useWorldXZRotation="true" rotMinX="-1.6" rotMaxX="1.1" transMin="4" transMax="45" translation="0 0 9" rotation="-14 180 0"/>
             <camera node="indoorCamera" rotatable="true" limit="true" rotMinX="-1.0" rotMaxX="0.6" transMin="0" transMax="0" isInside="true"/>
@@ -64,6 +66,8 @@
         </states>
 
         <realLights>
+            <!-- beamLight is switched by scripts/UFO2000.lua together with the beam,
+                 so it is not part of the light states -->
             <low>
                 <light node="headLightLeft" lightTypes="0"/>
                 <light node="headLightRight" lightTypes="0"/>
@@ -207,13 +211,14 @@
         <i3dMapping id="leg1Mesh" node="0>0|3|0"/>
         <i3dMapping id="leg2" node="0>0|4"/>
         <i3dMapping id="leg2Mesh" node="0>0|4|0"/>
-        <i3dMapping id="alienNode" node="0>0|5"/>
-        <i3dMapping id="alienMesh" node="0>0|5|0"/>
-        <i3dMapping id="consoleMesh" node="0>0|6"/>
+        <i3dMapping id="consoleMesh" node="0>0|5"/>
+        <i3dMapping id="driverSeatNode" node="0>0|6"/>
         <i3dMapping id="beaconNode" node="0>0|7"/>
         <i3dMapping id="beaconMesh" node="0>0|7|0"/>
         <i3dMapping id="beamNode" node="0>0|8"/>
         <i3dMapping id="beamMesh" node="0>0|8|0"/>
+        <i3dMapping id="groundRing" node="0>0|9"/>
+        <i3dMapping id="groundRingMesh" node="0>0|9|0"/>
         <i3dMapping id="collisions" node="0>1"/>
         <i3dMapping id="collisionDome" node="0>1|0"/>
         <i3dMapping id="lights" node="0>2"/>
