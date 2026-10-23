@@ -41,12 +41,15 @@ ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt")
 # ---------------------------------------------------------------------------
 # wheel configurations
 # ---------------------------------------------------------------------------
-# (node, isLeft, steerable)
-CARE_WHEELS = (
-    ("wheelCareFrontLeft", "true", True),
-    ("wheelCareFrontRight", "false", True),
-    ("wheelCareRearLeft", "true", False),
-    ("wheelCareRearRight", "false", False),
+# (node, isLeft, steerable) - two wide wheels in line, like a motorcycle
+LOAD_WHEELS = (
+    ("wheelFront", "true", True),
+    ("wheelRear", "false", False),
+)
+# tiny hidden wheels against tipping over
+OUTRIGGERS = (
+    ("wheelOutriggerLeft", "true"),
+    ("wheelOutriggerRight", "false"),
 )
 
 # (l10n key, saveId, number of 0.5 m brush modules)
@@ -65,8 +68,15 @@ DEFAULT_CONFIG = "STANDARD"
 PHYSICS = ('repr="{repr}" radius="0.55" width="{width}" mass="{mass}" '
            'restLoad="{load}" forcePointRatio="0.4" initialCompression="25" '
            'suspTravel="0.15" spring="{spring}" damper="{damper}" '
-           'frictionScale="1" maxLongStiffness="30" maxLatStiffness="40" '
+           'frictionScale="{friction}" maxLongStiffness="30" maxLatStiffness="{lat}" '
            'rotationDamping="0.05" tireType="mud"')
+
+WIDE = dict(width="0.70", mass="0.15", load="0.55", spring="16", damper="18",
+            friction="1", lat="40")
+STAB = dict(width="0.05", mass="0.01", load="0.05", spring="4", damper="5",
+            friction="0.2", lat="6")
+BRUSH = dict(width="0.50", mass="0.02", load="0.20", spring="6", damper="7",
+             friction="1", lat="40")
 STEERING = ' rotMax="30" rotMin="-30" rotSpeed="45" rotSpeedNeg="-45"'
 
 
@@ -83,19 +93,21 @@ def wheel_block():
         out.append('            <wheelConfiguration name="$l10n_%s" price="0" saveId="%s"%s>'
                    % (key, save_id, default))
         out.append('                <wheels hasSurfaceSounds="false" autoRotateBackSpeed="1">')
-        for node, is_left, steerable in CARE_WHEELS:
+        for node, is_left, steerable in LOAD_WHEELS:
             out.append('                    <wheel isLeft="%s" isCareWheel="true">' % is_left)
-            physics = PHYSICS.format(repr=node, width="0.30", mass="0.05",
-                                     load="0.50", spring="14", damper="16")
+            physics = PHYSICS.format(repr=node, **WIDE)
             if steerable:
                 physics += STEERING
             out.append("                        <physics %s/>" % physics)
             out.append("                    </wheel>")
+        for node, is_left in OUTRIGGERS:
+            out.append('                    <wheel isLeft="%s" isCareWheel="true">' % is_left)
+            out.append("                        <physics %s/>" % PHYSICS.format(repr=node, **STAB))
+            out.append("                    </wheel>")
         for node in mc.brush_module_names(modules):
             out.append('                    <wheel isLeft="true" isCareWheel="false">')
             out.append("                        <physics %s/>"
-                       % PHYSICS.format(repr=node, width="0.50", mass="0.02",
-                                        load="0.20", spring="6", damper="7"))
+                       % PHYSICS.format(repr=node, **BRUSH))
             out.append("                    </wheel>")
         out.append("                </wheels>")
         out.append("            </wheelConfiguration>")
@@ -154,6 +166,27 @@ def copy_assets():
     print("  %d files" % copied)
 
 
+def landed_scene(scene=None):
+    """The scene as it looks after the landing animation (craft at street level)."""
+    import model_console
+    root = scene or model_console.build_scene()
+    visual = model_console.find(root, "visual")
+    x, y, z = model_console._xyz(visual)
+    visual.attrs["translation"] = "%s %s %s" % (model_console._fmt([x]),
+                                                model_console._fmt([0.95]),
+                                                model_console._fmt([z]))
+    for i, splay in zip(range(3), (16.0, 16.0, 16.0)):
+        leg = model_console.find(root, "leg%d" % i)
+        rot = leg.attrs["rotation"].split()
+        leg.attrs["rotation"] = "%s %s %s" % (rot[0], rot[1], model_console._fmt([splay]))
+    beam = model_console.find(root, "beamNode")
+    beam.attrs["scale"] = "0.9 1.0 0.9"
+    ring = model_console.find(root, "groundRing")
+    ring.attrs["translation"] = "0 -0.88 0"
+    ring.attrs["scale"] = "0.9 1 0.9"
+    return root
+
+
 def build_images():
     step("images")
     import model_console
@@ -161,7 +194,8 @@ def build_images():
     import images as ufo_images
 
     mod = MOD
-    os.makedirs(os.path.join(REPO, "docs", "renders"), exist_ok=True)
+    docs = os.path.join(REPO, "docs", "renders")
+    os.makedirs(docs, exist_ok=True)
     scene = model_console.build_scene()
 
     # 1) shop / mod icon, 512x512 BC1 with mipmaps - the saucer alone
@@ -170,24 +204,26 @@ def build_images():
         node = model_console.find(craft, name)
         if node is not None:
             node.attrs["visibility"] = "false"
-    icon = render.render(size=512, eye=(9.4, 13.0, 11.8), target=(0, 10.2, 0), fov=34,
+    icon = render.render(size=512, eye=(11.0, 24.0, 13.5), target=(0, 19.4, 0), fov=34,
                          ss=2, root=craft)
     p = os.path.join(BUILD, "icon_ufo2500.png")
     icon.save(p)
     ufo_images._dds(p, os.path.join(mod, "icon_ufo2500.dds"), "bc1", sys.executable)
 
     # 2) store picture (RGBA): the whole craft with the beam reaching the ground
-    store = render.render(size=512, eye=(12.6, 8.6, 16.2), target=(0, 5.9, 0), fov=32,
+    store = render.render(size=512, eye=(20.0, 21.5, 23.0), target=(0, 12.0, 0), fov=40,
                           ss=2, beam=True, return_alpha=True, root=scene)
     store.save(os.path.join(mod, "store_ufo2500.png"))
 
     # 3) documentation renders
-    docs = os.path.join(REPO, "docs", "renders")
-    render.render(size=900, eye=(13.5, 7.5, 17.0), target=(0, 5.4, 0), fov=36, ss=2,
+    render.render(size=900, eye=(24.0, 15.0, 27.0), target=(0, 9.8, 0), fov=34, ss=2,
                   beam=True, root=scene).save(os.path.join(docs, "ufo2500_hero.png"))
-    render.render(size=760, eye=(12.0, 9.5, 15.5), target=(0, 6.4, 0), fov=40, ss=2,
+    render.render(size=760, eye=(14.0, 22.0, 18.0), target=(0, 16.5, 0), fov=38, ss=2,
                   beam=True, root=scene).save(os.path.join(docs, "ufo2500_top.png"))
-    print("  icon, store picture, 2 doc renders")
+    render.render(size=760, eye=(9.6, 4.6, 10.2), target=(0, 1.5, 0), fov=40, ss=2,
+                  beam=True, root=landed_scene()).save(
+        os.path.join(docs, "ufo2500_landed.png"))
+    print("  icon, store picture, 3 doc renders")
 
 
 def validate():

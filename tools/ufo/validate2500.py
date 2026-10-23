@@ -89,19 +89,25 @@ def check_console_rules():
     desc = load(os.path.join(MOD, "modDesc.xml"))
     if desc is None:
         return None
-    for tag in ("specializations", "extraSourceFiles", "actions", "inputBinding"):
+    for tag in ("extraSourceFiles", "actions", "inputBinding"):
         if desc.find(tag) is not None:
             err("console check: modDesc.xml must not contain <%s>" % tag)
+    # <specializations> is fine as long as it only enables base game code
+    for spec in desc.findall("specializations/specialization"):
+        f = spec.get("filename")
+        if f and not f.startswith("$dataS/"):
+            err("console check: specialization %r ships its own script (%s)"
+                % (spec.get("name"), f))
     types = desc.findall("vehicleTypes/type")
-    if len(types) != 1:
-        err("console check: expected exactly one <vehicleTypes><type>")
+    if not types:
+        err("console check: no <vehicleTypes><type>")
     for t in types:
-        if t.findall("specialization"):
-            err("console check: vehicle type %r adds a specialization" % t.get("name"))
         if os.path.basename(t.get("filename") or "") != "Vehicle.lua" and not \
                 (t.get("filename") or "").startswith("$dataS/"):
             err("console check: vehicle type %r uses a file outside the base game"
                 % t.get("name"))
+        if not (t.get("parent") or "").strip():
+            err("console check: vehicle type %r has no base game parent" % t.get("name"))
     if not errors:
         ok("console check: XML only, base game scripts only")
     return desc
@@ -300,6 +306,64 @@ def check_i3d(mappings):
         err("the first scene node has to be the dynamic vehicle component")
 
 
+def check_landing(veh, mappings):
+    """The landing animation has to bring the craft down to street level."""
+    anims = {a.get("name"): a for a in veh.findall("animations/animation")}
+    if "landing" not in anims:
+        err("no <animations><animation name=\"landing\">")
+        return
+    parts = {p.get("node"): p for p in anims["landing"].findall("part")}
+    visual = parts.get("visual")
+    if visual is None:
+        err("landing animation does not move the visual node")
+        return
+    try:
+        start = float(visual.get("startTrans").split()[1])
+        end = float(visual.get("endTrans").split()[1])
+    except (AttributeError, IndexError, ValueError):
+        err("landing animation: visual part needs startTrans/endTrans")
+        return
+    if start < 15.0:
+        err("landing animation starts at %.2f m, the craft should hover" % start)
+    if end > 1.5:
+        err("landing animation ends at %.2f m - that is not street level" % end)
+    ok("landing animation: %.2f m -> %.2f m in %.1f s"
+       % (start, end, float(visual.get("endTime", 0))))
+    for leg in ("leg0", "leg1", "leg2"):
+        if leg not in parts:
+            err("landing animation does not extend %s" % leg)
+        elif not (parts[leg].get("startRot") and parts[leg].get("endRot")):
+            err("landing animation: %s needs startRot/endRot" % leg)
+    for node in ("beamNode", "groundRing"):
+        if node not in parts:
+            warn("landing animation does not animate %s" % node)
+    fold = veh.find("foldable/foldingConfigurations/foldingConfiguration/foldingParts")
+    if fold is None:
+        err("no <foldable> block - the landing animation would never play")
+    elif fold.get("foldInputButton") is None:
+        warn("<foldable> has no foldInputButton")
+    else:
+        ok("foldable: %s plays the landing animation" % fold.get("foldInputButton"))
+
+
+def check_cockpit(veh, mappings):
+    beacons = veh.findall("lights/beaconLights/beaconLight")
+    if not beacons:
+        warn("no beacon lights in the cockpit")
+    for b in beacons:
+        f = b.get("filename") or ""
+        if not f.startswith("$data/shared/"):
+            err("cockpit beacon %r is not a base game light (%s)" % (b.get("node"), f))
+        if b.get("node") not in mappings:
+            err("cockpit beacon node %r has no i3dMapping" % b.get("node"))
+    if beacons and not errors:
+        ok("cockpit: %d blinking base game beacon lights" % len(beacons))
+    for node in ("cockpitDetail", "cockpitBeacon1", "cockpitBeacon2", "driverSeatNode"):
+        if node not in mappings:
+            err("cockpit node %r missing" % node)
+    ok("cockpit: dashboard, screens and buttons in the model")
+
+
 def check_files():
     veh = load(os.path.join(MOD, "ufo2500.xml"))
     if veh is None:
@@ -359,6 +423,8 @@ def main():
         mappings = check_i3d_mappings(veh)
         check_xml_nodes(veh, mappings)
         check_wheels(veh, mappings)
+        check_landing(veh, mappings)
+        check_cockpit(veh, mappings)
         check_i3d(mappings)
     check_xsd(os.path.join(MOD, "modDesc.xml"), sd, "modDesc.xsd")
     check_xsd(os.path.join(MOD, "ufo2500.xml"), sd, "vehicle.xsd")

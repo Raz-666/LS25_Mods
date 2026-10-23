@@ -26,8 +26,8 @@ MOD = os.path.join(REPO, "FS25_UFO2500")
 
 GRID = 0.05            # raster resolution in metres
 STEP = 0.10            # distance between two frames (a slow drive)
-HOVER = 8.83
-SEAT = 10.00
+HOVER = 18.83
+SEAT = 20.00
 
 failures = []
 
@@ -179,7 +179,7 @@ def main():
         label = save_id.lower().ljust(10)
         check(centred, "%s brush is centred on the craft" % label)
         check(abs(area - expected) / expected < 0.06,
-              "%s circle r=%.0f m: %.0f m2 pressed, analytic %.0f m2 (%d care wheels)"
+              "%s circle r=%.0f m: %.0f m2 pressed, analytic %.0f m2 (%d traces)"
               % (label, radius, area, expected, len(care)))
 
     standard = [c for c in cfgs if c[1] == "STANDARD"][0]

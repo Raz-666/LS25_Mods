@@ -8,4 +8,5 @@
     <text name="ufo2500_brushRing"><de>Pinsel: Ring 1,5 m</de><en>Brush: ring 1.5 m</en></text>
     <text name="ufo2500_brushStandard"><de>Pinsel: Standard 3,5 m</de><en>Brush: standard 3.5 m</en></text>
     <text name="ufo2500_brushHarvester"><de>Pinsel: Mähdrescher 7,5 m</de><en>Brush: harvester 7.5 m</en></text>
+    <text name="ufo2500_landing"><de>Landung</de><en>Landing</en></text>
 </l10n>

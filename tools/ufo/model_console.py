@@ -1,38 +1,40 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Model of the console edition: FS25_UFO2500 (no Lua at all).
+"""Model of the console edition FS25_UFO2500 (no Lua at all).
 
-The saucer is the same procedural mesh as the FS25_UFO2000.  What changes is
-the trick that makes it a console mod:
+The saucer uses the same procedural mesh as FS25_UFO2000 and stands 20 m in
+the air:
 
-  * the whole craft floats ``HOVER`` metres above the vehicle origin,
-  * below it there is nothing but air - the craft rolls on **invisible wheels**
-    that sit on the ground plane,
-  * four wide-spread "care wheels" carry the vehicle (they do not damage crop),
-  * a row of up to 15 narrow brush wheels presses the crop exactly where the
-    saucer hovers - that is the whole crop circle mechanic, done with the
-    base-game wheel destruction, no script involved,
-  * the tractor beam is baked in as static geometry that ends on the ground,
-    so you can see where the brush is.
-
-The vehicle origin stays at ground level, so everything the game does with a
-normal car (spawning, entering, physics, the shop) works unchanged.
+  * the cockpit (driver seat) is exactly 20.00 m above the ground,
+  * the hull floats 18.83 m above the vehicle origin,
+  * the craft rolls on two wide invisible wheels in line (like a motorcycle,
+    just wider) plus two tiny invisible outriggers that keep it upright,
+  * below the middle sits the brush: up to 15 invisible 0.5 m wheels that press
+    the crop down, using nothing but the base game wheel destruction,
+  * a "landing" animation (driven by the base game foldable + AnimatedVehicle
+    specializations) lowers the whole craft to street level, so the player can
+    get out without falling 20 m,
+  * inside the dome there is a real cockpit: dashboard, three screens, buttons
+    and two beacon lights from the base game that blink.
 """
 
+import math
+
 import model
-from meshlib import Mesh, cylinder
+from meshlib import Mesh, box, cylinder, disc, place, sphere, torus
 from model import Node, _fmt
 
-HOVER = 8.83             # the seat ends up 10.0 m above the ground
+HOVER = 18.83            # seat ends up 20.0 m above the ground
+LANDED = 0.95            # visual node position at the end of the landing animation
 WHEEL_RADIUS = 0.55      # wheels hang at y = radius -> origin on the ground
-CARE_X = 1.85            # track width of the load carrying wheels
-CARE_Z = 1.55
-CARE_WIDTH = 0.30
+TRACK_Z = 1.85           # the two wide wheels sit in line, front / rear
+TRACK_WIDTH = 0.70       # ... and they are wide, like a fat motorcycle tyre
+OUTRIGGER_X = 1.95       # tiny hidden wheels against tipping over
 
-BRUSH_MODULES = 15       # 15 x 0.5 m = 7.5 m, the widest swath
+BRUSH_MODULES = 15
 BRUSH_PITCH = 0.50
 BRUSH_WIDTH = 0.50
 
-BEAM_RADIUS = 1.75       # matches the 3.5 m "standard" swath
+BEAM_RADIUS = 1.75
 BEAM_BOTTOM = 0.16
 RING_Y = 0.07
 
@@ -47,11 +49,13 @@ SHIFTED = (
     "exactFillRootNode",
 )
 
-CARE_WHEELS = (
-    ("wheelCareFrontLeft", -CARE_X, CARE_Z),
-    ("wheelCareFrontRight", CARE_X, CARE_Z),
-    ("wheelCareRearLeft", -CARE_X, -CARE_Z),
-    ("wheelCareRearRight", CARE_X, -CARE_Z),
+LOAD_WHEELS = (
+    ("wheelFront", TRACK_Z, True),
+    ("wheelRear", -TRACK_Z, False),
+)
+OUTRIGGERS = (
+    ("wheelOutriggerLeft", -OUTRIGGER_X, 0.0),
+    ("wheelOutriggerRight", OUTRIGGER_X, 0.0),
 )
 
 
@@ -75,18 +79,87 @@ def _move(node, dy):
 
 
 def brush_wheels():
-    """Node name + local x for every brush module (centred, odd count)."""
     half = (BRUSH_MODULES - 1) * 0.5
     return [("wheelBrush%d" % i, (i - half) * BRUSH_PITCH) for i in range(BRUSH_MODULES)]
 
 
 def brush_module_names(count):
-    """The contiguous, centred set of brush modules used by one configuration."""
     half = (count - 1) // 2
     middle = BRUSH_MODULES // 2
     return ["wheelBrush%d" % i for i in range(middle - half, middle + half + 1)]
 
 
+def leg_angles():
+    """Rest (folded) and landed (extended) splay of the three legs."""
+    out = []
+    for i in range(3):
+        node = "leg%d" % i
+        deg = 30 + 120 * i
+        z_rest = float(model.LEG_SPLAY) + 74.0
+        out.append((node, -deg, z_rest, float(model.LEG_SPLAY)))
+    return out
+
+
+# --------------------------------------------------------------------------
+# cockpit interior
+# --------------------------------------------------------------------------
+def cockpit_detail_mesh():
+    """Dashboard, console, screens, buttons and levers - all inside the dome."""
+    m = Mesh()
+
+    # floor plate / seat base
+    m.add("cockpit", *disc(0.95, 1.158, 40))
+    m.add("hullMetal", *place(torus(0.95, 0.028, 0, 40, 6), translation=(0, 1.158, 0)))
+    m.add("hullMetal", *place(cylinder(0.30, 1.16, 1.34, 18, caps=True),
+                              translation=(0, 0, -0.72)))
+
+    # curved dashboard in front of the pilot
+    m.add("hullMetal", *place(box((0, 0, 0), (1.10, 0.10, 0.26)), rot=(-22, 0, 0),
+                              translation=(0, 1.36, 0.86)))
+    m.add("hullMetal", *place(box((0, 0, 0), (0.42, 0.16, 0.22)), rot=(-18, 0, 0),
+                              translation=(0, 1.29, 1.02)))
+
+    # three screens + a row of indicator lights on the dash
+    for i, dx in enumerate((-0.34, 0.0, 0.34)):
+        m.add("lensGreen" if i != 1 else "lensWhite",
+              *place(box((0, 0, 0), (0.26, 0.14, 0.02)), rot=(-22, 0, 0),
+                     translation=(dx, 1.395, 0.80)))
+    for i, dx in enumerate((-0.30, -0.18, -0.06, 0.06, 0.18, 0.30)):
+        m.add("lensRed" if i % 2 == 0 else "lensWhite",
+              *place(sphere((0, 0, 0), 0.018, 8, 6),
+                     translation=(dx, 1.30, 0.94)))
+
+    # side consoles with buttons
+    for side in (-1, 1):
+        m.add("hullMetal", *place(box((0, 0, 0), (0.22, 0.09, 0.52)), rot=(0, 0, 0),
+                                  translation=(side * 0.70, 1.24, 0.30)))
+        for k in range(4):
+            m.add("lensGreen" if (k + (side > 0)) % 2 else "lensRed",
+                  *place(sphere((0, 0, 0), 0.017, 8, 6),
+                         translation=(side * 0.70, 1.29, 0.10 + k * 0.13)))
+
+    # throttle lever + joystick
+    m.add("hullMetal", *place(cylinder(0.022, 0.0, 0.20, 8, caps=True),
+                              rot=(0, 0, 18), translation=(0.56, 1.20, 0.44)))
+    m.add("lensRed", *place(sphere((0, 0, 0), 0.045, 10, 6),
+                            translation=(0.62, 1.39, 0.44)))
+    m.add("hullMetal", *place(cylinder(0.020, 0.0, 0.16, 8, caps=True),
+                              rot=(0, 0, -12), translation=(-0.56, 1.20, 0.42)))
+    m.add("hullMetal", *place(sphere((0, 0, 0), 0.05, 10, 6),
+                              translation=(-0.58, 1.36, 0.42)))
+
+    # overhead switch panel between the two beacon lights
+    m.add("hullMetal", *place(box((0, 0, 0), (0.66, 0.05, 0.20)), rot=(14, 0, 0),
+                              translation=(0, 1.72, 0.18)))
+    for k in range(3):
+        m.add("lensWhite", *place(box((0, 0, 0), (0.10, 0.02, 0.06)), rot=(14, 0, 0),
+                                  translation=(-0.20 + k * 0.20, 1.755, 0.18)))
+    return m
+
+
+# --------------------------------------------------------------------------
+# scene
+# --------------------------------------------------------------------------
 def build_scene(hover=HOVER):
     root = model.build_scene()
 
@@ -97,13 +170,12 @@ def build_scene(hover=HOVER):
             raise RuntimeError("node %r not found in the base model" % name)
         _move(node, hover)
 
-    # 2) landing legs folded in - the saucer never touches down
-    for i in range(3):
-        leg = find(root, "leg%d" % i)
+    # 2) landing legs: folded while flying, extended by the landing animation
+    for name, _deg, z_rest, _z_landed in leg_angles():
+        leg = find(root, name)
         if leg is not None:
             rot = leg.attrs["rotation"].split()
-            leg.attrs["rotation"] = "%s %s %s" % (rot[0], rot[1],
-                                                  _fmt([float(rot[2]) + 74.0]))
+            leg.attrs["rotation"] = "%s %s %s" % (rot[0], rot[1], _fmt([z_rest]))
 
     # 3) the beam is always on and ends just above the ground
     beam = find(root, "beamNode")
@@ -119,8 +191,7 @@ def build_scene(hover=HOVER):
         ring.attrs["scale"] = "%s 1 %s" % (_fmt([BEAM_RADIUS]), _fmt([BEAM_RADIUS]))
         ring.attrs["visibility"] = "true"
 
-    # 3b) the hull itself has to be solid up there: an invisible collision
-    #     cylinder around the saucer (the "collisions" node is already lifted)
+    # 3b) invisible collision hull around the saucer
     collisions = find(root, "collisions")
     if collisions is not None:
         hull = Mesh()
@@ -131,20 +202,29 @@ def build_scene(hover=HOVER):
             "castsShadows": "false", "receiveShadows": "false", "nonRenderable": "true",
         }))
 
-    # 4) invisible wheels: four load carrying care wheels ...
-    for name, x, z in CARE_WHEELS:
+    # 3c) the cockpit inside the dome
+    visual = find(root, "visual")
+    visual.add(Node("Shape", "cockpitDetail", cockpit_detail_mesh()))
+    visual.add(Node("TransformGroup", "cockpitBeacon1", translation="-0.44 1.62 0.30"))
+    visual.add(Node("TransformGroup", "cockpitBeacon2", translation="0.44 1.62 0.30"))
+
+    # 4) invisible wheels: two wide ones in line, two tiny outriggers ...
+    for name, z, _steer in LOAD_WHEELS:
+        root.add(Node("TransformGroup", name,
+                      translation="0 %s %s" % (_fmt([WHEEL_RADIUS]), _fmt([z]))))
+    for name, x, z in OUTRIGGERS:
         root.add(Node("TransformGroup", name,
                       translation="%s %s %s" % (_fmt([x]), _fmt([WHEEL_RADIUS]), _fmt([z]))))
     # ... and the brush row that presses the crop
     for name, x in brush_wheels():
         root.add(Node("TransformGroup", name,
-                      translation="%s %s %s" % (_fmt([x]), _fmt([WHEEL_RADIUS]), _fmt([0]))))
+                      translation="%s %s 0" % (_fmt([x]), _fmt([WHEEL_RADIUS]))))
 
-    # 5) pool of green light on the ground, so the beam reads as "active"
+    # 5) pool of green light on the ground
     ground = root.add(Node("TransformGroup", "groundEffects"))
     ground.add(Node("Light", "groundGlow", translation="0 0.45 0",
                     type="point", color="0.45 1.0 0.8", emitDiffuse="true",
-                    emitSpecular="false", castShadowMap="false", range="14"))
+                    emitSpecular="false", castShadowMap="false", range="16"))
 
     return root
 
@@ -163,6 +243,6 @@ if __name__ == "__main__":
     out = os.path.join(repo, "build", "ufo2500_inline.i3d")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     s, m = write(out)
-    print("%d shapes, %d tris -> %s (%d mappings)" % (s["shapes"], s["tris"], out,
-                                                      m.count("i3dMapping id=")))
+    print("%d shapes, %d tris -> %s (%d mappings)"
+          % (s["shapes"], s["tris"], out, m.count("i3dMapping id=")))
     sys.exit(0)

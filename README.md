@@ -6,7 +6,7 @@ Zwei kleine Mods für **Farming Simulator 25**:
 | --- | --- |
 | **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse – großes Glaskuppel-Cockpit (Simpsons-Stil), grüner Leuchtenkranz, drei Landebeine, rotes Drehlicht, Traktorstrahl, **Kornkreis-Menü mit manuellem 50-cm-Stift** |
 | **`dist/FS25_Alien.zip`** | Das Alien-Maskottchen als eigene, aufstellbare Deko – getrennt vom UFO, weil unter der Kuppel jetzt **dein eigener Charakter** sitzt |
-| **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, 10 m über dem Feld, rollt auf unsichtbaren Rädern und drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide |
+| **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, Cockpit 20 m über dem Feld, rollt auf zwei breiten unsichtbaren Rädern, drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide und **landet auf Tastendruck** |
 
 ![UFO 2000](docs/renders/ufo_hero.png)
 
@@ -129,10 +129,18 @@ also die Untertasse stehen, wo sie stand. 🙂
 - Deutsch + Englisch
 
 **UFO 2500 (Konsole)**
-- dasselbe Modell (12.800 Dreiecke), aber **kein Lua, kein `scripts/`-Ordner**
-- 19 unsichtbare Räder: 4 Pflege-Räder (tragen) + 15 Pinsel-Räder (drücken)
+- dasselbe Modell (15.200 Dreiecke), aber **kein Lua, kein `scripts/`-Ordner**
+- **20 m** vom Boden bis zum Scheitel – Cockpit auf 20,00 m, Rumpf schwebt auf
+  18,83 m
+- 19 unsichtbare Räder: **zwei breite Räder (0,70 m)** als Fahrwerk, zwei
+  winzige Stützräder gegen Umkippen, 15 Pinsel-Räder für die Frucht
 - 4 Radkonfigurationen als Pinselbreite (0,5 / 1,5 / 3,5 / 7,5 m)
-- Strahl und Bodenring als feste Geometrie, Bodenlicht, Kameras, Sounds
+- **Landung ohne Skript**: Grundspiel-`foldable` + i3d-Animation fährt das
+  Cockpit in 4,5 s auf 0,95 m herunter, Beine klappen aus, Strahl wird zum
+  Landefleck
+- Cockpit mit Konsole, Sitzen und **zwei blinkenden Leuchten** (Grundspiel-
+  `BeaconLight`), Kameras innen/außen
+- Strahl und Bodenring als feste Geometrie, Bodenlicht, Sounds
 - Marke `Lizard`, Deutsch + Englisch
 
 **Alien-Maskottchen**
@@ -190,23 +198,45 @@ lua scripts"), deshalb ist das fliegende **UFO 2000** PC-only. Für das **UFO
 Grundspiel ohnehin mitbringt:
 
 ```
-        .-'-.
-      .'  Cockpit  '.        <- dein Charakter sitzt 10,00 m über dem Boden
-     /   (Glaskuppel) \      <- Rumpf schwebt 8,83 m über dem Ursprung
-    |=================|
-     \__  Strahl  __/        <- feste Geometrie, endet immer am Boden
-        |  |  |  |             <- 15 unsichtbare Pinsel-Räder à 0,5 m
-  ______|__|__|__|______       <- 4 unsichtbare Pflege-Räder tragen das Fahrzeug
-  Aufstandspunkte am Boden  =  das Spiel sieht ein ganz normales Auto
+                        .-'-.
+       20 m ----→   .'  Cockpit  '.      <- dein Charakter sitzt auf 20,00 m
+      (Sitz)       /  (Glaskuppel)  \    <- Rumpf schwebt auf 18,83 m
+                  |==================|
+                   \__  Strahl  __/      <- feste Geometrie, endet am Boden
+                      |  |  |  |          <- 15 unsichtbare Pinsel-Räder à 0,5 m
+       0,95 m ----→  ==O=======O==        <- 2 breite unsichtbare Räder (0,70 m)
+                     ^         ^
+                  Landung: Cockpit fährt hier herunter, Beine stützen
 ```
 
+![UFO 2500](docs/renders/ufo2500_hero.png)
+
 **Der Trick:** Das Fahrzeug ist ein stinknormales `baseDrivable`-Fahrzeug – nur
-mit **unsichtbaren Rädern**. Die vier Pflegereifen stehen am Boden (Radradius
-0,55 m), das eigentliche UFO ist als Modell 8,83 m darüber montiert. Der
-Fahrzeug-Ursprung bleibt am Boden, also funktionieren Physik, Kamera,
-Ein-/Aussteigen, Shop und Spawn genau wie bei einem Traktor – nur dass oben
-eine Untertasse hängt und darunter „Luft statt Räder" ist. Genau das, was du
-beschrieben hast: ein 10 m hoher Mähdrescher ohne Aufbau unter dem Cockpit.
+mit **unsichtbaren Rädern**. Zwei breite Räder (0,70 m, wie ein Motorrad, bloß
+fett) stehen vorn und hinten am Boden (Radradius 0,55 m), zwei winzige
+Stützräder links und rechts verhindern das Umkippen. Das eigentliche UFO ist als
+Modell 18,83 m darüber montiert. Der Fahrzeug-Ursprung bleibt am Boden, also
+funktionieren Physik, Kamera, Ein-/Aussteigen, Shop und Spawn genau wie bei
+einem Traktor – nur dass oben eine Untertasse hängt und darunter „Luft statt
+Räder" ist. Genau das, was du beschrieben hast: ein 20 m hohes UFO ohne Aufbau
+unter dem Cockpit.
+
+**Landen ohne Skript:** Die Landung ist eine i3d-Animation, die das Grundspiel
+abspielt. Das UFO hat dafür eine `foldable`-Konfiguration „Landung": Taste **X**
+(Gamepad: Gerät ausklappen) startet sie. In 4,5 Sekunden fährt das Cockpit von
+20,00 m auf **0,95 m** herunter – fast Straßenniveau –, die drei Beine klappen
+aus, der Strahl zieht sich zum Landefleck zusammen. Nochmal X und das UFO steigt
+wieder auf. Du kannst also landen, aussteigen, einsteigen und weiterfliegen –
+ohne eine Zeile Lua, nur mit `foldable` + `AnimatedVehicle` aus dem Grundspiel.
+
+![Schnitt durch das Fahrzeug](docs/renders/ufo2500_concept.png)
+
+**Cockpit:** unter der Glaskuppel sitzen Konsole, Bildschirme, Schalter und zwei
+kleine Leuchten. Die blinken über die Grundspiel-Komponente `BeaconLight`
+(Rundumlicht-Taste), drehen sich und färben den Innenraum. Dazu wippt das ganze
+UFO leicht, weil die unsichtbaren Räder federn – das verkauft das Schweben.
+
+![Gelandet](docs/renders/ufo2500_landed.png)
 
 **Kornkreise ohne Skript:** Die Rad-Beschädigung des Grundspiels
 (`WheelDestruction`) drückt pro Rad und Frame ein Rechteck von
@@ -233,18 +263,17 @@ Stern = gerade Bahnen. Kein Menü, keine Sondertaste, alles Gamepad-tauglich.
 
 ![So sehen gefahrene Kornkreise aus](docs/renders/ufo2500_patterns.png)
 
-![Schnitt durch das Fahrzeug](docs/renders/ufo2500_concept.png)
-
-**Was auf Konsole fehlt** (ehrlich): kein Abheben, keine Höhensteuerung, kein
-Muster-Menü, kein HUD, keine Start-/Landespuren – das braucht alles Lua. Der
-Strahl ist feste Geometrie und immer an, das Arbeitslicht (`L`) macht das grüne
-Leuchten am Boden. „Mähdrescher" heißt: die Ernte wird zerstört (Ertrag weg,
-Pflanzen platt), geerntet wird nichts.
+**Was auf Konsole fehlt** (ehrlich): Höhensteuerung im Flug, Muster-Menü, HUD,
+Start-/Landespuren. Der Strahl ist feste Geometrie und immer an, das Arbeitslicht
+(`L`) macht das grüne Leuchten am Boden. „Mähdrescher" heißt: die Ernte wird
+zerstört (Ertrag weg, Pflanzen platt), geerntet wird nichts – für richtiges
+Ernten gibt es die separate Mähdrescher-Variante.
 
 **ModHub:** Das UFO 2500 ist genau dafür gebaut – kein `scripts/`-Ordner, keine
-`<specializations>`, keine `<actions>`, Marke `LIZARD` (Basisspiel). Damit sollte
-es den Konsolentest überstehen; einreichen musst du es selbst (Konto auf
-farming-simulator.com, TestRunner drüberlaufen lassen, ZIP hochladen).
+eigenen Skripte in `<specializations>` (nur Grundspiel-Code wie `foldable`),
+keine `<actions>`, Marke `LIZARD` (Basisspiel). Damit sollte es den Konsolentest
+überstehen; einreichen musst du es selbst (Konto auf farming-simulator.com,
+TestRunner drüberlaufen lassen, ZIP hochladen).
 
 ## 8. Ehrlicher Hinweis
 
@@ -252,10 +281,11 @@ Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht*
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit
 „UFO2000", „UFO2500" oder „Alien" zeigen die Stelle, dann bessere ich gezielt nach.
 
-Beim UFO 2500 sind zwei Dinge die ersten Kandidaten für Feinschliff, falls es im
+Beim UFO 2500 sind drei Dinge die ersten Kandidaten für Feinschliff, falls es im
 Spiel komisch aussieht: die Fahrhöhe (Federn/Dämpfer der unsichtbaren Räder,
-`spring`/`damper` in `ufo2500.xml`) und die Anzahl der Pinsel-Räder pro
-Konfiguration. Beides lässt sich in `tools/build_console_mod.py` in einer Zeile
-ändern und neu bauen.
+`spring`/`damper` in `ufo2500.xml`), die Standfestigkeit (Breite der beiden
+Räder und die Stützräder) und der Startwert der Lande-Animation. Alles lässt
+sich in `tools/build_console_mod.py` bzw. `tools/ufo/ufo2500.template.xml` in
+einer Zeile ändern und neu bauen.
 
 Viel Spaß beim Schweben – und grüß Alf. 👽
