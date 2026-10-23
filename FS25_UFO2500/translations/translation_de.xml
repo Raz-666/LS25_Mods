@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <text name="ufo2500_name"><de>UFO 2500</de><en>UFO 2500</en></text>
+    <text name="function_ufo2500"><de>Kornkreis-Drucker</de><en>Crop circle press</en></text>
+    <text name="typeDesc_ufo2500"><de>UFO 2500 – Untertasse, 10 m über dem Feld, drückt das Getreide platt</de><en>UFO 2500 - saucer, 10 m above the field, presses the crop down</en></text>
+
+    <text name="ufo2500_brushPen"><de>Pinsel: Stift 0,5 m</de><en>Brush: pen 0.5 m</en></text>
+    <text name="ufo2500_brushRing"><de>Pinsel: Ring 1,5 m</de><en>Brush: ring 1.5 m</en></text>
+    <text name="ufo2500_brushStandard"><de>Pinsel: Standard 3,5 m</de><en>Brush: standard 3.5 m</en></text>
+    <text name="ufo2500_brushHarvester"><de>Pinsel: Mähdrescher 7,5 m</de><en>Brush: harvester 7.5 m</en></text>
+</l10n>

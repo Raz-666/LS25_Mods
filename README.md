@@ -6,21 +6,31 @@ Zwei kleine Mods für **Farming Simulator 25**:
 | --- | --- |
 | **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse – großes Glaskuppel-Cockpit (Simpsons-Stil), grüner Leuchtenkranz, drei Landebeine, rotes Drehlicht, Traktorstrahl, **Kornkreis-Menü mit manuellem 50-cm-Stift** |
 | **`dist/FS25_Alien.zip`** | Das Alien-Maskottchen als eigene, aufstellbare Deko – getrennt vom UFO, weil unter der Kuppel jetzt **dein eigener Charakter** sitzt |
+| **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, 10 m über dem Feld, rollt auf unsichtbaren Rädern und drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide |
 
 ![UFO 2000](docs/renders/ufo_hero.png)
+
+| Mod | PC / Mac | Xbox / PlayStation |
+| --- | --- | --- |
+| UFO 2000 | ✅ fliegen, Höhe, Strahl, 10 Muster | ❌ eigener Lua-Code |
+| Alien-Maskottchen | ✅ | ⚠️ möglich (nur noch über ModHub einreichen) |
+| UFO 2500 | ✅ | ✅ **kein Lua, nur Grundspiel-Technik** |
 
 ---
 
 ## 1. Installation
 
-1. Beide ZIPs (oder nur die, die du willst) **unverändert** in den Mods-Ordner legen:
+1. Die ZIPs (oder nur die, die du willst) **unverändert** in den Mods-Ordner legen:
    - Windows: `Dokumente\My Games\FarmingSimulator25\mods\`
    - macOS: `~/Library/Application Support/FarmingSimulator25/mods/`
 2. Spiel starten, im Hauptmenü unter **Mods** die Häkchen setzen.
-3. UFO: am Händler unter **Fahrzeuge → Autos** für 42.000 € kaufen.
+3. UFO 2000: am Händler unter **Fahrzeuge → Autos** für 42.000 € kaufen.
+   UFO 2500: ebd. unter der Marke **Lizard** für 38.000 €.
    Alien: unter **Platzierbare Objekte → Deko** für 750 € aufstellen.
+   (UFO 2000 und UFO 2500 sind zwei eigenständige Mods – nimm das, was dir
+   gefällt, oder beide.)
 
-Keine weiteren Mods nötig, die beiden sind unabhängig voneinander.
+Keine weiteren Mods nötig, alle drei sind unabhängig voneinander.
 
 ## 2. Steuerung – alles über die normalen Spiel-Optionen
 
@@ -118,6 +128,13 @@ also die Untertasse stehen, wo sie stand. 🙂
 - 7 selbst erzeugte OGG-Sounds, DDS-Texturen, Shop-Icon, Brand-Logo
 - Deutsch + Englisch
 
+**UFO 2500 (Konsole)**
+- dasselbe Modell (12.800 Dreiecke), aber **kein Lua, kein `scripts/`-Ordner**
+- 19 unsichtbare Räder: 4 Pflege-Räder (tragen) + 15 Pinsel-Räder (drücken)
+- 4 Radkonfigurationen als Pinselbreite (0,5 / 1,5 / 3,5 / 7,5 m)
+- Strahl und Bodenring als feste Geometrie, Bodenlicht, Kameras, Sounds
+- Marke `Lizard`, Deutsch + Englisch
+
 **Alien-Maskottchen**
 - 4.400 Dreiecke, 2 Shapes (Mesh + unsichtbare Kollision), 7 Texturen
 - Platzierbar, frei drehbar, wieder aufnehmbar, Preis 750 €
@@ -151,6 +168,12 @@ python3 -m venv .venv
 .venv/bin/python tools/alien/validate.py
 .venv/bin/python tools/ufo/luatest.py          # Fluglogik ohne Spiel testen
 .venv/bin/python tools/ufo/circle_preview.py   # Muster-Vorschau erzeugen
+.venv/bin/python tools/build_console_mod.py    # UFO 2500 (Konsole): Modell, Media, ZIP
+.venv/bin/python tools/ufo/validate2500.py     # Konsolen-Regeln prüfen
+.venv/bin/python tools/ufo/brush_test.py       # Pinselbreiten nachrechnen
+.venv/bin/python tools/ufo/brush_patterns.py   # Beispiel-Kornkreise rendern
+.venv/bin/python tools/ufo/brush_preview.py    # Pinselbreiten-Diagramm
+.venv/bin/python tools/ufo/console_preview.py  # Schnittzeichnung
 ```
 
 Die Prüfskripte kontrollieren beide XMLs gegen die echten FS25-Schemas
@@ -159,36 +182,80 @@ Lua-Syntax und den ZIP-Inhalt. `luatest.py` simuliert die Engine-Schnittstelle
 und fliegt einmal komplett durch: abheben, steigen, kurven, Muster drücken,
 mit dem Stift malen, landen, Beine ein-/ausfahren, Spuren, Multiplayer-Sync.
 
-## 7. Konsole (Xbox / PlayStation) – ehrliche Antwort: leider nein
+## 7. Konsole (Xbox / PlayStation) – so geht es doch: das UFO 2500
 
-Kurz gesagt: **dieser Mod kann nicht auf Xbox oder PlayStation laufen.** Das
-liegt nicht am Mod, sondern an den Regeln der Konsolenhersteller:
+Auf Konsolen sind eigene Lua-Skripte verboten („Mods must not contain any extra
+lua scripts"), deshalb ist das fliegende **UFO 2000** PC-only. Für das **UFO
+2500** ist die Fliegerei aber gar nicht nötig – es benutzt nur, was das
+Grundspiel ohnehin mitbringt:
 
-- Auf Konsolen gibt es **keine manuelle Mod-Installation**. Es geht
-  ausschließlich über den eingebauten ModHub, und dort erscheint nur, was
-  GIANTS freigegeben hat.
-- Für Konsolen-Mods gilt laut GIANTS-ModHub-Richtlinien: **„Mods must not
-  contain any extra lua scripts"** – eigene Lua-Skripte sind verboten (Sony und
-  Microsoft erlauben aus Sicherheitsgründen generell keine Skripte in
-  nutzergenerierten Inhalten). Das ist der Grund, warum Courseplay, AutoDrive
-  und praktisch alle Gameplay-Mods PC-only sind.
-- Zusätzlich sind auf Konsolen **Fantasy-Marken verboten** (nur „Lizard" als
-  Platzhalter) – unsere Marke „UFO-Werke" wäre also auch ein Thema.
+```
+        .-'-.
+      .'  Cockpit  '.        <- dein Charakter sitzt 10,00 m über dem Boden
+     /   (Glaskuppel) \      <- Rumpf schwebt 8,83 m über dem Ursprung
+    |=================|
+     \__  Strahl  __/        <- feste Geometrie, endet immer am Boden
+        |  |  |  |             <- 15 unsichtbare Pinsel-Räder à 0,5 m
+  ______|__|__|__|______       <- 4 unsichtbare Pflege-Räder tragen das Fahrzeug
+  Aufstandspunkte am Boden  =  das Spiel sieht ein ganz normales Auto
+```
 
-Da das UFO komplett aus eigenem Lua besteht (Fliegen, Höhe, Strahl, Muster,
-Spuren), ist eine Konsolenversion nicht möglich, ohne die komplette Funktion zu
-entfernen. Eine reine Deko-Version ohne Skript (etwa das Alien-Maskottchen als
-platzierbares Objekt) wäre technisch denkbar – sie müsste aber über den ModHub
-eingereicht und von GIANTS für Konsole freigegeben werden. Einfach die ZIP
-irgendwo hochladen und auf der Xbox nutzen geht nicht.
+**Der Trick:** Das Fahrzeug ist ein stinknormales `baseDrivable`-Fahrzeug – nur
+mit **unsichtbaren Rädern**. Die vier Pflegereifen stehen am Boden (Radradius
+0,55 m), das eigentliche UFO ist als Modell 8,83 m darüber montiert. Der
+Fahrzeug-Ursprung bleibt am Boden, also funktionieren Physik, Kamera,
+Ein-/Aussteigen, Shop und Spawn genau wie bei einem Traktor – nur dass oben
+eine Untertasse hängt und darunter „Luft statt Räder" ist. Genau das, was du
+beschrieben hast: ein 10 m hoher Mähdrescher ohne Aufbau unter dem Cockpit.
 
-Für PC (Steam/Epic/GIANTS) und Mac gilt: ZIP in den Mods-Ordner, fertig – genau
-wie oben beschrieben.
+**Kornkreise ohne Skript:** Die Rad-Beschädigung des Grundspiels
+(`WheelDestruction`) drückt pro Rad und Frame ein Rechteck von
+`Breite × 0,5 m` in die Frucht. Das UFO 2500 hat deshalb unter der Mitte eine
+**Reihe aus bis zu 15 unsichtbaren Rädern** („Pinsel"). Wie breit der Pinsel
+ist, wählst du im Shop:
+
+| Radkonfiguration | Pinsel | Fläche pro 100 m Fahrt | Wofür |
+| --- | --- | --- | --- |
+| **Stift** | 1 × 0,5 m | 50 m² | frei malen wie mit dem 50-cm-Stift im PC-Mod |
+| **Ring** | 3 × 0,5 m = 1,5 m | 150 m² | kleine Kreise, Buchstaben |
+| **Standard** | 7 × 0,5 m = 3,5 m | 350 m² | so groß ist der Bodenring unter dem UFO |
+| **Mähdrescher** | 15 × 0,5 m = 7,5 m | 750 m² | eine Bahn und das Feld ist platt |
+
+Weil die Stempel lückenlos aneinanderliegen, ist der Streifen exakt so breit wie
+eingestellt (nachgerechnet in `tools/ufo/brush_test.py`: Kreis r = 15 m mit dem
+Standard-Pinsel = 330 m² gedrückte Fläche, theoretisch 2π·r·b = 330 m²).
+
+![Pinselbreiten](docs/renders/brushes.png)
+
+**Formen zeichnet man durch Fahren:** Kreis = einmal im Kreis fahren (der
+Bodenring zeigt die Pinselbreite), Doppelring = außen rum, quer rein, innen rum,
+Stern = gerade Bahnen. Kein Menü, keine Sondertaste, alles Gamepad-tauglich.
+
+![So sehen gefahrene Kornkreise aus](docs/renders/ufo2500_patterns.png)
+
+![Schnitt durch das Fahrzeug](docs/renders/ufo2500_concept.png)
+
+**Was auf Konsole fehlt** (ehrlich): kein Abheben, keine Höhensteuerung, kein
+Muster-Menü, kein HUD, keine Start-/Landespuren – das braucht alles Lua. Der
+Strahl ist feste Geometrie und immer an, das Arbeitslicht (`L`) macht das grüne
+Leuchten am Boden. „Mähdrescher" heißt: die Ernte wird zerstört (Ertrag weg,
+Pflanzen platt), geerntet wird nichts.
+
+**ModHub:** Das UFO 2500 ist genau dafür gebaut – kein `scripts/`-Ordner, keine
+`<specializations>`, keine `<actions>`, Marke `LIZARD` (Basisspiel). Damit sollte
+es den Konsolentest überstehen; einreichen musst du es selbst (Konto auf
+farming-simulator.com, TestRunner drüberlaufen lassen, ZIP hochladen).
 
 ## 8. Ehrlicher Hinweis
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit
-„UFO2000" oder „Alien" zeigen die Stelle, dann bessere ich gezielt nach.
+„UFO2000", „UFO2500" oder „Alien" zeigen die Stelle, dann bessere ich gezielt nach.
+
+Beim UFO 2500 sind zwei Dinge die ersten Kandidaten für Feinschliff, falls es im
+Spiel komisch aussieht: die Fahrhöhe (Federn/Dämpfer der unsichtbaren Räder,
+`spring`/`damper` in `ufo2500.xml`) und die Anzahl der Pinsel-Räder pro
+Konfiguration. Beides lässt sich in `tools/build_console_mod.py` in einer Zeile
+ändern und neu bauen.
 
 Viel Spaß beim Schweben – und grüß Alf. 👽
