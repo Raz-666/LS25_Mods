@@ -123,6 +123,58 @@ def greeting(dur=0.85, seed=2):
     return out * 0.65
 
 
+def mode_beep(dur=0.42, seed=31):
+    """Two soft round blips when the pilot turns the mode dial."""
+    t = _t(dur)
+    out = np.zeros_like(t)
+    for start, length, f0, f1 in ((0.00, 0.11, 620.0, 880.0), (0.16, 0.18, 980.0, 1240.0)):
+        i0 = int(start * FS)
+        i1 = min(len(t), i0 + int(length * FS))
+        tt = np.arange(i1 - i0) / FS
+        f = f0 + (f1 - f0) * (tt / max(tt[-1], 1e-6))
+        ph = 2 * np.pi * np.cumsum(f) / FS
+        env = np.minimum(1.0, tt / 0.010) * np.minimum(1.0, (tt[-1] - tt) / 0.045)
+        out[i0:i1] += env * (np.sin(ph) + 0.25 * np.sin(2 * ph) + 0.10 * np.sin(3 * ph))
+    out /= max(np.abs(out).max(), 1e-9)
+    return out * 0.55
+
+
+def beam_hum(dur=2.0, seed=32):
+    """Looping working hum under the beam: bubbling energy with a soft grind."""
+    t = _t(dur)
+    rng = np.random.default_rng(seed)
+    ph = 2 * np.pi * np.cumsum(_quantise(118.0, dur) * (1.0 + 0.03 * np.sin(
+        2 * np.pi * _quantise(3.4, dur) * t))) / FS
+    out = np.sin(ph) + 0.32 * np.sin(2 * ph) + 0.14 * np.sin(3 * ph)
+    out *= 0.75 + 0.25 * np.sin(2 * np.pi * _quantise(7.7, dur) * t)
+    # grainy sparkling layer, band limited so it loops cleanly
+    w = rng.normal(size=len(t))
+    k = 9
+    kernel = np.hanning(k)
+    kernel /= kernel.sum()
+    w = np.convolve(w, kernel, mode="same")
+    out += 0.22 * w / max(np.abs(w).max(), 1e-9)
+    out /= max(np.abs(out).max(), 1e-9)
+    return out * 0.7
+
+
+def suction_hum(dur=2.0, seed=33, rising=True):
+    """Looping hiss for the suction / pouring beam."""
+    t = _t(dur)
+    rng = np.random.default_rng(seed)
+    w = rng.normal(size=len(t))
+    k = 7
+    kernel = np.hanning(k)
+    kernel /= kernel.sum()
+    w = np.convolve(w, kernel, mode="same")
+    w /= max(np.abs(w).max(), 1e-9)
+    tone = np.sin(2 * np.pi * _quantise(240.0 if rising else 180.0, dur) * t)
+    swirl = 0.5 + 0.5 * np.sin(2 * np.pi * _quantise(4.3, dur) * t)
+    out = 0.55 * w * swirl + 0.30 * tone * (0.4 + 0.6 * swirl)
+    out /= max(np.abs(out).max(), 1e-9)
+    return out * 0.65
+
+
 SOUNDS = {
     # name: (generator, kind, meta)
     "hoverIdle": (lambda: hover_tone(3.0, 96.0, wobble=0.45, seed=11, bubbles=4), "loop",
@@ -140,6 +192,11 @@ SOUNDS = {
     "hoverStop": (lambda: sweep(1.1, 760.0, 120.0, False, seed=22), "once",
                   {"duration": 1.1}),
     "greeting": (greeting, "once", {"duration": 0.85}),
+    # v7: one beep per mode change plus a loop for every working beam
+    "modeSwitch": (mode_beep, "once", {"duration": 0.42}),
+    "beamLoop": (beam_hum, "loop", {}),
+    "loadLoop": (lambda: suction_hum(2.0, seed=33, rising=True), "loop", {}),
+    "unloadLoop": (lambda: suction_hum(2.0, seed=34, rising=False), "loop", {}),
 }
 
 

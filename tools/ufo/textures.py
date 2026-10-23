@@ -139,7 +139,7 @@ def glass(size=256):
     sheen = np.clip(1.0 - np.abs((xx * 0.8 + yy * 0.6) - 0.42) * 3.2, 0, 1) ** 2
     arr = np.ones((size, size, 3), dtype=np.float32) * _color((170, 232, 240))
     arr = arr * (0.85 + 0.25 * sheen[..., None])
-    alpha = 0.30 + 0.45 * sheen
+    alpha = 0.16 + 0.30 * sheen
     return _to_img(arr, alpha)
 
 
@@ -181,6 +181,29 @@ def beam(size=256):
     return _to_img(arr, alpha * streak)
 
 
+BEAM_COLOURS = {
+    # name: RGB, where the mode uses it
+    "beamRed": (255, 96, 84),        # damage / crop circles
+    "beamGreen": (72, 255, 132),     # harvest
+    "beamBrown": (214, 158, 92),     # cultivate (grubber)
+    "beamOrange": (255, 168, 64),    # plough
+    "beamLime": (196, 255, 96),      # sow
+    "beamViolet": (176, 132, 255),   # fertilize
+    "beamBlue": (128, 208, 255),     # beam me up (load)
+    "beamCyan": (120, 255, 246),     # unload
+}
+
+
+def beam_colour(rgb, size=128):
+    yy = np.linspace(0, 1, size)[:, None]
+    xx = np.linspace(0, 1, size)[None, :]
+    arr = np.ones((size, size, 3), dtype=np.float32) * np.array(rgb, dtype=np.float32) / 255.0
+    alpha = np.clip(0.70 * (1.0 - yy) ** 1.3, 0, 1) * np.ones((1, size))
+    streak = 0.75 + 0.25 * np.sin(xx * 46) ** 2
+    arr = arr * (0.62 + 0.5 * (1 - yy)[..., None]) * (0.8 + 0.4 * streak[..., None])
+    return _to_img(arr, alpha * streak)
+
+
 def specular(kind, size=256):
     if kind == "paint":
         base = 0.42
@@ -217,6 +240,10 @@ TEXTURES = {
     "eyeBlack_diffuse": (eye_black, "bc1", True),
     "beam_diffuse": (beam, "bc3", True),
 }
+
+# one tinted beam texture per working mode (the Lua script shows exactly one)
+TEXTURES.update({name + "_diffuse": ((lambda rgb=rgb: beam_colour(rgb)), "bc3", True)
+                 for name, rgb in BEAM_COLOURS.items()})
 
 
 def generate(out_dir, build_dir, png2dds=os.path.join(os.path.dirname(__file__), "..", "png2dds.py"),

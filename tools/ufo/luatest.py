@@ -56,9 +56,12 @@ SpecializationUtil = {
 -- scene state of the single test vehicle
 world = { x = 0, y = 0.0, z = 0, pitch = 0, yaw = 0, roll = 0,
           vx = 0, vy = 0, vz = 0, terrainY = 0.0, visibility = {}, time = 0 }
-nodeIds = { leg0 = 11, leg1 = 12, leg2 = 13, beamNode = 20, beamLight = 21,
+nodeIds = { leg0 = 11, leg1 = 12, leg2 = 13, beamLight = 21,
             beaconLight = 22, groundRing = 23, driverSeatNode = 24,
-            patternPointer = 30, modeLever = 31, focusSlider = 32 }
+            patternPointer = 30, modeLever = 31, focusSlider = 32, modeNeedle = 33,
+            beamNodeDamage = 50, beamNodeHarvest = 51, beamNodeCultivate = 52,
+            beamNodePlow = 53, beamNodeSow = 54, beamNodeFertilize = 55,
+            beamNodeLoad = 56, beamNodeUnload = 57 }
 
 function getWorldTranslation(node)
     local t = world.nodes and world.nodes[node]
@@ -69,6 +72,8 @@ function getTranslation(node) return 0, 0, 0 end
 function getRotation(node) return 0, 0, 16 end
 function getWorldRotation(node) return world.pitch, world.yaw, world.roll end
 function setRotation(node, a, b, c)
+    world.rotation = world.rotation or {}
+    world.rotation[node] = { a, b, c }
     if node == world.node then world.pitch, world.yaw, world.roll = a, b, c end
 end
 function setWorldTranslation(node, x, y, z) world.x, world.y, world.z = x, y, z end
@@ -83,6 +88,10 @@ end
 function setLinearVelocity(node, x, y, z) world.vx, world.vy, world.vz = x, y, z end
 function setAngularVelocity(node, x, y, z) end
 function setVisibility(node, v) world.visibility[node] = v end
+function setLightColor(node, r, g, b)
+    world.lightColor = world.lightColor or {}
+    world.lightColor[node] = { r, g, b }
+end
 function getTerrainHeightAtWorldPos(terrain, x, y, z) return world.terrainY end
 
 math.clamp = function(v, a, b) return math.max(a, math.min(b, v)) end
@@ -126,8 +135,8 @@ FSDensityMapUtil = {
         table.insert(mown.rects, { x1, z1, x2, z2, x3, z3 })
     end,
 }
-FillType = { UNKNOWN = 0, WHEAT = 1 }
-ToolType = { UNDEFINED = 1, UNLOADING = 2 }
+FillType = { UNKNOWN = 0, WHEAT = 1, FERTILIZER = 2 }
+ToolType = { UNDEFINED = 1, UNLOADING = 2, LOADING = 3 }
 g_fillTypeManager = {
     getFillTypeByIndex = function(i) return { index = i, name = "wheat" } end,
 }
@@ -136,7 +145,43 @@ g_fruitTypeManager = {
         return { index = i, name = "WHEAT", fillType = 1, literPerSqm = 0.35,
                  getAreaLiters = function(self, area) return area * self.literPerSqm end }
     end,
+    getFruitTypeIndexByName = function(name) return name == "WHEAT" and 1 or 2 end,
 }
+g_sprayTypeManager = {
+    getSprayTypeByName = function(name) return { index = 1, name = name } end,
+}
+
+-- sound mock: remembers what was played / stopped
+sounds = { played = {}, stopped = {}, playing = {} }
+g_soundManager = {
+    playSample = function(self, sample) sounds.played[#sounds.played + 1] = sample end,
+    stopSample = function(self, sample) sounds.stopped[#sounds.stopped + 1] = sample end,
+    getIsSamplePlaying = function(self, sample) return false end,
+    loadSampleFromXML = function() return nil end,
+}
+
+-- field work mock: counts the worked area per tool
+worked = { cultivate = 0, plow = 0, sow = 0, spray = 0, calls = 0 }
+local function recordRect(kind, x1, z1, wx, wz, hx, hz)
+    local area = math.abs(wx * hz) + math.abs(hx * wz)
+    worked[kind] = worked[kind] + area
+    worked.calls = worked.calls + 1
+    return area, area
+end
+FSDensityMapUtil.updateCultivatorArea = function(x1, z1, wx, wz, hx, hz)
+    return recordRect("cultivate", x1, z1, wx, wz, hx, hz)
+end
+FSDensityMapUtil.updatePlowArea = function(x1, z1, wx, wz, hx, hz)
+    return recordRect("plow", x1, z1, wx, wz, hx, hz)
+end
+FSDensityMapUtil.updateSowingArea = function(fruit, x1, z1, wx, wz, hx, hz)
+    worked.lastFruit = fruit
+    return recordRect("sow", x1, z1, wx, wz, hx, hz)
+end
+FSDensityMapUtil.updateSprayArea = function(x1, z1, wx, wz, hx, hz, sprayType, amount)
+    worked.lastSpray = sprayType
+    return recordRect("spray", x1, z1, wx, wz, hx, hz)
+end
 -- harvest mock: counts the cut area and the liters the field gives
 cut = { count = 0, area = 0 }
 FSDensityMapUtil.getFruitTypeIndexAtWorldPos = function(x, z)
@@ -208,9 +253,10 @@ function newVehicle()
     v.actionEvents = {}
     v.getNextDirtyFlag = function(self) return 16 end
     v.getOwnerFarmId = function(self) return 1 end
-    -- fill units: 1 = diesel, 2 = the grain tank of the saucer
+    -- fill units: 1 = diesel, 2 = the grain tank, 3 = the virtual cargo hold
     v.fillUnits = { { fillType = 0, fillLevel = 90, capacity = 90 },
-                    { fillType = 1, fillLevel = 0, capacity = 25000 } }
+                    { fillType = 1, fillLevel = 0, capacity = 25000 },
+                    { fillType = 0, fillLevel = 0, capacity = 5000000 } }
     v.tankAccept = true
     v.getFillUnitCount = function(self) return #self.fillUnits end
     v.getFillUnitFillLevel = function(self, i) return self.fillUnits[i].fillLevel end
@@ -219,7 +265,7 @@ function newVehicle()
     v.getFillUnitFreeCapacity = function(self, i, fillType, farmId)
         return self.fillUnits[i].capacity - self.fillUnits[i].fillLevel
     end
-    v.getFillUnitSupportsFillType = function(self, i, fillType) return i == 2 end
+    v.getFillUnitSupportsFillType = function(self, i, fillType) return i >= 2 end
     v.addFillUnitFillLevel = function(self, farmId, i, delta, fillType, toolType, pos)
         local fu = self.fillUnits[i]
         local before = fu.fillLevel
@@ -292,8 +338,10 @@ def main():
     ok = True
     spec = lua.eval("vehicle.spec_ufo2000")
     ok &= check("legs found", lua.eval("#vehicle.spec_ufo2000.legNodes") == 3)
-    ok &= check("beam node found", lua.eval("vehicle.spec_ufo2000.beamNode") == 11 + 9)
-    ok &= check("beam hidden at load", lua.eval("world.visibility[20]") is False)
+    ok &= check("eight beam nodes found (one per mode)",
+                lua.eval("#vehicle.spec_ufo2000.beamNodes") == 8)
+    ok &= check("beam cones hidden at load",
+                all(lua.eval("world.visibility[%d]" % n) is False for n in range(50, 58)))
     ok &= check("minRotTime patched", lua.eval("vehicle.minRotTime") != 0)
 
     # ---- take off ----------------------------------------------------------
@@ -355,7 +403,9 @@ def main():
 
     # ---- beam toggle -------------------------------------------------------
     lua.execute("vehicle:setUFOBeamActive(true)")
-    ok &= check("beam visible", lua.eval("world.visibility[20]") is True)
+    ok &= check("beam visible", lua.eval("world.visibility[50]") is True)
+    ok &= check("only one beam cone visible",
+                sum(1 for n in range(50, 58) if lua.eval("world.visibility[%d]" % n)) == 1)
     ok &= check("beam light visible", lua.eval("world.visibility[21]") is True)
 
     # ---- multiplayer update stream ----------------------------------------
@@ -542,7 +592,7 @@ def main():
                 "y=%.2f" % lua.eval("world.y"))
     ok &= check("landing legs are deployed again", lua.eval("vehicle.spec_ufo2000.legsAlpha") < 0.02,
                 "alpha=%.3f" % lua.eval("vehicle.spec_ufo2000.legsAlpha"))
-    ok &= check("beam stopped on landing", lua.eval("world.visibility[20]") is False)
+    ok &= check("beam stopped on landing", lua.eval("world.visibility[50]") is False)
     padArea = lua.eval("mown.area")
     padStamps = lua.eval("mown.count")
     wantPad = math.pi * 1.9 * 1.9
@@ -673,6 +723,148 @@ def main():
     ok &= check("pattern pointer moves to the second row",
                 ptr is not None and abs(ptr[1] - 0.0) < 0.08 and abs(ptr[2] + 0.03) < 1e-6,
                 "translation=%s" % (ptr,))
+
+    # ---- v7: mode dial, field work, cargo hold --------------------------
+    lua.execute("""
+    vehicle:setUFOAltitude(30)
+    for i = 1, 200 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    vehicle:setUFOCirclePattern(1)
+    vehicle.fillUnits[2].fillLevel = 0
+    """)
+    ok &= check("eight modes are defined", lua.eval("#UFO2000.MODES") == 8)
+
+    # the mode key cycles through all eight and wraps around
+    lua.execute("""
+    vehicle:setUFOBeamMode(1)
+    seen = {}
+    for i = 1, 8 do
+        seen[i] = vehicle:getUFOBeamMode()
+        UFO2000.runCommand(vehicle, "mode")
+    end
+    """)
+    ok &= check("mode key cycles through all eight modes",
+                [lua.eval("seen[%d]" % i) for i in range(1, 9)] == list(range(1, 9)))
+    ok &= check("mode wraps around to flatten", lua.eval("vehicle:getUFOBeamMode()") == 1)
+
+    # cultivate / plow / sow / fertilize all work the ground
+    for mode, key, label in ((3, "cultivate", "cultivate"),
+                             (4, "plow", "plow"),
+                             (5, "sow", "sow"),
+                             (6, "spray", "fertilize")):
+        lua.execute("""
+        vehicle:setUFOBeamMode(%d)
+        worked.cultivate, worked.plow, worked.sow, worked.spray, worked.calls = 0, 0, 0, 0, 0
+        vehicle:setUFOBeamActive(true)
+        for i = 1, 120 do
+            g_currentMission.time = g_currentMission.time + 16
+            callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+        end
+        """ % mode)
+        area = lua.eval("worked.%s" % key)
+        ok &= check("%s mode works the field" % label, area > 100,
+                    "%.0f m2" % area)
+        ok &= check("%s mode does not press crop circles" % label,
+                    lua.eval("mown.count") == 0)
+
+    # the right beam cone is the visible one
+    lua.execute("""
+    vehicle:setUFOBeamMode(4)
+    vehicle:setUFOBeamActive(true)
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("plow mode shows the orange cone only",
+                lua.eval("world.visibility[53]") is True and
+                lua.eval("world.visibility[50]") is False)
+    ok &= check("beam light takes the mode colour", lua.eval(
+        "world.lightColor ~= nil and math.abs(world.lightColor[21][1] - 1.0) < 0.01"))
+    needle = lua.eval("world.rotation[33]")
+    ok &= check("mode needle points at the selected segment",
+                needle is not None and abs(needle[2] + 135) < 1e-6,
+                "rotation=%s" % (needle,))
+
+    # sowing uses the selected seed and the keys can change it
+    lua.execute("""
+    vehicle:setUFOBeamMode(5)
+    UFO2000.runCommand(vehicle, "penDown")
+    """)
+    ok &= check("sowing mode: keys pick the next seed",
+                lua.eval("vehicle.spec_ufo2000.sowFruitIndex") == 15,
+                "index %s" % lua.eval("vehicle.spec_ufo2000.sowFruitIndex"))
+    ok &= check("sowing mode does not change the pen radius",
+                lua.eval("vehicle:getUFOPenRadius()") == 0.25)
+
+    # ---- cargo hold: load from a trailer by hovering ---------------------
+    lua.execute("""
+    trailer = newVehicle()
+    trailer.isServer = true
+    trailer.components = { { node = 2 } }
+    trailer.fillUnits = { { fillType = 1, fillLevel = 12000, capacity = 20000 } }
+    trailer.getFillUnitSupportsFillType = function(self, i, fillType) return true end
+    trailer.getName = function() return "Kipper" end
+    g_currentMission.vehicleSystem = {
+        getVehicles = function() return { vehicle, trailer } end,
+    }
+    world.nodes = { [1] = { 0, 20, 0 }, [2] = { 0, 0, 0 } }
+    vehicle.fillUnits[3].fillLevel = 0
+    vehicle:setUFOBeamMode(7)
+    vehicle:setUFOBeamActive(true)
+    for i = 1, 600 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+        if vehicle.spec_ufo2000.loadTargetName ~= "" then
+            loadName = vehicle.spec_ufo2000.loadTargetName
+        end
+    end
+    """)
+    ok &= check("load mode sucks the trailer empty",
+                lua.eval("trailer.fillUnits[1].fillLevel") < 100,
+                "%.0f l left in the trailer" % lua.eval("trailer.fillUnits[1].fillLevel"))
+    ok &= check("the cargo hold took the load",
+                lua.eval("vehicle.fillUnits[3].fillLevel") > 5000,
+                "%.0f l in the hold" % lua.eval("vehicle.fillUnits[3].fillLevel"))
+    ok &= check("load target name is reported",
+                lua.eval("loadName") == "Kipper", lua.eval("tostring(loadName)"))
+
+    # ---- unload mode pours the cargo hold back out -----------------------
+    lua.execute("""
+    stationFill = 0
+    trailer.fillUnits[1].fillLevel = 20000          -- full: the silo has to take it
+    world.nodes[stationNode] = { 0, 0, 0 }
+    vehicle:setUFOBeamMode(8)
+    vehicle:setUFOBeamActive(true)
+    for i = 1, 800 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("unload mode empties the cargo hold",
+                lua.eval("vehicle.fillUnits[3].fillLevel") < 100,
+                "%.0f l left" % lua.eval("vehicle.fillUnits[3].fillLevel"))
+    ok &= check("the unloaded goods arrived",
+                lua.eval("stationFill") > 5000, "%.0f l" % lua.eval("stationFill"))
+    ok &= check("leaving unload mode stops unloading",
+                lua.eval("vehicle.spec_ufo2000.unloading") is False)
+
+    # ---- mode sounds -----------------------------------------------------
+    lua.execute("""
+    vehicle.spec_ufo2000.sounds = { modeSwitch = "beep", beamLoop = "hum",
+                                   loadLoop = "load", unloadLoop = "pour" }
+    vehicle.spec_ufo2000.soundState = { beam = false, load = false, unload = false }
+    vehicle:setUFOBeamMode(3)
+    vehicle:setUFOBeamActive(true)
+    sounds.played = {}
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("working beam starts its hum loop", lua.eval("#sounds.played") >= 1,
+                "%d sample(s)" % lua.eval("#sounds.played"))
+    lua.execute("""
+    vehicle:setUFOBeamActive(false)
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("beam off stops the hum loop", lua.eval("#sounds.stopped") >= 1)
 
     # ---- overridden getCanMotorRun ---------------------------------------
     can = lua.eval("callOverwritten(vehicle, 'getCanMotorRun')")

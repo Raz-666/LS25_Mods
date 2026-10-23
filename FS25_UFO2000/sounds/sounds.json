@@ -53,6 +53,31 @@
       "duration_s": 0.85,
       "peak_dbfs": -3.74,
       "duration": 0.85
+    },
+    "modeSwitch": {
+      "type": "once",
+      "file": "modeSwitch.ogg",
+      "duration_s": 0.42,
+      "peak_dbfs": -5.19,
+      "duration": 0.42
+    },
+    "beamLoop": {
+      "type": "loop",
+      "file": "beamLoop.ogg",
+      "duration_s": 2.0,
+      "peak_dbfs": -3.1
+    },
+    "loadLoop": {
+      "type": "loop",
+      "file": "loadLoop.ogg",
+      "duration_s": 2.0,
+      "peak_dbfs": -3.74
+    },
+    "unloadLoop": {
+      "type": "loop",
+      "file": "unloadLoop.ogg",
+      "duration_s": 2.0,
+      "peak_dbfs": -3.74
     }
   }
 }

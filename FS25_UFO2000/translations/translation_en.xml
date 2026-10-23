@@ -12,7 +12,19 @@
     <text name="ufo_action_descend"><de>Sinken / Muster</de><en>Descend / pattern</en></text>
     <text name="ufo_action_beam"><de>Traktorstrahl</de><en>Tractor beam</en></text>
 
-    <text name="ufo_action_mode"><de>Strahl-Modus (ernten / plattdrücken)</de><en>Beam mode (harvest / flatten)</en></text>
+    <text name="ufo_mode_damage"><de>Plattdrücken (Kornkreis)</de><en>Flatten (crop circle)</en></text>
+    <text name="ufo_mode_harvest"><de>Ernten</de><en>Harvest</en></text>
+    <text name="ufo_mode_cultivate"><de>Grubbern</de><en>Cultivate</en></text>
+    <text name="ufo_mode_plow"><de>Pflügen</de><en>Plow</en></text>
+    <text name="ufo_mode_sow"><de>Säen</de><en>Sow</en></text>
+    <text name="ufo_mode_fertilize"><de>Düngen</de><en>Fertilize</en></text>
+    <text name="ufo_mode_load"><de>Aufnehmen (Sog)</de><en>Load (suction)</en></text>
+    <text name="ufo_mode_unload"><de>Abladen (Strahl)</de><en>Unload (beam)</en></text>
+    <text name="ufo_notify_mode"><de>Strahl-Modus: %s</de><en>Beam mode: %s</en></text>
+    <text name="ufo_menu_modeHint"><de>K: nächster Modus · J/L: Strahl / Saatgut · Z: Strahl an</de><en>K: next mode · J/L: beam / seed · Z: beam on</en></text>
+    <text name="ufo_hud_cargo"><de>Laderaum</de><en>Cargo hold</en></text>
+    <text name="ufo_hud_sow"><de>Saatgut</de><en>Seed</en></text>
+    <text name="ufo_action_mode"><de>Strahl-Modus (8 Funktionen)</de><en>Beam mode (8 functions)</en></text>
     <text name="ufo_action_penWide"><de>Strahl weiter</de><en>Beam wider</en></text>
     <text name="ufo_action_penNarrow"><de>Strahl enger</de><en>Beam narrower</en></text>
     <text name="ufo_action_unload"><de>Abladen (über Anhänger/Abkippstelle)</de><en>Unload (over trailer / tip station)</en></text>

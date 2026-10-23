@@ -4,7 +4,7 @@ Zwei kleine Mods für **Farming Simulator 25**:
 
 | Mod | Was es ist |
 | --- | --- |
-| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, grüner Leuchtenkranz, drei Landebeine, Traktorstrahl, Kornkreis-Menü **plus Ernte-Modus mit Korntank und Abtanken** |
+| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, drei Landebeine und ein Traktorstrahl, der **acht Arbeiten** kann: plattdrücken, ernten, grubbern, pflügen, säen, düngen, aufnehmen, abladen – dazu ein **virtueller Laderaum mit 5 Mio. Litern** |
 | **`dist/FS25_Alien.zip`** | **Zwei** Aliens als aufstellbare Deko – der kleine grüne Kumpel und der Große mit Riesenschädel und Glubschaugen |
 | **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, Cockpit 20 m über dem Feld, rollt auf zwei breiten unsichtbaren Rädern, drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide und **landet auf Tastendruck** |
 
@@ -12,7 +12,7 @@ Zwei kleine Mods für **Farming Simulator 25**:
 
 | Mod | PC / Mac | Xbox / PlayStation |
 | --- | --- | --- |
-| UFO 2000 | ✅ fliegen, Höhe, Strahl, 10 Muster | ❌ eigener Lua-Code |
+| UFO 2000 | ✅ fliegen, 8 Arbeits-Modi, Laderaum, Cockpit | ❌ eigener Lua-Code |
 | Alien-Maskottchen | ✅ | ⚠️ möglich (nur noch über ModHub einreichen) |
 | UFO 2500 | ✅ | ✅ **kein Lua, nur Grundspiel-Technik** |
 
@@ -52,54 +52,74 @@ Alles davon lässt sich unter **Optionen → Steuerung** umbelegen (Suche nach
 „UFO"). Tastenbelegungen mit `Bild ↑/↓` sind nur die bequeme Tastatur-Variante
 der Achse.
 
-## 2b. Neu im UFO 2000: ernten, abtanken, Strahl-Fokus, Cockpit
+## 2b. Acht Arbeits-Modi, virtueller Laderaum, Cockpit
 
-Das UFO 2000 ist jetzt nicht mehr nur ein Kornkreis-Gerät. Alles unten ist über
-die normalen Spieltasten erreichbar (Gamepad: dieselben Aktionen, frei belegbar
-im Spielmenü) – kein Sondermenü nötig.
+Das UFO 2000 arbeitet jetzt wie eine ganze Maschinenkette – **ohne dass
+irgendetwas sichtbar angekoppelt wird**. Kein Anbaugerät, kein Tank, kein
+Anhänger: alles läuft unsichtbar über den Traktorstrahl.
 
 | Taste | Was passiert |
 | --- | --- |
-| **K** | Strahl-Modus umschalten: **Plattdrücken** (Kornkreise) ⇄ **Ernten** |
-| **J / L** | Strahl enger / weiter – von **0,50 m** (feiner Schnitt) bis **16 m** (dicker Strahl) |
-| **U** | Abtanken: über einem Anhänger oder einer Abkippstelle schweben, dann U |
-| **I** | Korntank **unendlich** an/aus (praktisch für ein Rieselfeld am Stück) |
-| **M** | Bodenmuster-Menü (wie vorher) |
-| **Z** | Strahl an/aus |
+| **K** | nächster Strahl-Modus (die 8 Modi im Kreis) |
+| **J / L** | Strahl enger / weiter – **0,50 m** bis **16 m** (im Sä-Modus: Saatgut wechseln) |
+| **Z** | Strahl an / aus – der Strahl *macht* die Arbeit |
+| **M** | Cockpit-Menü: Muster, Modi, Tank – **mit der Maus klickbar** |
+| **U** | Abladen an/aus (geht auch automatisch im Modus „Abladen") |
+| **I** | Korntank unendlich an/aus |
+| **V**, `Bild ↑/↓`, `W/A/S/D` | abheben/landen, Höhe, fliegen – wie vorher |
 
-**Ernten statt plattdrücken.** Im Ernte-Modus schneidet der Strahl die Frucht ab
-(genau die Funktion, die auch das Original-Schneidwerk benutzt), und das Korn
-geht in einen echten **Korntank mit 25.000 l** – mit Füllstandsanzeige. Ist der
-Tank voll, hört der Strahl von selbst auf. „Unendlich" schaltet die Tankgrenze
-ab: das Feld wird trotzdem echt geerntet, nur das Korn verschwindet im kleinen
-Wurmloch der Untertasse.
+### Die acht Modi
 
-**Abtanken.** Anhänger (oder jede Abkippstelle der Karte) unter das UFO stellen,
-mit dem UFO **darüber schweben** – mindestens 1,8 m Höhe, damit es keine
-Kollision mit dem Anhänger gibt –, **U** drücken. Das Korn läuft mit 3.000 l/s
-hinten über. Während des Abtankens wird nicht geerntet, sonst würde der Tank
-gleich wieder volllaufen.
+| # | Modus | Strahl-Farbe | Was er macht |
+| --- | --- | --- | --- |
+| 1 | **Plattdrücken** | rot, pulsierend | Kornkreise in 10 Mustern, keine Ernte |
+| 2 | **Ernten** | sattgrün | schneidet die Frucht, Korn in den Tank |
+| 3 | **Grubbern** | bernstein | grubbert den Boden (Stoppel wird eingearbeitet) |
+| 4 | **Pflügen** | orange | pflügt, inkl. Pflug-Level |
+| 5 | **Säen** | hellgrün | sät das gewählte Saatgut (J/L wechselt die Frucht) |
+| 6 | **Düngen** | violett | bringt Düngestufe 1 auf die Fläche |
+| 7 | **Aufnehmen** | hellblau | saugt Anhänger/Ladung in den Laderaum („beam me up") |
+| 8 | **Abladen** | türkis | schüttet den Laderaum nach unten aus |
 
-**Der Strahl-Fokus** gilt im manuellen Modus (letzter Menüpunkt): 0,50 m für
-Buchstaben und feine Linien, 16 m für eine breite Schneise. Die Taste J/L
-verstellt ihn in 0,25-m-Schritten, der Bereich wird im Cockpit am Schieber
-angezeigt.
+Technisch sind das genau die Funktionen, die auch die Original-Maschinen
+benutzen (`cutFruitArea`, `updateCultivatorArea`, `updatePlowArea`,
+`updateSowingArea`, `updateSprayArea`) – der Acker sieht danach genauso aus wie
+nach echter Arbeit, inklusive Feldstatus, Spuren und Wachstumsstufen. Jeder
+Modus hat seinen **eigenen Leuchtkegel**, seine **eigene Lichtfarbe**, sein
+**eigenes Summen** und seine eigene Anzeige im Cockpit. Von außen ändert sich
+nur Farbe, Blinken und Ton – das UFO selbst bleibt nackt.
 
-**Cockpit.** Unter der hohen, schmalen Glaskuppel sitzt du jetzt in einem
-richtigen Arbeitsplatz: geschwungene Konsole, großer grüner Bildschirm,
-seitliche Anzeigen, Schalterreihen, Steuerknüppel, ein Leuchtenkranz über dem
-Kopf – und drei Dinge, die sich **mit dem Spielstand bewegen**:
+### Virtueller Laderaum
 
-* der **Muster-Wähler** links (10 Kacheln, der Rahmen wandert zum gewählten
-  Muster),
-* der **Modus-Hebel** rechts (kippt zwischen Ernten und Plattdrücken),
-* der **Fokus-Schieber** (fährt mit J/L hin und her).
+Der Laderaum (Füllstand 3) fasst **5.000.000 l** und nimmt alles an, was
+normalerweise transportiert wird: Getreide, Häckselgut, Heu, Silage, Stroh,
+Dünger, Kalk, Mist, Gülle, Saatgut, Wasser, Milch …
 
-Dazu der blinkende Leuchtenkranz der Grundspiel-Beleuchtung und das leichte
-Wippen der schwebenden Untertasse.
+* **Aufnehmen:** mit Modus 7 **über** einem vollen Anhänger schweben (mindestens
+  1,8 m Abstand, damit nichts kollidiert) und **Z** drücken – der Strahl saugt
+  die Ladung mit 6.000 l/s hoch.
+* **Abladen:** mit Modus 8 über Anhänger **oder** Abkippstelle schweben und
+  **Z** drücken – 3.000 l/s gehen nach unten. Erst läuft der Korntank leer,
+  dann der große Laderaum.
+* Ein ganzes Feld am Stück ernten ist damit kein Problem: der Tank läuft nicht
+  mehr über, und mit **I** ist sogar die Tankgrenze abgeschaltet.
 
-> Getestet mit `tools/ufo/luatest.py` (45 Prüfungen: Flug, Ernten, Tank,
-> Abtanken, Fokus, Cockpit-Anzeigen) – alles grün, ohne Spiel im Hintergrund.
+### Cockpit
+
+Unter der hohen, schmalen Glaskuppel sitzt du in einem richtigen Arbeitsplatz:
+geschwungene Konsole mit zwei Instrumentenflügeln, ein **Modus-Wahlrad** mit
+acht leuchtenden Segmenten und einer Nadel, die auf den gewählten Modus zeigt,
+Schalterreihen, Steuerknüppel, ein Leuchtenkranz über dem Kopf, eine Kaffeetasse
+und ein **Wackel-Alien** auf der Feder. Der Blick nach vorn bleibt frei – durch
+die Kuppel siehst du Feld und Horizont.
+
+Mit **M** öffnest du das Bordmenü: oben die Bodenmuster, unten die acht Modi.
+Alles ist **mit der Maus anklickbar** (der Zeiger erscheint, solange das Menü
+offen ist) und mit `Bild ↑/↓` + `Z` genauso per Tastatur oder Gamepad bedienbar.
+
+> Getestet mit `tools/ufo/luatest.py` (69 Prüfungen: Flug, alle 8 Modi,
+> Feldarbeit, Tank, Laderaum, Be- und Entladen, Cockpit-Anzeigen, Sounds) –
+> alles grün, ohne Spiel im Hintergrund.
 
 ## 3. Fliegen
 
