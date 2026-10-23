@@ -8,6 +8,7 @@ what you see in docs/renders/circles.png is exactly what the UFO mows.
     python tools/ufo/circle_preview.py
 """
 
+import math
 import os
 import sys
 
@@ -42,6 +43,7 @@ def main():
     lua.execute(open(LUA, encoding="utf-8").read())
 
     count = lua.eval("UFO2000.getPatternCount()")
+    manual = {i + 1 for i in range(count) if lua.eval("UFO2000.isManual(%d)" % (i + 1))}
     is_point = lua.eval("UFO2000.isPointInPattern")
     names = [lua.eval("UFO2000.PATTERNS[%d].name" % i) for i in range(1, count + 1)]
     print("patterns:", ", ".join(names))
@@ -66,12 +68,22 @@ def main():
         # mown cells: darker stubble
         u = (xx - tile / 2) / (tile / 2 - 4)
         v = (yy - tile / 2) / (tile / 2 - 4)
-        flat_u, flat_v = u.ravel(), v.ravel()
-        mown = np.array([bool(is_point(index + 1, float(a), float(b)))
-                         for a, b in zip(flat_u, flat_v)], dtype=bool).reshape(tile, tile)
-        rr = np.sqrt(u ** 2 + v ** 2)
-        mown &= rr <= 1.0
-        field[mown] = field[mown] * 0.35 + np.array([0.28, 0.26, 0.16]) * 0.65
+        if index + 1 in manual:
+            # the pen: a hand drawn squiggle 50 cm wide
+            verts = [(math.cos(t * 5.5) * (0.15 + 0.6 * t / 6.0), -0.72 + 0.24 * t)
+                     for t in np.linspace(0, 6, 400)]
+            d = np.full((tile, tile), 9.0)
+            for ax, ay in verts:
+                d = np.minimum(d, np.sqrt((u - ax) ** 2 + (v - ay) ** 2))
+            crushed = d <= 0.055
+        else:
+            flat_u, flat_v = u.ravel(), v.ravel()
+            crushed = np.array([bool(is_point(index + 1, float(a), float(b)))
+                                for a, b in zip(flat_u, flat_v)], dtype=bool).reshape(tile, tile)
+            crushed &= np.sqrt(u ** 2 + v ** 2) <= 1.0
+        # flattened crop: paler and dull, not cut
+        field[crushed] = field[crushed] * 0.85 + np.array([0.62, 0.55, 0.30]) * 0.15
+        field[crushed] = np.clip(field[crushed] * 1.15, 0, 1)
         tile_img = Image.fromarray((np.clip(field, 0, 1) * 255).astype(np.uint8), "RGB")
         img.paste(tile_img, (cx, cy))
         draw.rectangle([cx, cy, cx + tile - 1, cy + tile - 1], outline=(120, 200, 160))

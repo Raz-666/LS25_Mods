@@ -44,8 +44,16 @@ UFO2000.SPEED_ACCEL = 2.4
 UFO2000.BEAM_HALF_ANGLE = 34.0      -- degrees; matches the visible cone
 UFO2000.MIN_CIRCLE_RADIUS = 1.8     -- m
 UFO2000.MAX_CIRCLE_RADIUS = 70.0    -- m
-UFO2000.CIRCLE_CELL = 0.35          -- m, finest raster of the mown pattern
+UFO2000.CIRCLE_CELL = 0.35          -- m, finest raster of the pressed pattern
 UFO2000.CIRCLE_DRAW_TIME = 3.2      -- s until the pattern is finished
+
+-- manual pen: narrow beam, the player draws by flying
+UFO2000.MANUAL_RADIUS = 0.25        -- m, half of the 50 cm pen
+UFO2000.MANUAL_STEP = 0.22          -- m of flight per stamped dot
+
+-- marks the craft leaves on the ground when it takes off / lands
+UFO2000.LANDING_MARK_RADIUS = 1.9   -- m, the flattened pad under the hull
+UFO2000.LEG_MARK_RADIUS = 0.30      -- m, one footprint per leg
 
 UFO2000.clamp = function(value, minValue, maxValue)
     if value < minValue then
@@ -190,6 +198,10 @@ local function patternSun(u, v)
     return false
 end
 
+--- The last entry is the manual pen: no fixed shape, the beam is bundled into a
+--- thin column and the player paints by flying.
+local MANUAL_PATTERN = {name = "ufo_circle_manual", manual = true}
+
 UFO2000.PATTERNS = {
     {name = "ufo_circle_circle", test = patternCircle},
     {name = "ufo_circle_ring", test = patternRing},
@@ -200,16 +212,23 @@ UFO2000.PATTERNS = {
     {name = "ufo_circle_alien", test = patternAlien},
     {name = "ufo_circle_flowerOfLife", test = patternFlowerOfLife},
     {name = "ufo_circle_sun", test = patternSun},
+    MANUAL_PATTERN,
 }
 
 function UFO2000.getPatternCount()
     return #UFO2000.PATTERNS
 end
 
+--- true if the given pattern index is the manual pen
+function UFO2000.isManual(patternIndex)
+    local pattern = UFO2000.PATTERNS[patternIndex]
+    return pattern ~= nil and pattern.manual == true
+end
+
 --- true if the crop at the normalised position belongs to the pattern
 function UFO2000.isPointInPattern(patternIndex, u, v)
     local pattern = UFO2000.PATTERNS[patternIndex]
-    if pattern == nil then
+    if pattern == nil or pattern.test == nil then
         return false
     end
     return pattern.test(u, v)
@@ -466,6 +485,10 @@ end
 --- radius of the circle that the beam covers right now
 function UFO2000:getUFOCircleRadius()
     local spec = self.spec_ufo2000
+    if UFO2000.isManual(spec.patternIndex) then
+        -- the pen: the beam stays bundled instead of opening into a cone
+        return UFO2000.MANUAL_RADIUS
+    end
     local radius = spec.altitude * spec.beamTan
     return UFO2000.clamp(radius, UFO2000.MIN_CIRCLE_RADIUS, UFO2000.MAX_CIRCLE_RADIUS)
 end
@@ -500,15 +523,18 @@ function UFO2000:setUFOIsHovering(hovering)
         spec.hoverY = cy
         spec.speed = 0
         spec.isHovering = true
+        -- the cushion and the legs leave their trace in the field
+        UFO2000.stampLandingMarks(self)
     else
         spec.isHovering = false
         spec.altitude = spec.minAltitude
         spec.altitudeTarget = spec.minAltitude
         spec.hoverY = nil
         spec.speed = 0
-        -- landed: the beam switches itself off
+        -- landed: the beam switches itself off and the craft leaves its mark
         spec.beamActive = false
         UFO2000.stopDrawing(self)
+        UFO2000.stampLandingMarks(self)
     end
     self:raiseDirtyFlags(spec.dirtyFlag)
     UFO2000.applyState(self)
@@ -556,12 +582,21 @@ end
 -- ---------------------------------------------------------------------------
 -- crop circles
 -- ---------------------------------------------------------------------------
---- builds the list of mown rectangles for the pattern below the craft
-function UFO2000.buildCircleSpans(vehicle, radius)
-    local spec = vehicle.spec_ufo2000
-    local cx, _, cz = getWorldTranslation(vehicle.components[1].node)
+--- presses the crop inside one rectangle down (server side).
+--- updateWheelDestructionArea is the vanilla "a wheel rolled over the field"
+--- effect: the plants are flattened and lose their yield, the field itself and
+--- its fruit stay intact - exactly the trace a landing saucer would leave.
+function UFO2000.damageArea(x1, z1, x2, z2)
+    if FSDensityMapUtil == nil or FSDensityMapUtil.updateWheelDestructionArea == nil then
+        return false
+    end
+    FSDensityMapUtil.updateWheelDestructionArea(x1, z1, x2, z1, x1, z2)
+    return true
+end
+
+--- builds the list of rectangles for a pattern around a world position
+function UFO2000.buildSpans(cx, cz, radius, patternIndex)
     local cell = math.max(UFO2000.CIRCLE_CELL, radius / 80)
-    local patternIndex = spec.patternIndex
     local spans = {}
 
     local v = -radius
@@ -574,10 +609,11 @@ function UFO2000.buildCircleSpans(vehicle, radius)
             if inside and spanStart == nil then
                 spanStart = u
             elseif not inside and spanStart ~= nil then
+                local x2 = lastU + cell
                 table.insert(spans, {
                     x1 = cx + spanStart, z1 = cz + v,
-                    x2 = cx + lastU + cell, z2 = cz + v + cell,
-                    distSq = (spanStart + lastU + cell) * (spanStart + lastU + cell) / 4 + v * v,
+                    x2 = cx + x2, z2 = cz + v + cell,
+                    distSq = (spanStart + x2) * (spanStart + x2) / 4 + v * v,
                 })
                 spanStart = nil
             end
@@ -601,11 +637,19 @@ end
 
 function UFO2000.startDrawing(vehicle)
     local spec = vehicle.spec_ufo2000
-    local radius = vehicle:getUFOCircleRadius()
-    spec.drawQueue = UFO2000.buildCircleSpans(vehicle, radius)
     spec.drawIndex = 0
-    spec.drawTotal = #spec.drawQueue
     spec.drawProgress = 0
+    spec.lastPaint = nil
+    if UFO2000.isManual(spec.patternIndex) then
+        -- nothing precomputed: the pen paints while the craft moves
+        spec.drawQueue = nil
+        spec.drawTotal = 0
+        return
+    end
+    local radius = vehicle:getUFOCircleRadius()
+    local cx, _, cz = getWorldTranslation(vehicle.components[1].node)
+    spec.drawQueue = UFO2000.buildSpans(cx, cz, radius, spec.patternIndex)
+    spec.drawTotal = #spec.drawQueue
     spec.lastRadius = radius
     if spec.drawTotal == 0 then
         spec.drawQueue = nil
@@ -618,35 +662,50 @@ function UFO2000.stopDrawing(vehicle)
     spec.drawIndex = 0
     spec.drawTotal = 0
     spec.drawProgress = 0
+    spec.lastPaint = nil
 end
 
---- mows the next slice of the pattern (server side)
+--- the manual pen: presses a 50 cm dot onto the field below the craft
+function UFO2000.paintManual(vehicle)
+    local spec = vehicle.spec_ufo2000
+    local node = vehicle.components[1].node
+    local px, _, pz = getWorldTranslation(node)
+
+    if spec.lastPaint ~= nil then
+        local dx, dz = px - spec.lastPaint[1], pz - spec.lastPaint[2]
+        if dx * dx + dz * dz < UFO2000.MANUAL_STEP * UFO2000.MANUAL_STEP then
+            return
+        end
+    end
+    spec.lastPaint = {px, pz}
+
+    local r = UFO2000.MANUAL_RADIUS
+    UFO2000.damageArea(px - r, pz - r, px + r, pz + r)
+end
+
+--- presses the next slice of the pattern into the field (server side)
 function UFO2000.updateDrawing(vehicle, dt)
     local spec = vehicle.spec_ufo2000
+
+    if UFO2000.isManual(spec.patternIndex) then
+        UFO2000.paintManual(vehicle)
+        spec.drawProgress = 1
+        return
+    end
+
     local queue = spec.drawQueue
     if queue == nil or spec.drawTotal == 0 then
         return
     end
 
     local perFrame = math.max(1, math.ceil(spec.drawTotal * dt / UFO2000.CIRCLE_DRAW_TIME))
-    local fruitIndex = nil
-    if FSDensityMapUtil ~= nil then
-        fruitIndex = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(
-            (queue[1].x1 + queue[1].x2) * 0.5, (queue[1].z1 + queue[1].z2) * 0.5)
-    end
-
     for i = 1, perFrame do
         spec.drawIndex = spec.drawIndex + 1
         local span = queue[spec.drawIndex]
         if span == nil then
             break
         end
-        if fruitIndex ~= nil and fruitIndex ~= 0 and FSDensityMapUtil ~= nil then
-            FSDensityMapUtil.updateMowerArea(fruitIndex,
-                span.x1, span.z1,
-                span.x2, span.z1,
-                span.x1, span.z2, false)
-        end
+        UFO2000.damageArea(span.x1, span.z1, span.x2, span.z2)
     end
 
     spec.drawProgress = UFO2000.clamp(spec.drawIndex / spec.drawTotal, 0, 1)
@@ -657,6 +716,29 @@ function UFO2000.updateDrawing(vehicle, dt)
         spec.drawTotal = 0
         spec.drawProgress = 1
         vehicle:raiseDirtyFlags(spec.dirtyFlag)
+    end
+end
+
+--- the cushion and the legs flatten a small pad into the field on every
+--- take off and landing - the classic saucer trace
+function UFO2000.stampLandingMarks(vehicle)
+    local spec = vehicle.spec_ufo2000
+    if FSDensityMapUtil == nil or FSDensityMapUtil.updateWheelDestructionArea == nil then
+        return
+    end
+
+    local cx, _, cz = getWorldTranslation(vehicle.components[1].node)
+    local spans = UFO2000.buildSpans(cx, cz, UFO2000.LANDING_MARK_RADIUS, 1)
+    for i = 1, #spans do
+        local span = spans[i]
+        UFO2000.damageArea(span.x1, span.z1, span.x2, span.z2)
+    end
+
+    -- the feet dig in a little deeper around the hull
+    local r = UFO2000.LEG_MARK_RADIUS
+    for i = 1, #spec.legNodes do
+        local lx, _, lz = getWorldTranslation(spec.legNodes[i])
+        UFO2000.damageArea(lx - r, lz - r, lx + r, lz + r)
     end
 end
 
@@ -956,6 +1038,7 @@ function UFO2000:onUpdate(dt, isActiveForInput, isActiveForInputIgnoreSelection,
         setRotation(spec.beaconLight, 0, time * 220 % 360, 0)
     end
 
+    local manual = UFO2000.isManual(spec.patternIndex)
     if spec.beamActive and spec.isHovering then
         local radius = self:getUFOCircleRadius()
         local drawing = spec.drawTotal ~= nil and 0 < spec.drawTotal
@@ -969,12 +1052,16 @@ function UFO2000:onUpdate(dt, isActiveForInput, isActiveForInputIgnoreSelection,
         end
 
         if spec.ringNode ~= nil then
-            setTranslation(spec.ringNode, 0, -(height) + 0.08, 0)
-            local ringScale = radius * (drawing and (0.35 + 0.65 * spec.drawProgress) or 1.0)
-            local ringPulse = 1 + 0.012 * math.sin(time * (drawing and 14 or 3))
-            setScale(spec.ringNode, ringScale * ringPulse, 1, ringScale * ringPulse)
-            setRotation(spec.ringNode, 0, time * 55 % 360, 0)
-            setVisibility(spec.ringNode, true)
+            -- in pen mode the ring would only be a dot: hide it and let the
+            -- thin beam mark the spot
+            setVisibility(spec.ringNode, not manual)
+            if not manual then
+                setTranslation(spec.ringNode, 0, -(height) + 0.08, 0)
+                local ringScale = radius * (drawing and (0.35 + 0.65 * spec.drawProgress) or 1.0)
+                local ringPulse = 1 + 0.012 * math.sin(time * (drawing and 14 or 3))
+                setScale(spec.ringNode, ringScale * ringPulse, 1, ringScale * ringPulse)
+                setRotation(spec.ringNode, 0, time * 55 % 360, 0)
+            end
         end
     else
         if spec.beamNode ~= nil then
@@ -1018,12 +1105,16 @@ function UFO2000.drawHud(vehicle)
     if spec.isHovering then
         local altitudeText = string.format("%s %.1f m", g_i18n:getText("ufo_hud_height"), spec.altitude)
         drawText(0.5, 0.09, 0.016, altitudeText, RenderText.ALIGN_CENTER, white)
-        local radius = vehicle:getUFOCircleRadius()
-        drawText(0.5, 0.068, 0.014,
-            string.format("%s: %s  (%s %.1f m)", g_i18n:getText("ufo_hud_pattern"),
-                g_i18n:getText(UFO2000.PATTERNS[spec.patternIndex].name),
-                g_i18n:getText("ufo_hud_radius"), radius),
-            RenderText.ALIGN_CENTER, green)
+        local patternName = g_i18n:getText(UFO2000.PATTERNS[spec.patternIndex].name)
+        local line
+        if UFO2000.isManual(spec.patternIndex) then
+            line = string.format("%s: %s  -  %s", g_i18n:getText("ufo_hud_pattern"), patternName,
+                g_i18n:getText("ufo_hud_pen"))
+        else
+            line = string.format("%s: %s  (%s %.1f m)", g_i18n:getText("ufo_hud_pattern"), patternName,
+                g_i18n:getText("ufo_hud_radius"), vehicle:getUFOCircleRadius())
+        end
+        drawText(0.5, 0.068, 0.014, line, RenderText.ALIGN_CENTER, green)
     end
 
     if not spec.menuOpen then
@@ -1047,11 +1138,14 @@ function UFO2000.drawHud(vehicle)
             RenderText.ALIGN_CENTER, selected and green or dim)
     end
 
-    local radius = vehicle:getUFOCircleRadius()
-    drawText(0.5, y + 0.045, 0.014,
-        string.format("%s %.1f m   (%s %.1f m)", g_i18n:getText("ufo_hud_radius"), radius,
-            g_i18n:getText("ufo_hud_height"), spec.altitude),
-        RenderText.ALIGN_CENTER, white)
+    local radiusLine
+    if UFO2000.isManual(spec.patternIndex) then
+        radiusLine = g_i18n:getText("ufo_hud_pen")
+    else
+        radiusLine = string.format("%s %.1f m   (%s %.1f m)", g_i18n:getText("ufo_hud_radius"),
+            vehicle:getUFOCircleRadius(), g_i18n:getText("ufo_hud_height"), spec.altitude)
+    end
+    drawText(0.5, y + 0.045, 0.014, radiusLine, RenderText.ALIGN_CENTER, white)
     drawText(0.5, y + 0.022, 0.012, g_i18n:getText("ufo_menu_hint"), RenderText.ALIGN_CENTER, dim)
 end
 

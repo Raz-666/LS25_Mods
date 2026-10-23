@@ -4,7 +4,7 @@ Zwei kleine Mods für **Farming Simulator 25**:
 
 | Mod | Was es ist |
 | --- | --- |
-| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse – großes Glaskuppel-Cockpit (Simpsons-Stil), grüner Leuchtenkranz, drei Landebeine, rotes Drehlicht, Traktorstrahl und ein **Kornkreis-Menü** |
+| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse – großes Glaskuppel-Cockpit (Simpsons-Stil), grüner Leuchtenkranz, drei Landebeine, rotes Drehlicht, Traktorstrahl, **Kornkreis-Menü mit manuellem 50-cm-Stift** |
 | **`dist/FS25_Alien.zip`** | Das Alien-Maskottchen als eigene, aufstellbare Deko – getrennt vom UFO, weil unter der Kuppel jetzt **dein eigener Charakter** sitzt |
 
 ![UFO 2000](docs/renders/ufo_hero.png)
@@ -58,14 +58,21 @@ der Achse.
 
 ![Landebeine ein- und ausgefahren](docs/renders/ufo_legs.png)
 
-## 4. Kornkreise ins Feld mähen
+## 4. Kornkreise ins Feld drücken
 
 1. Über das Feld fliegen und mit `V` abheben.
-2. `M` öffnet das **Bordmenü** – dort stehen neun Geometrien zur Auswahl.
+2. `M` öffnet das **Bordmenü** – dort stehen neun Geometrien plus der **manuelle
+   Modus** zur Auswahl.
 3. Mit `Bild ↑ / ↓` (bzw. der Achse) das Muster wählen, mit `Z` anwenden.
 4. Der Traktorstrahl fährt auf, ein Ring am Boden wächst auf die Zielgröße, und
-   die Pflanzen darunter werden **von oben nach unten gemäht** – genau in der
-   gewählten Form, ohne dass ein Mähdrescher drüberfahren muss.
+   die Pflanzen darunter werden **von der Mitte nach außen plattgedrückt** –
+   genau in der gewählten Form, ohne dass ein Mähdrescher drüberfahren muss.
+
+Es wird **nichts gemäht**: die Ernte bleibt stehen, wird aber zerdrückt. Genau
+das macht das Spiel auch, wenn ein Fahrzeugreifen über ein Feld rollt – die
+Pflanzen sind platt, der Ertrag an der Stelle ist weg, das Feld selbst bleibt
+unverändert. Das ist der Effekt `updateWheelDestructionArea` aus dem Basisspiel
+und funktioniert damit auch bei allen Fruchtarten.
 
 Der **Radius ergibt sich aus der Flughöhe**: der Strahl endet immer genau am
 Boden, sein halber Öffnungswinkel beträgt 34°. Bei 10 m Höhe sind das ca. 6,7 m
@@ -76,11 +83,25 @@ Fluges Höhe, gewähltes Muster und aktuellen Radius.
 ![Die neun Grundkreis-Geometrien](docs/renders/circles.png)
 
 Muster: Kreis · Ring · Drei Ringe · Spirale · Blüte · Stern · Alien-Gesicht ·
-Blume des Lebens · Sonne
+Blume des Lebens · Sonne · **Manuell**
 
-Das Mähen passiert serverseitig in Streifen (kein Lag), funktioniert also auch
-im Multiplayer. Es wird nur **Frucht auf Feldern** gemäht, Zäune und Gebäude
-bleiben unangetastet.
+### Manueller Modus (50-cm-Stift)
+
+Im manuellen Modus öffnet sich der Strahl nicht zum Kegel, sondern bleibt zu
+einem **dünnen Strich von ca. 50 cm Durchmesser** gebündelt, der senkrecht auf
+den Boden zeigt. Du fliegst einfach los und „malst" dabei: alle ~22 cm setzt das
+UFO einen 50-cm-Stempel in die Ernte, dazwischen interpoliert das Spiel. So
+kannst du eigene Formen, Buchstaben, Pfeile oder Spiralen in ein Feld ziehen –
+langsam fliegen = feine Linie, schneller = grober Strich. Stehen bleiben setzt
+keine weiteren Stempel, du kannst also in Ruhe neu ansetzen.
+
+### Spuren beim Start und bei der Landung
+
+Jedes Abheben und Aufsetzen drückt einen **kreisrunden Fleck von ca. 3,8 m
+Durchmesser** in die Ernte darunter, dazu je Landebein einen kleinen Abdruck.
+Das passiert nur, wenn tatsächlich Frucht unter dem UFO steht – auf Wiese,
+Straße oder Hof passiert nichts. Wer auf seinem Feld landet, sieht danach
+also die Untertasse stehen, wo sie stand. 🙂
 
 ![Strahl und Markierungsring](docs/renders/ufo_beam.png)
 
@@ -112,7 +133,9 @@ UFO2000.CLIMB_SPEED    = 6.5     -- m/s auf der Höhenachse
 UFO2000.YAW_SPEED      = 55.0    -- Grad/s beim Drehen
 UFO2000.MAX_SPEED      = 8.5     -- m/s Horizontalflug (~31 km/h)
 UFO2000.BEAM_HALF_ANGLE = 34.0   -- Öffnungswinkel des Strahls (= Radius/Höhe)
-UFO2000.CIRCLE_CELL    = 0.35    -- Rasterfeinheit der gemähten Form
+UFO2000.CIRCLE_CELL    = 0.35    -- Rasterfeinheit der gedrückten Form
+UFO2000.MANUAL_RADIUS  = 0.25    -- Stift-Radius (50 cm Durchmesser)
+UFO2000.LANDING_MARK_RADIUS = 1.9 -- Spurenfleck beim Start / bei der Landung
 ```
 
 ## 6. Selbst bauen (optional)
@@ -133,10 +156,36 @@ python3 -m venv .venv
 Die Prüfskripte kontrollieren beide XMLs gegen die echten FS25-Schemas
 (modDesc, vehicle, placeable, i3d 1.6), alle i3dMappings, die l10n-Keys, die
 Lua-Syntax und den ZIP-Inhalt. `luatest.py` simuliert die Engine-Schnittstelle
-und fliegt einmal komplett durch: abheben, steigen, kurven, Kornkreis mähen,
-landen, Beine ein-/ausfahren, Multiplayer-Sync.
+und fliegt einmal komplett durch: abheben, steigen, kurven, Muster drücken,
+mit dem Stift malen, landen, Beine ein-/ausfahren, Spuren, Multiplayer-Sync.
 
-## 7. Ehrlicher Hinweis
+## 7. Konsole (Xbox / PlayStation) – ehrliche Antwort: leider nein
+
+Kurz gesagt: **dieser Mod kann nicht auf Xbox oder PlayStation laufen.** Das
+liegt nicht am Mod, sondern an den Regeln der Konsolenhersteller:
+
+- Auf Konsolen gibt es **keine manuelle Mod-Installation**. Es geht
+  ausschließlich über den eingebauten ModHub, und dort erscheint nur, was
+  GIANTS freigegeben hat.
+- Für Konsolen-Mods gilt laut GIANTS-ModHub-Richtlinien: **„Mods must not
+  contain any extra lua scripts"** – eigene Lua-Skripte sind verboten (Sony und
+  Microsoft erlauben aus Sicherheitsgründen generell keine Skripte in
+  nutzergenerierten Inhalten). Das ist der Grund, warum Courseplay, AutoDrive
+  und praktisch alle Gameplay-Mods PC-only sind.
+- Zusätzlich sind auf Konsolen **Fantasy-Marken verboten** (nur „Lizard" als
+  Platzhalter) – unsere Marke „UFO-Werke" wäre also auch ein Thema.
+
+Da das UFO komplett aus eigenem Lua besteht (Fliegen, Höhe, Strahl, Muster,
+Spuren), ist eine Konsolenversion nicht möglich, ohne die komplette Funktion zu
+entfernen. Eine reine Deko-Version ohne Skript (etwa das Alien-Maskottchen als
+platzierbares Objekt) wäre technisch denkbar – sie müsste aber über den ModHub
+eingereicht und von GIANTS für Konsole freigegeben werden. Einfach die ZIP
+irgendwo hochladen und auf der Xbox nutzen geht nicht.
+
+Für PC (Steam/Epic/GIANTS) und Mac gilt: ZIP in den Mods-Ordner, fertig – genau
+wie oben beschrieben.
+
+## 8. Ehrlicher Hinweis
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit

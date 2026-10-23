@@ -14,8 +14,11 @@
 * Takes off, hovers and lands with a press of a key, altitude control included
 * Retractable landing legs, rotating beacon and a tractor beam
 * Crop circles: pick a pattern (circle, ring, spiral, flower, star, alien face ...)
-  in the on-board menu and the beam mows it into the field below
+  in the on-board menu and the beam presses it into the field below
+* Manual pen: a bundled 50 cm beam instead of a cone - fly freely and draw
+  your own shapes into the field
 * The beam ends exactly on the ground, its radius grows with the altitude
+* Taking off and landing leaves flattened marks in the field, like a real saucer
 * A big glass dome - you see your own character sitting inside
 * Complete hover sound set, synthesised from scratch (start, stop, three rpm layers)
 * Works in single player and multiplayer
@@ -25,7 +28,7 @@ Price: 42,000  |  Max. speed: 32 km/h  |  Max. altitude: 120 m
 Controls (all in the normal game options menu, joystick friendly):
   Lower implement key (V)     - take off / land
   Front loader arm axis       - climb / descend (joystick) or Page Up / Page Down
-  Implement extra key (Z)     - beam on / off, fires the crop circle
+  Implement extra key (Z)     - beam on / off, fires the pattern / draws
   M                           - crop circle menu
   Page Up / Page Down         - climb / descend, or pick the pattern in the menu
   Horn key                    - the on-board computer says hello
@@ -37,8 +40,11 @@ repository (tools/ufo/). No base-game assets were copied.]]></en>
 * Startet, schwebt und landet auf Knopfdruck, inklusive Höhensteuerung
 * Einfahrbare Landebeine, rotierendes Warnlicht und ein Traktorstrahl
 * Kornkreise: Muster im Bordmenü wählen (Kreis, Ring, Spirale, Blume, Stern,
-  Alien-Gesicht ...) und der Strahl mäht es ins Feld darunter
+  Alien-Gesicht ...) und der Strahl drückt es ins Feld darunter
+* Manueller Stift: gebündelter 50-cm-Strahl statt Kegel - frei fliegen und
+  eigene Formen ins Feld zeichnen
 * Der Strahl endet genau am Boden, sein Radius wächst mit der Höhe
+* Abheben und Landen hinterlassen plattgedrückte Spuren im Feld
 * Große Glaskuppel - dein eigener Charakter sitzt sichtbar darin
 * Kompletter Schwebe-Sound, komplett selbst synthetisiert (Start, Stopp, drei Drehzahl-Ebenen)
 * Funktioniert im Einzelspieler und im Multiplayer
@@ -48,7 +54,7 @@ Preis: 42.000  |  Höchstgeschwindigkeit: 32 km/h  |  Maximale Höhe: 120 m
 Steuerung (alles im normalen Spielmenü änderbar, joysticktauglich):
   Geräte absenken (V)         - Abheben / Landen
   Frontladerarm-Achse         - steigen / sinken (Joystick) oder Bild auf / Bild ab
-  Gerät extra (Z)             - Traktorstrahl an / aus, löst den Kornkreis aus
+  Gerät extra (Z)             - Strahl an / aus, löst das Muster aus / malt
   M                           - Kornkreis-Menü
   Bild auf / Bild ab          - steigen / sinken, im Menü das Muster wählen
   Hupe                        - der Bordcomputer grüßt

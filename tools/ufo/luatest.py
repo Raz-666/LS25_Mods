@@ -110,16 +110,15 @@ renderText = function() end
 drawFilledRect = function() end
 drawOutlineRect = function() end
 
--- density map mock: records the mown rectangles
-mown = { count = 0, area = 0 }
+-- density map mock: records the damaged (flattened) rectangles
+mown = { count = 0, area = 0, rects = {} }
 FSDensityMapUtil = {
-    getFruitTypeIndexAtWorldPos = function(x, z) return 2, 4 end,
-    updateMowerArea = function(fruitIndex, x1, z1, x2, z1b, x1b, z2, limitToField)
-        local w = math.abs(x2 - x1)
-        local h = math.abs(z2 - z1)
+    updateWheelDestructionArea = function(x1, z1, x2, z2, x3, z3)
+        local w = math.sqrt((x2 - x1) ^ 2 + (z2 - z1) ^ 2)
+        local h = math.sqrt((x3 - x1) ^ 2 + (z3 - z1) ^ 2)
         mown.count = mown.count + 1
         mown.area = mown.area + w * h
-        return 0, 0
+        table.insert(mown.rects, { x1, z1, x2, z2, x3, z3 })
     end,
 }
 g_i18n = { getText = function(k) return k end }
@@ -378,7 +377,7 @@ def main():
     area = lua.eval("mown.area")
     cells = lua.eval("mown.count")
     want = math.pi * radius * radius
-    ok &= check("mowing finished", lua.eval("vehicle.spec_ufo2000.drawQueue") is None,
+    ok &= check("pattern stamped", lua.eval("vehicle.spec_ufo2000.drawQueue") is None,
                 "%d rectangles" % cells)
     ok &= check("circle area matches pi r^2", abs(area - want) / want < 0.10,
                 "%.0f m2 vs %.0f m2" % (area, want))
@@ -397,7 +396,7 @@ def main():
     end
     """)
     ringArea = lua.eval("mown.area")
-    ok &= check("ring mows less than the filled circle", area * 0.5 < ringArea < area * 0.95,
+    ok &= check("ring damages less than the filled circle", area * 0.5 < ringArea < area * 0.95,
                 "%.0f m2 vs %.0f m2" % (ringArea, area))
 
     # the marker ring on the ground grows to the beam radius
@@ -410,8 +409,58 @@ def main():
                 abs(ringScale[1] - radius) / radius < 0.05,
                 "scale=%.2f" % (ringScale[1] if ringScale else -1))
 
+    # ---- manual pen -------------------------------------------------------
+    lua.execute("""
+    vehicle:setUFOCirclePattern(UFO2000.getPatternCount())
+    """)
+    ok &= check("manual pattern is the last menu entry",
+                lua.eval("UFO2000.isManual(vehicle.spec_ufo2000.patternIndex)") is True)
+    ok &= check("pen radius is 25 cm (50 cm beam)", abs(lua.eval("vehicle:getUFOCircleRadius()") - 0.25) < 1e-6)
+
+    lua.execute("""
+    vehicle:setUFOAltitude(6)
+    for i = 1, 240 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    vehicle:setUFOBeamActive(false)
+    mown.count, mown.area, mown.rects = 0, 0, {}
+    vehicle:setUFOBeamActive(true)
+    vehicle.spec_drivable.axisForward = 1
+    for i = 1, 180 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    vehicle.spec_drivable.axisForward = 0
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    penDots = lua.eval("mown.count")
+    penArea = lua.eval("mown.area")
+    ok &= check("pen paints dots along the flight path", penDots > 20, "%d dots" % penDots)
+    ok &= check("pen dots are single 50 cm stamps", 1.5 < penArea < 25, "%.1f m2" % penArea)
+    ok &= check("pen line follows the craft", lua.eval(
+        "(function() local minx, maxx = 1e9, -1e9; for _, r in ipairs(mown.rects) do minx = math.min(minx, r[1]); maxx = math.max(maxx, r[1]) end; return maxx - minx end)()") > 8)
+    ok &= check("marker ring hidden in pen mode", lua.eval("world.visibility[23]") is False)
+
+    # stationary craft must not keep stamping the same spot
+    lua.execute("""
+    for i = 1, 400 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+        if vehicle.spec_ufo2000.speed < 0.01 then break end
+    end
+    mown.count, mown.area = 0, 0
+    for i = 1, 120 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("no damage while standing still", lua.eval("mown.count") == 0,
+                "%d stamps" % lua.eval("mown.count"))
+
     # ---- legs: fold in when flying, unfold when landing -------------------
     lua.execute("""
+    vehicle:setUFOBeamActive(false)
     vehicle.spec_ufo2000.digitalDown = true
     for i = 1, 2000 do
         g_currentMission.time = g_currentMission.time + 16
@@ -429,6 +478,20 @@ def main():
     ok &= check("landing legs are deployed again", lua.eval("vehicle.spec_ufo2000.legsAlpha") < 0.02,
                 "alpha=%.3f" % lua.eval("vehicle.spec_ufo2000.legsAlpha"))
     ok &= check("beam stopped on landing", lua.eval("world.visibility[20]") is False)
+    padArea = lua.eval("mown.area")
+    padStamps = lua.eval("mown.count")
+    wantPad = math.pi * 1.9 * 1.9
+    ok &= check("landing left a flattened pad in the field",
+                0.6 * wantPad < padArea < 1.6 * wantPad,
+                "%.1f m2 in %d stamps (pad ~ %.1f m2)" % (padArea, padStamps, wantPad))
+
+    # take off again: the cushion stamps the pad a second time
+    lua.execute("""
+    mown.count, mown.area = 0, 0
+    vehicle:setUFOIsHovering(true)
+    """)
+    ok &= check("take off leaves marks, too", lua.eval("mown.area") > 0.6 * wantPad,
+                "%.1f m2" % lua.eval("mown.area"))
 
     # ---- overridden getCanMotorRun ---------------------------------------
     can = lua.eval("callOverwritten(vehicle, 'getCanMotorRun')")

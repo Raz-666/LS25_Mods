@@ -12,12 +12,13 @@
     <text name="ufo_action_descend"><de>Sinken / Muster</de><en>Descend / pattern</en></text>
     <text name="ufo_action_beam"><de>Traktorstrahl</de><en>Tractor beam</en></text>
 
-    <text name="ufo_menu_title"><de>Grundkreis-Geometrie</de><en>Crop circle geometry</en></text>
+    <text name="ufo_menu_title"><de>Bodenmuster (drückt die Ernte platt)</de><en>Ground patterns (presses the crop down)</en></text>
     <text name="ufo_menu_hint"><de>Bild auf / Bild ab: Auswahl · Z: anwenden · M: schließen</de><en>Page Up / Page Down: select · Z: apply · M: close</en></text>
     <text name="ufo_hud_height"><de>Höhe</de><en>Height</en></text>
     <text name="ufo_hud_pattern"><de>Muster</de><en>Pattern</en></text>
     <text name="ufo_hud_radius"><de>Radius</de><en>Radius</en></text>
-    <text name="ufo_hint_controls"><de>UFO 2000: V = abheben/landen, Joystick-Achse oder Bild auf/ab = Höhe, Z = Traktorstrahl, M = Kornkreis-Menü</de><en>UFO 2000: V = take off/land, joystick axis or Page Up/Down = altitude, Z = tractor beam, M = crop circle menu</en></text>
+    <text name="ufo_hud_pen"><de>Stift: einfach fliegen und malen</de><en>Pen: just fly and draw</en></text>
+    <text name="ufo_hint_controls"><de>UFO 2000: V = abheben/landen, Joystick-Achse oder Bild auf/ab = Höhe, Z = Strahl an/aus, M = Bodenmuster-Menü</de><en>UFO 2000: V = take off/land, joystick axis or Page Up/Down = altitude, Z = beam on/off, M = pattern menu</en></text>
 
     <text name="ufo_circle_circle"><de>Kreis</de><en>Circle</en></text>
     <text name="ufo_circle_ring"><de>Ring</de><en>Ring</en></text>
@@ -28,4 +29,5 @@
     <text name="ufo_circle_alien"><de>Alien-Gesicht</de><en>Alien face</en></text>
     <text name="ufo_circle_flowerOfLife"><de>Blume des Lebens</de><en>Flower of life</en></text>
     <text name="ufo_circle_sun"><de>Sonne</de><en>Sun</en></text>
+    <text name="ufo_circle_manual"><de>Manuell (50-cm-Stift)</de><en>Manual (50 cm pen)</en></text>
 </l10n>
