@@ -12,6 +12,24 @@
     <text name="ufo_action_descend"><de>Sinken / Muster</de><en>Descend / pattern</en></text>
     <text name="ufo_action_beam"><de>Traktorstrahl</de><en>Tractor beam</en></text>
 
+    <text name="ufo_action_mode"><de>Strahl-Modus (ernten / plattdrücken)</de><en>Beam mode (harvest / flatten)</en></text>
+    <text name="ufo_action_penWide"><de>Strahl weiter</de><en>Beam wider</en></text>
+    <text name="ufo_action_penNarrow"><de>Strahl enger</de><en>Beam narrower</en></text>
+    <text name="ufo_action_unload"><de>Abladen (über Anhänger/Abkippstelle)</de><en>Unload (over trailer / tip station)</en></text>
+    <text name="ufo_action_infinite"><de>Korntank unendlich</de><en>Endless grain tank</en></text>
+
+    <text name="ufo_hud_mode"><de>Strahl</de><en>Beam</en></text>
+    <text name="ufo_hud_modeHarvest"><de>Ernten</de><en>Harvest</en></text>
+    <text name="ufo_hud_modeDamage"><de>Plattdrücken</de><en>Flatten</en></text>
+    <text name="ufo_hud_tank"><de>Korntank</de><en>Grain tank</en></text>
+    <text name="ufo_hud_tankEndless"><de>unendlich</de><en>endless</en></text>
+    <text name="ufo_hud_unloading"><de>Lädt ab:</de><en>Unloading:</en></text>
+    <text name="ufo_menu_keysMode"><de>K: Modus · J/L: Strahl enger/weiter</de><en>K: mode · J/L: beam focus</en></text>
+    <text name="ufo_menu_keysTank"><de>I: unendlich · U: abtanken</de><en>I: endless · U: unload</en></text>
+    <text name="ufo_notify_modeHarvest"><de>Strahl-Modus: ERNTEN – das Korn geht in den Tank</de><en>Beam mode: HARVEST – the crop goes into the tank</en></text>
+    <text name="ufo_notify_modeDamage"><de>Strahl-Modus: PLATTDRÜCKEN – Kornkreise ohne Ernte</de><en>Beam mode: FLATTEN – crop circles without harvesting</en></text>
+    <text name="ufo_notify_tankEndless"><de>Korntank: unendlich</de><en>Grain tank: endless</en></text>
+    <text name="ufo_notify_tankNormal"><de>Korntank: normal (25.000 l)</de><en>Grain tank: normal (25,000 l)</en></text>
     <text name="ufo_menu_title"><de>Bodenmuster (drückt die Ernte platt)</de><en>Ground patterns (presses the crop down)</en></text>
     <text name="ufo_menu_hint"><de>Bild auf / Bild ab: Auswahl · Z: anwenden · M: schließen</de><en>Page Up / Page Down: select · Z: apply · M: close</en></text>
     <text name="ufo_hud_height"><de>Höhe</de><en>Height</en></text>

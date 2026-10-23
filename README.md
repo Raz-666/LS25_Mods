@@ -4,8 +4,8 @@ Zwei kleine Mods für **Farming Simulator 25**:
 
 | Mod | Was es ist |
 | --- | --- |
-| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse – großes Glaskuppel-Cockpit (Simpsons-Stil), grüner Leuchtenkranz, drei Landebeine, rotes Drehlicht, Traktorstrahl, **Kornkreis-Menü mit manuellem 50-cm-Stift** |
-| **`dist/FS25_Alien.zip`** | Das Alien-Maskottchen als eigene, aufstellbare Deko – getrennt vom UFO, weil unter der Kuppel jetzt **dein eigener Charakter** sitzt |
+| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, grüner Leuchtenkranz, drei Landebeine, Traktorstrahl, Kornkreis-Menü **plus Ernte-Modus mit Korntank und Abtanken** |
+| **`dist/FS25_Alien.zip`** | **Zwei** Aliens als aufstellbare Deko – der kleine grüne Kumpel und der Große mit Riesenschädel und Glubschaugen |
 | **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, Cockpit 20 m über dem Feld, rollt auf zwei breiten unsichtbaren Rädern, drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide und **landet auf Tastendruck** |
 
 ![UFO 2000](docs/renders/ufo_hero.png)
@@ -51,6 +51,55 @@ das Spiel schon kennt, damit Tastatur, Gamepad und Joystick einfach mitgehen:
 Alles davon lässt sich unter **Optionen → Steuerung** umbelegen (Suche nach
 „UFO"). Tastenbelegungen mit `Bild ↑/↓` sind nur die bequeme Tastatur-Variante
 der Achse.
+
+## 2b. Neu im UFO 2000: ernten, abtanken, Strahl-Fokus, Cockpit
+
+Das UFO 2000 ist jetzt nicht mehr nur ein Kornkreis-Gerät. Alles unten ist über
+die normalen Spieltasten erreichbar (Gamepad: dieselben Aktionen, frei belegbar
+im Spielmenü) – kein Sondermenü nötig.
+
+| Taste | Was passiert |
+| --- | --- |
+| **K** | Strahl-Modus umschalten: **Plattdrücken** (Kornkreise) ⇄ **Ernten** |
+| **J / L** | Strahl enger / weiter – von **0,50 m** (feiner Schnitt) bis **16 m** (dicker Strahl) |
+| **U** | Abtanken: über einem Anhänger oder einer Abkippstelle schweben, dann U |
+| **I** | Korntank **unendlich** an/aus (praktisch für ein Rieselfeld am Stück) |
+| **M** | Bodenmuster-Menü (wie vorher) |
+| **Z** | Strahl an/aus |
+
+**Ernten statt plattdrücken.** Im Ernte-Modus schneidet der Strahl die Frucht ab
+(genau die Funktion, die auch das Original-Schneidwerk benutzt), und das Korn
+geht in einen echten **Korntank mit 25.000 l** – mit Füllstandsanzeige. Ist der
+Tank voll, hört der Strahl von selbst auf. „Unendlich" schaltet die Tankgrenze
+ab: das Feld wird trotzdem echt geerntet, nur das Korn verschwindet im kleinen
+Wurmloch der Untertasse.
+
+**Abtanken.** Anhänger (oder jede Abkippstelle der Karte) unter das UFO stellen,
+mit dem UFO **darüber schweben** – mindestens 1,8 m Höhe, damit es keine
+Kollision mit dem Anhänger gibt –, **U** drücken. Das Korn läuft mit 3.000 l/s
+hinten über. Während des Abtankens wird nicht geerntet, sonst würde der Tank
+gleich wieder volllaufen.
+
+**Der Strahl-Fokus** gilt im manuellen Modus (letzter Menüpunkt): 0,50 m für
+Buchstaben und feine Linien, 16 m für eine breite Schneise. Die Taste J/L
+verstellt ihn in 0,25-m-Schritten, der Bereich wird im Cockpit am Schieber
+angezeigt.
+
+**Cockpit.** Unter der hohen, schmalen Glaskuppel sitzt du jetzt in einem
+richtigen Arbeitsplatz: geschwungene Konsole, großer grüner Bildschirm,
+seitliche Anzeigen, Schalterreihen, Steuerknüppel, ein Leuchtenkranz über dem
+Kopf – und drei Dinge, die sich **mit dem Spielstand bewegen**:
+
+* der **Muster-Wähler** links (10 Kacheln, der Rahmen wandert zum gewählten
+  Muster),
+* der **Modus-Hebel** rechts (kippt zwischen Ernten und Plattdrücken),
+* der **Fokus-Schieber** (fährt mit J/L hin und her).
+
+Dazu der blinkende Leuchtenkranz der Grundspiel-Beleuchtung und das leichte
+Wippen der schwebenden Untertasse.
+
+> Getestet mit `tools/ufo/luatest.py` (45 Prüfungen: Flug, Ernten, Tank,
+> Abtanken, Fokus, Cockpit-Anzeigen) – alles grün, ohne Spiel im Hintergrund.
 
 ## 3. Fliegen
 

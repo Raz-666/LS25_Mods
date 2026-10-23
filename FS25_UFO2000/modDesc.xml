@@ -86,6 +86,11 @@ Repository erzeugt (tools/ufo/). Es wurden keine Spieldateien kopiert.]]></de>
         <action name="ufo_menu" category="VEHICLE" axisType="HALF"/>
         <action name="ufo_altitudeUp" category="VEHICLE" axisType="HALF"/>
         <action name="ufo_altitudeDown" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo_beamMode" category="VEHICLE"/>
+        <action name="ufo_penUp" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo_penDown" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo_unload" category="VEHICLE"/>
+        <action name="ufo_infinite" category="VEHICLE"/>
     </actions>
 
     <inputBinding>
@@ -97,6 +102,21 @@ Repository erzeugt (tools/ufo/). Es wurden keine Spieldateien kopiert.]]></de>
         </actionBinding>
         <actionBinding action="ufo_altitudeDown">
             <binding device="KB_MOUSE_DEFAULT" input="KEY_pageDown" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo_beamMode">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_k" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo_penUp">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_l" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo_penDown">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_j" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo_unload">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_u" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo_infinite">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_i" index="1"/>
         </actionBinding>
     </inputBinding>
 

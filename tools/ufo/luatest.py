@@ -57,9 +57,14 @@ SpecializationUtil = {
 world = { x = 0, y = 0.0, z = 0, pitch = 0, yaw = 0, roll = 0,
           vx = 0, vy = 0, vz = 0, terrainY = 0.0, visibility = {}, time = 0 }
 nodeIds = { leg0 = 11, leg1 = 12, leg2 = 13, beamNode = 20, beamLight = 21,
-            beaconLight = 22, groundRing = 23, driverSeatNode = 24 }
+            beaconLight = 22, groundRing = 23, driverSeatNode = 24,
+            patternPointer = 30, modeLever = 31, focusSlider = 32 }
 
-function getWorldTranslation(node) return world.x, world.y, world.z end
+function getWorldTranslation(node)
+    local t = world.nodes and world.nodes[node]
+    if t ~= nil then return t[1], t[2], t[3] end
+    return world.x, world.y, world.z
+end
 function getTranslation(node) return 0, 0, 0 end
 function getRotation(node) return 0, 0, 16 end
 function getWorldRotation(node) return world.pitch, world.yaw, world.roll end
@@ -121,6 +126,46 @@ FSDensityMapUtil = {
         table.insert(mown.rects, { x1, z1, x2, z2, x3, z3 })
     end,
 }
+FillType = { UNKNOWN = 0, WHEAT = 1 }
+ToolType = { UNDEFINED = 1, UNLOADING = 2 }
+g_fillTypeManager = {
+    getFillTypeByIndex = function(i) return { index = i, name = "wheat" } end,
+}
+g_fruitTypeManager = {
+    getFruitTypeByIndex = function(i)
+        return { index = i, name = "WHEAT", fillType = 1, literPerSqm = 0.35,
+                 getAreaLiters = function(self, area) return area * self.literPerSqm end }
+    end,
+}
+-- harvest mock: counts the cut area and the liters the field gives
+cut = { count = 0, area = 0 }
+FSDensityMapUtil.getFruitTypeIndexAtWorldPos = function(x, z)
+    if world.field then return 1, 4 end
+    return nil
+end
+FSDensityMapUtil.cutFruitArea = function(fruitIndex, x1, z1, wx, wz, hx, hz)
+    if not world.field then return 0 end
+    local area = math.abs(wx * hz)
+    cut.count = cut.count + 1
+    cut.area = cut.area + area
+    return area
+end
+
+-- a tip station standing at the origin, and a trailer next to it
+stationNode, trailerNode = 40, 41
+g_currentMission.storageSystem = {
+    getUnloadingStations = function()
+        return { { stationName = "Silo", unloadTriggers = { { triggerNode = stationNode } },
+                   getIsFillTypeAllowed = function(self, fillType) return true end,
+                   getFreeCapacity = function(self, fillType, farmId) return 999999 end,
+                   addFillLevelFromTool = function(self, farmId, amount, fillType, info, toolType)
+                       stationFill = (stationFill or 0) + amount
+                       return amount
+                   end } }
+    end,
+}
+stationFill = 0
+
 g_i18n = { getText = function(k) return k end }
 g_inputBinding = { setActionEventTextPriority = function() end, setActionEventText = function() end }
 GS_PRIO_HIGH, GS_PRIO_NORMAL = 3, 2
@@ -162,6 +207,26 @@ function newVehicle()
     v.dirtyFlags = 0
     v.actionEvents = {}
     v.getNextDirtyFlag = function(self) return 16 end
+    v.getOwnerFarmId = function(self) return 1 end
+    -- fill units: 1 = diesel, 2 = the grain tank of the saucer
+    v.fillUnits = { { fillType = 0, fillLevel = 90, capacity = 90 },
+                    { fillType = 1, fillLevel = 0, capacity = 25000 } }
+    v.tankAccept = true
+    v.getFillUnitCount = function(self) return #self.fillUnits end
+    v.getFillUnitFillLevel = function(self, i) return self.fillUnits[i].fillLevel end
+    v.getFillUnitFillType = function(self, i) return self.fillUnits[i].fillType end
+    v.getFillUnitCapacity = function(self, i) return self.fillUnits[i].capacity end
+    v.getFillUnitFreeCapacity = function(self, i, fillType, farmId)
+        return self.fillUnits[i].capacity - self.fillUnits[i].fillLevel
+    end
+    v.getFillUnitSupportsFillType = function(self, i, fillType) return i == 2 end
+    v.addFillUnitFillLevel = function(self, farmId, i, delta, fillType, toolType, pos)
+        local fu = self.fillUnits[i]
+        local before = fu.fillLevel
+        fu.fillType = fillType
+        fu.fillLevel = math.max(0, math.min(fu.capacity, fu.fillLevel + delta))
+        return fu.fillLevel - before
+    end
     v.raiseDirtyFlags = function(self, f) self.dirtyFlags = f end
     v.getIsMotorStarted = function(self) return true end
     v.getIsEntered = function(self) return true end
@@ -492,6 +557,122 @@ def main():
     """)
     ok &= check("take off leaves marks, too", lua.eval("mown.area") > 0.6 * wantPad,
                 "%.1f m2" % lua.eval("mown.area"))
+
+    # ---- harvest mode -----------------------------------------------------
+    lua.execute("""
+    vehicle:setUFOIsHovering(true)
+    vehicle:setUFOAltitude(30)
+    vehicle:setUFOCirclePattern(1)
+    vehicle:setUFOBeamMode(UFO2000.BEAM_MODE_HARVEST)
+    world.field = true
+    cut.count, cut.area = 0, 0
+    vehicle.fillUnits[2].fillLevel = 0
+    mown.count, mown.area = 0, 0
+    vehicle:setUFOBeamActive(false)
+    vehicle:setUFOBeamActive(true)
+    for i = 1, 240 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("harvest mode is selectable",
+                lua.eval("vehicle:getUFOBeamMode()") == 2)
+    cutArea = lua.eval("cut.area")
+    tank = lua.eval("vehicle.fillUnits[2].fillLevel")
+    ok &= check("beam cuts the field in harvest mode", cutArea > 100,
+                "%.0f m2 cut" % cutArea)
+    ok &= check("cut crop lands in the grain tank", tank > 30,
+                "%.0f l in the tank" % tank)
+    ok &= check("harvest mode does not flatten the crop",
+                lua.eval("mown.count") == 0, "%d stamps" % lua.eval("mown.count"))
+    ok &= check("tank litres match the cut area",
+                abs(tank - cutArea * 0.35) < 1.0,
+                "%.0f l vs %.0f l" % (tank, cutArea * 0.35))
+
+    # endless tank: the field is still harvested, the tank stays empty
+    lua.execute("""
+    vehicle:setUFOInfiniteTank(true)
+    cut.count, cut.area = 0, 0
+    vehicle.fillUnits[2].fillLevel = 0
+    for i = 1, 120 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("endless tank still harvests", lua.eval("cut.area") > 50,
+                "%.0f m2" % lua.eval("cut.area"))
+    ok &= check("endless tank stays empty", lua.eval("vehicle.fillUnits[2].fillLevel") == 0)
+    lua.execute("vehicle:setUFOInfiniteTank(false)")
+
+    # full tank: no more cutting until it is emptied
+    lua.execute("""
+    vehicle.fillUnits[2].fillLevel = 25000
+    cut.count, cut.area = 0, 0
+    for i = 1, 60 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("full tank stops the harvest", lua.eval("cut.area") == 0)
+
+    # ---- unload by hovering ----------------------------------------------
+    lua.execute("""
+    vehicle:setUFOBeamActive(false)     -- the beam is off while unloading
+    vehicle:setUFOAltitude(12)
+    for i = 1, 300 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    world.x, world.z = 0, 0
+    world.nodes = { [stationNode] = { 0, 0, 0 } }
+    stationFill = 0
+    local before = vehicle.fillUnits[2].fillLevel
+    UFO2000.runCommand(vehicle, "unload")
+    callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    targetWhileUnloading = vehicle.spec_ufo2000.unloadTargetName
+    for i = 1, 800 do
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    """)
+    ok &= check("unloading empties the tank", lua.eval("vehicle.fillUnits[2].fillLevel") < 1,
+                "%.0f l left, unloading=%s" % (lua.eval("vehicle.fillUnits[2].fillLevel"),
+                                               lua.eval("tostring(vehicle.spec_ufo2000.unloading)")))
+    ok &= check("grain arrived in the tip station", lua.eval("stationFill") > 1000,
+                "%.0f l" % lua.eval("stationFill"))
+    ok &= check("unload target name is reported",
+                lua.eval("targetWhileUnloading") == "Silo",
+                lua.eval("tostring(targetWhileUnloading)"))
+
+    # ---- beam focus -------------------------------------------------------
+    lua.execute("""
+    vehicle:setUFOCirclePattern(UFO2000.getPatternCount())
+    vehicle:setUFOPenRadius(3.0)
+    """)
+    ok &= check("pen focus can be widened to 3 m",
+                abs(lua.eval("vehicle:getUFOCircleRadius()") - 3.0) < 1e-6)
+    lua.execute("vehicle:setUFOPenRadius(99)")
+    ok &= check("pen focus is clamped to 8 m",
+                abs(lua.eval("vehicle:getUFOCircleRadius()") - 8.0) < 1e-6)
+    lua.execute("vehicle:setUFOPenRadius(0.25)")
+
+    # ---- cockpit instruments follow the state ----------------------------
+    lua.execute("""
+    vehicle:setUFOCirclePattern(1)
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ptr = lua.eval("world.translation[30]")
+    ok &= check("pattern pointer sits on the first tile",
+                ptr is not None and abs(ptr[1] + 0.15) < 1e-6 and abs(ptr[2] - 0.045) < 1e-6,
+                "translation=%s" % (ptr,))
+    lua.execute("""
+    vehicle:setUFOCirclePattern(7)
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ptr = lua.eval("world.translation[30]")
+    ok &= check("pattern pointer moves to the second row",
+                ptr is not None and abs(ptr[1] - 0.0) < 0.08 and abs(ptr[2] + 0.03) < 1e-6,
+                "translation=%s" % (ptr,))
 
     # ---- overridden getCanMotorRun ---------------------------------------
     can = lua.eval("callOverwritten(vehicle, 'getCanMotorRun')")

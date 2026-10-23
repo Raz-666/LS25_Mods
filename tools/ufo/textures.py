@@ -117,7 +117,7 @@ def hull_metal(size=512):
 
 
 def cockpit(size=256):
-    base = _color((44, 54, 52))
+    base = _color((72, 86, 82))
     n = _noise(size, 24, seed=7)
     arr = np.ones((size, size, 3), dtype=np.float32) * base
     arr *= (0.9 + 0.2 * n[..., None])

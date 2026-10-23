@@ -18,9 +18,9 @@ import model  # noqa: E402
 # base colours + glossiness per material (albedo in linear-ish sRGB 0..1)
 MAT_LOOK = {
     "collision": None,
-    "hullPaint": ((0.86, 0.94, 0.89), 0.45, 0.0, 1.0),
+    "hullPaint": ((0.80, 0.90, 0.85), 0.55, 0.0, 1.0),
     "hullMetal": ((0.30, 0.34, 0.36), 0.75, 0.0, 1.0),
-    "cockpit": ((0.16, 0.21, 0.20), 0.25, 0.0, 1.0),
+    "cockpit": ((0.30, 0.36, 0.34), 0.45, 0.0, 1.0),
     "glass": ((0.55, 0.86, 0.93), 0.9, 0.0, 0.42),
     "lensGreen": ((0.25, 1.0, 0.5), 0.4, 0.9, 1.0),
     "lensRed": ((1.0, 0.22, 0.20), 0.4, 0.9, 1.0),

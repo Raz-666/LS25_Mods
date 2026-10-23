@@ -194,6 +194,11 @@
                     <fillUnit unitTextOverride="$l10n_unit_literShort" showOnHud="false" showInShop="false" fillTypes="diesel" capacity="90">
                         <exactFillRootNode node="exactFillRootNode"/>
                     </fillUnit>
+                    <!-- 2: the grain tank. "Endless" is a switch in the cab (I),
+                         the capacity here is what a normal tank holds. -->
+                    <fillUnit unitTextOverride="$l10n_unit_literShort" showOnHud="true" showInShop="true" fillTypes="WHEAT BARLEY OAT CANOLA MAIZE SUNFLOWER SOYBEAN SORGHUM RYE TRITICALE" capacity="25000">
+                        <exactFillRootNode node="exactFillRootNode"/>
+                    </fillUnit>
                 </fillUnits>
             </fillUnitConfiguration>
         </fillUnitConfigurations>
@@ -212,13 +217,22 @@
         <i3dMapping id="leg2" node="0>0|4"/>
         <i3dMapping id="leg2Mesh" node="0>0|4|0"/>
         <i3dMapping id="consoleMesh" node="0>0|5"/>
-        <i3dMapping id="driverSeatNode" node="0>0|6"/>
-        <i3dMapping id="beaconNode" node="0>0|7"/>
-        <i3dMapping id="beaconMesh" node="0>0|7|0"/>
-        <i3dMapping id="beamNode" node="0>0|8"/>
-        <i3dMapping id="beamMesh" node="0>0|8|0"/>
-        <i3dMapping id="groundRing" node="0>0|9"/>
-        <i3dMapping id="groundRingMesh" node="0>0|9|0"/>
+        <i3dMapping id="cockpitDetailMesh" node="0>0|6"/>
+        <i3dMapping id="patternBoard" node="0>0|7"/>
+        <i3dMapping id="patternBoardMesh" node="0>0|7|0"/>
+        <i3dMapping id="patternPointer" node="0>0|7|1"/>
+        <i3dMapping id="patternPointerMesh" node="0>0|7|1|0"/>
+        <i3dMapping id="modeLever" node="0>0|8"/>
+        <i3dMapping id="modeLeverMesh" node="0>0|8|0"/>
+        <i3dMapping id="focusSlider" node="0>0|9"/>
+        <i3dMapping id="focusSliderMesh" node="0>0|9|0"/>
+        <i3dMapping id="driverSeatNode" node="0>0|10"/>
+        <i3dMapping id="beaconNode" node="0>0|11"/>
+        <i3dMapping id="beaconMesh" node="0>0|11|0"/>
+        <i3dMapping id="beamNode" node="0>0|12"/>
+        <i3dMapping id="beamMesh" node="0>0|12|0"/>
+        <i3dMapping id="groundRing" node="0>0|13"/>
+        <i3dMapping id="groundRingMesh" node="0>0|13|0"/>
         <i3dMapping id="collisions" node="0>1"/>
         <i3dMapping id="collisionDome" node="0>1|0"/>
         <i3dMapping id="lights" node="0>2"/>

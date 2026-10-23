@@ -30,10 +30,12 @@ MATERIALS = [
 ]
 MAT_INDEX = {m["name"]: i + 1 for i, m in enumerate(MATERIALS)}
 
-HULL_R = 2.35            # outer radius of the saucer
-DOME_R = 1.58            # big glass dome, Simpsons style
-RIM_Y = 0.93
-HULL_Y = 0.30            # belly centre height
+HULL_R = 2.45            # outer radius of the saucer
+DOME_R = 0.92            # tall, narrow bell jar - the Simpsons look
+RIM_Y = 0.86
+HULL_Y = 0.26            # belly centre height
+DOME_BASE = 1.06         # where the glass starts
+DOME_TOP = 2.92          # top of the glass
 
 
 LEG_SPLAY = "16"          # degrees the legs are splayed out at rest
@@ -51,48 +53,78 @@ def _fmt(values):
 # geometry
 # --------------------------------------------------------------------------
 def hull_mesh():
+    """The flying disc: flat, wide, comic-book thick rim, rivets, panel lines."""
     m = Mesh()
-    # underside: dark metal, from the centre out to the rim
+
+    # --- belly: dark metal, slightly stepped like a moulded plastic toy ----
     m.add("hullMetal", *lathe([
-        (0.06, HULL_Y), (0.45, 0.32), (0.95, 0.26), (1.45, 0.30),
-        (1.90, 0.46), (2.10, 0.60),
-    ], 56, close_ends=False))
-    # rim lip: painted band that catches the light
+        (0.04, HULL_Y), (0.55, 0.20), (1.10, 0.15), (1.60, 0.17),
+        (2.00, 0.26), (2.24, 0.40), (2.36, 0.52),
+    ], 60, close_ends=False))
+    # --- thick, rounded rim (the "bumper" of the saucer) -------------------
     m.add("hullPaint", *lathe([
-        (2.10, 0.60), (2.27, 0.67), (2.35, 0.79), (2.26, 0.93),
-    ], 56, close_ends=False))
-    # upper shell, gently domed towards the cockpit
+        (2.36, 0.52), (2.44, 0.60), (2.47, 0.72), (2.42, 0.84), (2.30, 0.92),
+    ], 60, close_ends=False))
+    # --- upper shell: flat on top, so the dome sits on real ground --------
     m.add("hullPaint", *lathe([
-        (2.26, 0.93), (2.00, 1.02), (1.62, 1.10), (1.22, 1.155), (DOME_R, 1.17),
-    ], 56, close_ends=False))
-    # cockpit floor (visible through the glass dome)
-    m.add("cockpit", *lathe([
-        (DOME_R, 1.17), (0.66, 1.12), (0.34, 1.06), (0.06, 1.02),
-    ], 40, close_ends=True))
+        (2.30, 0.92), (2.05, 0.99), (1.62, 1.04), (1.20, 1.06), (DOME_R + 0.10, 1.07),
+    ], 60, close_ends=False))
+    m.add("hullPaint", *disc(DOME_R + 0.10, 1.07, 40, up=True))
 
-    # accent rings
-    m.add("hullMetal", *torus(2.24, 0.06, 0.935, 56, 10))
-    m.add("hullMetal", *torus(1.02, 0.055, 1.175, 40, 10))
-    m.add("hullMetal", *torus(0.62, 0.045, 1.075, 32, 8))
+    # --- accent rings and panel lines -------------------------------------
+    m.add("hullMetal", *torus(2.43, 0.055, 0.72, 60, 10))
+    m.add("hullMetal", *torus(1.70, 0.022, 1.035, 52, 6))
+    m.add("hullMetal", *torus(1.15, 0.018, 1.06, 44, 6))
+    m.add("hullMetal", *torus(0.58, 0.016, 0.215, 40, 6))
+    # rivets all around the rim
+    for i in range(28):
+        a = TAU * i / 28
+        m.add("hullMetal", *place(sphere((0, 0, 0), 0.030, 8, 6),
+                                  translation=(2.40 * math.cos(a), 0.60, 2.40 * math.sin(a))))
+    for i in range(20):
+        a = TAU * i / 20 + 0.08
+        m.add("hullMetal", *place(sphere((0, 0, 0), 0.026, 8, 6),
+                                  translation=(1.86 * math.cos(a), 1.02, 1.86 * math.sin(a))))
 
-    # rim light pods: 12 around the saucer
+    # --- rim light pods: 12 around the saucer ------------------------------
     for i in range(12):
         a = TAU * i / 12
-        geom = sphere((0, 0, 0), 0.10, 14, 8, scale=(1.0, 0.55, 1.7))
-        m.add("lensGreen", *place(geom, translation=(2.245 * math.cos(a), 0.86, 2.245 * math.sin(a)),
-                                  rot=(0, -math.degrees(a), 0)))
-    # front head lamp
-    m.add("lensWhite", *place(sphere((0, 0, 0), 0.12, 16, 8, scale=(1.0, 0.8, 0.5)),
-                              translation=(0, 0.72, 2.315)))
-    m.add("hullMetal", *place(torus(0.14, 0.026, 0, 20, 8), rot=(90, 0, 0),
-                              translation=(0, 0.72, 2.28)))
+        m.add("hullMetal", *place(cylinder(0.10, 0.0, 0.10, 12, caps=True),
+                                  rot=(90, 0, 0),
+                                  translation=(2.30 * math.cos(a), 0.72, 2.30 * math.sin(a))))
+        geom = sphere((0, 0, 0), 0.085, 14, 8, scale=(1.0, 0.9, 0.55))
+        m.add("lensGreen", *place(geom, rot=(0, -math.degrees(a) + 90, 0),
+                                  translation=(2.40 * math.cos(a), 0.72, 2.40 * math.sin(a))))
 
-    # tractor beam emitter under the belly
-    m.add("hullMetal", *place(torus(0.50, 0.05, 0, 36, 8), translation=(0, 0.30, 0)))
-    m.add("lensGreen", *place(disc(0.47, 0.245, 32, up=False)))
+    # --- four landing skids under the rim (the legs are separate) ---------
+    for i in range(4):
+        a = TAU * i / 4 + math.pi / 4
+        m.add("hullMetal", *place(box((0, 0, 0), (0.62, 0.16, 0.26)),
+                                  rot=(0, -math.degrees(a) + 90, 0),
+                                  translation=(1.55 * math.cos(a), 0.13, 1.55 * math.sin(a))))
 
-    # antenna mast
-    m.add("hullMetal", *cylinder(0.018, 1.92, 2.22, 10, caps=True))
+    # --- front head lamps -------------------------------------------------
+    for side in (-1, 1):
+        m.add("hullMetal", *place(cylinder(0.10, 0.0, 0.12, 12, caps=True),
+                                  rot=(90, 0, 0),
+                                  translation=(side * 0.55, 0.62, 2.20)))
+        m.add("lensWhite", *place(sphere((0, 0, 0), 0.095, 14, 8, scale=(1.0, 1.0, 0.7)),
+                                  translation=(side * 0.55, 0.62, 2.30)))
+        m.add("lensRed", *place(sphere((0, 0, 0), 0.055, 12, 8, scale=(1.0, 1.0, 0.6)),
+                                translation=(side * 1.45, 0.55, -1.85)))
+
+    # --- tractor beam emitter under the belly -----------------------------
+    m.add("hullMetal", *place(torus(0.52, 0.06, 0, 40, 8), translation=(0, 0.20, 0)))
+    m.add("hullMetal", *place(cylinder(0.50, 0.14, 0.22, 32, caps=True)))
+    m.add("lensGreen", *place(disc(0.46, 0.145, 32, up=False)))
+
+    # --- two antennae on the rear rim -------------------------------------
+    for side in (-1, 1):
+        m.add("hullMetal", *place(cylinder(0.014, 0.0, 0.55, 8, caps=True),
+                                  rot=(-18, 0, side * 12),
+                                  translation=(side * 1.55, 1.02, -1.35)))
+        m.add("lensRed", *place(sphere((0, 0, 0), 0.05, 10, 8),
+                                translation=(side * 1.68, 1.53, -1.46)))
     return m
 
 
@@ -104,30 +136,213 @@ def antenna_beacon_mesh():
 
 
 def dome_mesh():
-    """Large bubble canopy - big enough to see the player character inside."""
+    """The tall narrow bell jar - the signature Simpsons shape.
+
+    Narrow enough to read as "eng und schmal", tall enough that the player
+    character inside is visible from every angle.
+    """
     m = Mesh()
+
+    # heavy metal collar the glass sits in
+    m.add("hullMetal", *lathe([
+        (DOME_R + 0.22, 1.03), (DOME_R + 0.22, 1.14), (DOME_R + 0.06, 1.20),
+        (DOME_R, 1.20),
+    ], 44, close_ends=True))
+    for i in range(16):
+        a = TAU * i / 16
+        m.add("hullMetal", *place(sphere((0, 0, 0), 0.030, 8, 6),
+                                  translation=((DOME_R + 0.16) * math.cos(a), 1.10,
+                                               (DOME_R + 0.16) * math.sin(a))))
+
+    # the glass: almost a cylinder, rounding off into a neat dome on top
     m.add("glass", *lathe([
-        (DOME_R, 1.155), (1.575, 1.38), (1.52, 1.69), (1.38, 2.02),
-        (1.16, 2.29), (0.86, 2.49), (0.52, 2.62), (0.22, 2.69), (0.06, 2.705),
-    ], 56, close_ends=True))
-    # inner frame ring at the base of the dome
-    m.add("hullMetal", *place(torus(DOME_R - 0.02, 0.045, 0, 56, 8), translation=(0, 1.17, 0)))
-    # bolted rim where the canopy meets the hull
-    for i in range(12):
-        a = TAU * i / 12
-        m.add("hullMetal", *place(sphere((0, 0, 0), 0.035, 8, 6),
-                                  translation=(DOME_R * 0.99 * math.cos(a), 1.19,
-                                               DOME_R * 0.99 * math.sin(a))))
+        (DOME_R, 1.18), (DOME_R, 1.55), (DOME_R - 0.01, 2.10),
+        (DOME_R - 0.03, 2.50), (DOME_R - 0.10, 2.74), (DOME_R - 0.24, 2.88),
+        (DOME_R - 0.42, DOME_TOP), (DOME_R - 0.62, DOME_TOP + 0.05),
+        (DOME_R - 0.80, DOME_TOP + 0.07), (0.04, DOME_TOP + 0.08),
+    ], 48, close_ends=True))
+
+    # one thin waist band - just enough structure, no bird cage
+    m.add("hullMetal", *place(torus(DOME_R + 0.004, 0.009, 0, 48, 5),
+                              translation=(0, 2.14, 0)))
+    m.add("hullMetal", *place(torus(DOME_R + 0.002, 0.008, 0, 44, 5),
+                              translation=(0, 1.30, 0)))
+
+    # little finial on the very top
+    m.add("hullMetal", *place(cylinder(0.05, 0.0, 0.10, 10, caps=True, top_radius=0.02),
+                              translation=(0, DOME_TOP + 0.06, 0)))
+    m.add("lensWhite", *place(sphere((0, 0, 0), 0.045, 12, 8),
+                              translation=(0, DOME_TOP + 0.17, 0)))
+    return m
+
+
+def cockpit_console_mesh():
+    """Everything the pilot sees from the seat: console, screens, levers, lamps."""
+    m = Mesh()
+
+    # floor of the cockpit, slightly raised
+    m.add("cockpit", *disc(DOME_R - 0.04, 1.09, 40, up=True))
+    m.add("hullMetal", *place(torus(DOME_R - 0.06, 0.03, 0, 44, 6), translation=(0, 1.10, 0)))
+    for i in range(8):                       # floor grating
+        a = TAU * i / 8
+        m.add("hullMetal", *place(box((0, 0, 0), (0.30, 0.02, 0.035)),
+                                  rot=(0, -math.degrees(a) + 90, 0),
+                                  translation=(0.45 * math.cos(a), 1.11, 0.45 * math.sin(a))))
+
+    # --- the main console: a curved desk with one big screen --------------
+    for i in range(7):
+        a = math.radians(-60 + i * 20)
+        r = DOME_R - 0.16
+        px, pz = r * math.sin(a), r * math.cos(a)
+        m.add("cockpit", *place(box((0, 0, 0), (0.26, 0.30, 0.14)),
+                                rot=(0, -math.degrees(a), 0),
+                                translation=(px, 1.18, pz)))
+    # one wide screen, tilted back towards the pilot
+    # the screen stands upright on the desk and looks at the pilot
+    m.add("hullMetal", *place(box((0, 0, 0), (0.64, 0.34, 0.05)), rot=(14, 0, 0),
+                              translation=(0, 1.38, 0.66)))
+    m.add("lensGreen", *place(box((0, 0, 0), (0.57, 0.28, 0.014)), rot=(14, 0, 0),
+                              translation=(0, 1.385, 0.632)))
+    m.add("hullMetal", *place(box((0, 0, 0), (0.70, 0.04, 0.07)), rot=(14, 0, 0),
+                              translation=(0, 1.56, 0.70)))
+    for side in (-1, 1):
+        m.add("hullMetal", *place(box((0, 0, 0), (0.24, 0.18, 0.03)), rot=(14, side * 26, 0),
+                                  translation=(side * 0.50, 1.33, 0.50)))
+        m.add("lensWhite", *place(box((0, 0, 0), (0.18, 0.13, 0.010)), rot=(14, side * 26, 0),
+                                  translation=(side * 0.50, 1.335, 0.484)))
+    # keyboard-ish button rows on the desk
+    for row in range(2):
+        for b in range(7):
+            m.add("lensWhite" if (b + row) % 3 else "lensRed",
+                  *place(box((0, 0, 0), (0.05, 0.016, 0.03)),
+                         translation=(-0.36 + b * 0.12, 1.27 + row * 0.035, 0.50 - row * 0.03)))
+
+    # throttle levers left and right of the seat
+    for side in (-1, 1):
+        m.add("hullMetal", *place(box((0, 0, 0), (0.10, 0.05, 0.24)),
+                                  translation=(side * 0.34, 1.16, 0.26)))
+        m.add("cockpit", *place(cylinder(0.018, 0.0, 0.20, 8, caps=True),
+                                rot=(-28, 0, side * 10),
+                                translation=(side * 0.34, 1.18, 0.24)))
+        m.add("lensRed", *place(sphere((0, 0, 0), 0.038, 10, 8),
+                                translation=(side * 0.38, 1.36, 0.14)))
+
+    # --- the seat the player sits in --------------------------------------
+    m.add("cockpit", *place(box((0, 0, 0), (0.46, 0.10, 0.44)),
+                            translation=(0, 1.20, 0.02)))
+    m.add("cockpit", *place(box((0, 0, 0), (0.46, 0.50, 0.10)), rot=(-12, 0, 0),
+                            translation=(0, 1.44, -0.20)))
+    m.add("hullMetal", *place(cylinder(0.05, 1.09, 1.20, 8, caps=True),
+                              translation=(0, 0, 0.02)))
+    for side in (-1, 1):
+        m.add("hullMetal", *place(box((0, 0, 0), (0.05, 0.05, 0.30)),
+                                  translation=(side * 0.24, 1.28, 0.02)))
+
+    # --- overhead instrument ring (you see it through the glass) ----------
+    # a hoop above the pilot, with the lamp ring the cockpit blinks with
+    hoop = DOME_R - 0.14
+    m.add("hullMetal", *place(torus(hoop, 0.016, 0, 44, 6), translation=(0, 1.82, 0)))
+    for i in range(10):
+        a = TAU * i / 10
+        m.add("hullMetal", *place(box((0, 0, 0), (0.10, 0.055, 0.045)),
+                                  rot=(0, -math.degrees(a) + 90, 0),
+                                  translation=(hoop * math.cos(a), 1.78, hoop * math.sin(a))))
+        mat = ("lensGreen", "lensRed", "lensWhite")[i % 3]
+        m.add(mat, *place(sphere((0, 0, 0), 0.024, 8, 6),
+                          translation=(hoop * math.cos(a), 1.74, hoop * math.sin(a))))
+
+    # --- little holo projector on the right end of the desk ---------------
+    m.add("hullMetal", *place(cylinder(0.045, 1.18, 1.30, 10, caps=True),
+                              translation=(0.34, 0, 0.30)))
+    m.add("lensGreen", *place(sphere((0, 0, 0), 0.060, 12, 8, scale=(1.0, 0.55, 1.0)),
+                              translation=(0.34, 1.32, 0.30)))
+    m.add("lensGreen", *place(torus(0.12, 0.007, 0, 24, 4),
+                              translation=(0.34, 1.40, 0.30)))
+    return m
+
+
+def cockpit_ui_meshes():
+    """Interactive looking instruments on the console.
+
+    The Lua script moves three nodes so the inside of the cockpit really
+    shows what is selected:
+      * patternPointer  - the lit frame around the chosen ground pattern
+      * modeLever       - the harvest / flatten switch
+      * focusSlider     - the beam focus knob
+    """
+    board = Mesh()
+    # backing plate of the pattern selector, on the left hand console
+    board.add("hullMetal", *box((0, 0, 0), (0.40, 0.20, 0.022)))
+    tiles = []
+    for row in range(2):
+        for col in range(5):
+            x = -0.15 + col * 0.075
+            y = 0.045 - row * 0.075
+            tiles.append(place(box((0, 0, 0), (0.058, 0.058, 0.014)),
+                               translation=(x, y, 0.012)))
+            # a tiny pictogram on every tile
+            board.add("lensGreen" if (row + col) % 2 == 0 else "lensWhite",
+                      *place(box((0, 0, 0), (0.034, 0.034, 0.008)),
+                             translation=(x, y, 0.020)))
+    for geom in tiles:
+        board.add("cockpit", *geom)
+
+    pointer = Mesh()
+    pointer.add("lensGreen", *box((0, 0, 0), (0.070, 0.070, 0.010)))
+    pointer.add("lensGreen", *place(box((0, 0, 0), (0.086, 0.012, 0.010)),
+                                    translation=(0, 0.042, 0)))
+    pointer.add("lensGreen", *place(box((0, 0, 0), (0.086, 0.012, 0.010)),
+                                    translation=(0, -0.042, 0)))
+
+    lever = Mesh()
+    lever.add("hullMetal", *place(box((0, 0, 0), (0.16, 0.03, 0.10))))
+    lever.add("hullPaint", *place(cylinder(0.016, 0.0, 0.20, 8, caps=True),
+                                  translation=(0, 0.02, 0)))
+    lever.add("lensRed", *place(sphere((0, 0, 0), 0.030, 10, 8),
+                                translation=(0, 0.22, 0)))
+
+    slider = Mesh()
+    slider.add("hullMetal", *place(box((0, 0, 0), (0.24, 0.016, 0.05))))
+    slider.add("lensWhite", *place(box((0, 0, 0), (0.045, 0.05, 0.06))))
+    return board, pointer, lever, slider
+
+
+def cockpit_detail_mesh():
+    """Pipes, brackets and a handrail - the bits that make it look lived in."""
+    m = Mesh()
+    # handrail around the inside of the glass
+    m.add("hullMetal", *place(torus(DOME_R - 0.06, 0.018, 0, 48, 6), translation=(0, 1.56, 0)))
+    for i in range(6):
+        a = TAU * i / 6 + 0.3
+        m.add("hullMetal", *place(cylinder(0.014, 1.20, 1.56, 6, caps=True),
+                                  translation=((DOME_R - 0.06) * math.cos(a), 0,
+                                               (DOME_R - 0.06) * math.sin(a))))
+    # cable bundle running from the console into the floor
+    for i in range(3):
+        m.add("hullMetal", *place(cylinder(0.016, 1.09, 1.22, 6, caps=True),
+                                  rot=(0, 0, -14 + i * 14),
+                                  translation=(-0.32 + i * 0.06, 0, -0.30)))
+    # two storage boxes under the console
+    for side in (-1, 1):
+        m.add("cockpit", *place(box((0, 0, 0), (0.22, 0.14, 0.16)),
+                                translation=(side * 0.42, 1.17, -0.42)))
     return m
 
 
 def leg_mesh_local():
     """One landing leg in local space (+Y up, pivot at the hull attachment)."""
     m = Mesh()
-    m.add("hullMetal", *cylinder(0.062, -0.36, 0.05, 12, caps=True, top_radius=0.10))
-    m.add("hullMetal", *place(torus(0.125, 0.032, 0, 20, 8), translation=(0, -0.36, 0)))
-    m.add("hullMetal", *place(disc(0.155, -0.385, 20, up=False)))
-    m.add("lensGreen", *place(sphere((0, 0, 0), 0.032, 10, 6), translation=(0, 0.0, 0.085)))
+    # upper strut
+    m.add("hullMetal", *cylinder(0.075, -0.30, 0.02, 12, caps=True, top_radius=0.11))
+    m.add("hullMetal", *place(torus(0.12, 0.030, 0, 20, 8), translation=(0, -0.02, 0)))
+    # hydraulic piston
+    m.add("hullMetal", *cylinder(0.045, -0.52, -0.28, 10, caps=True))
+    m.add("hullPaint", *cylinder(0.075, -0.62, -0.50, 10, caps=True))
+    # foot with a wide pad and a green landing light
+    m.add("hullMetal", *place(lathe([(0.10, -0.70), (0.16, -0.74), (0.19, -0.80),
+                                     (0.16, -0.84), (0.06, -0.86)], 18, close_ends=True)))
+    m.add("lensGreen", *place(torus(0.13, 0.020, 0, 20, 6), translation=(0, -0.76, 0)))
+    m.add("lensWhite", *place(sphere((0, 0, 0), 0.032, 10, 6), translation=(0, -0.05, 0.10)))
     return m
 
 
@@ -144,7 +359,7 @@ def leg_nodes(parent):
     nodes = []
     for i, deg in enumerate(LEG_ANGLES):
         a = math.radians(deg)
-        pos = (1.72 * math.cos(a), 0.375, 1.72 * math.sin(a))
+        pos = (1.86 * math.cos(a), 0.34, 1.86 * math.sin(a))
         node = Node("TransformGroup", "leg%d" % i, translation="%s" % _fmt(pos),
                     rotation="0 %s %s" % (_fmt([-deg]), LEG_SPLAY))
         m = Mesh()
@@ -156,19 +371,6 @@ def leg_nodes(parent):
         parent.add(node)
         nodes.append(node)
     return nodes
-
-
-def cockpit_console_mesh():
-    m = Mesh()
-    for i in range(3):
-        a = TAU * i / 3 + math.pi / 2
-        m.add("hullMetal", *place(box((0, 0, 0), (0.26, 0.16, 0.06)),
-                                  rot=(0, -math.degrees(a), 0),
-                                  translation=(0.92 * math.cos(a), 1.12, 0.92 * math.sin(a))))
-        m.add("lensGreen", *place(box((0, 0, 0), (0.18, 0.09, 0.02)),
-                                  rot=(0, -math.degrees(a), 0),
-                                  translation=(0.92 * math.cos(a), 1.16, 0.90 * math.sin(a))))
-    return m
 
 
 def beam_mesh():
@@ -194,8 +396,8 @@ def collision_meshes():
     """(name, geometry) pairs for the compound collision; the first one is the
     main rigid body shape (node 0>, "ufo_main_component1")."""
     return [
-        ("ufo_main_component1", cylinder(2.02, 0.0, 0.80, 16, caps=True)),
-        ("collisionDome", cylinder(1.30, 0.80, 2.10, 16, caps=True)),
+        ("ufo_main_component1", cylinder(2.10, 0.0, 0.80, 16, caps=True)),
+        ("collisionDome", cylinder(0.92, 0.80, 2.90, 16, caps=True)),
     ]
 
 
@@ -233,10 +435,29 @@ def build_scene():
     leg_nodes(visual)
 
     visual.add(Node("Shape", "consoleMesh", cockpit_console_mesh()))
+    visual.add(Node("Shape", "cockpitDetailMesh", cockpit_detail_mesh()))
+
+    # --- cockpit instruments the script animates --------------------------
+    board, pointer, lever, slider = cockpit_ui_meshes()
+
+    pattern_board = visual.add(Node("TransformGroup", "patternBoard",
+                                    translation="-0.56 1.34 0.24", rotation="0 66 0"))
+    pattern_board.add(Node("Shape", "patternBoardMesh", board))
+    pattern_pointer = pattern_board.add(Node("TransformGroup", "patternPointer",
+                                             translation="-0.15 0.045 0.030"))
+    pattern_pointer.add(Node("Shape", "patternPointerMesh", pointer, materials=["lensGreen"]))
+
+    mode_panel = visual.add(Node("TransformGroup", "modeLever",
+                                 translation="0.56 1.32 0.20", rotation="0 -62 0"))
+    mode_panel.add(Node("Shape", "modeLeverMesh", lever))
+
+    focus_panel = visual.add(Node("TransformGroup", "focusSlider",
+                                  translation="0.30 1.24 0.52", rotation="0 -14 -18"))
+    focus_panel.add(Node("Shape", "focusSliderMesh", slider))
 
     # seat for the player character - the game puts the player's own character
     # here (see <enterable><characterNode node="driverSeatNode"/></enterable>)
-    visual.add(Node("TransformGroup", "driverSeatNode", translation="0 1.17 0.02"))
+    visual.add(Node("TransformGroup", "driverSeatNode", translation="0 1.24 0.02"))
 
     beacon = visual.add(Node("TransformGroup", "beaconNode", translation="0 3.02 0"))
     beacon.add(Node("Shape", "beaconMesh", antenna_beacon_mesh(), materials=["lensRed"]))
@@ -295,8 +516,8 @@ def build_scene():
     cam_target = body.add(Node("TransformGroup", "outdoorCameraTarget", translation="0 1.15 0"))
     cam_target.add(Node("Camera", "outdoorCamera", translation="0 0 -9", rotation="0 180 0",
                         fov="45", nearClip="0.05", farClip="5000"))
-    inside_target = body.add(Node("TransformGroup", "indoorCameraTarget", translation="0 1.42 0.12"))
-    inside_target.add(Node("Camera", "indoorCamera", rotation="0 180 0", fov="60",
+    inside_target = body.add(Node("TransformGroup", "indoorCameraTarget", translation="0 1.66 0.06"))
+    inside_target.add(Node("Camera", "indoorCamera", rotation="-8 180 0", fov="70",
                            nearClip="0.03", farClip="5000"))
 
     return body
