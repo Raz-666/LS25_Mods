@@ -101,8 +101,8 @@ def glow(size=256):
 
 
 def stone(size=256):
-    v = 0.45 + _noise(size, 48, seed=13) * 0.25
-    rgb = np.dstack([v * 0.96, v * 0.94, v * 0.90])
+    v = 0.16 + _noise(size, 48, seed=13) * 0.14
+    rgb = np.dstack([v * 0.98, v * 0.95, v * 0.88])
     return _to_img(np.clip(rgb, 0, 1))
 
 

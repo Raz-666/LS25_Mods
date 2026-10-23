@@ -36,8 +36,8 @@ MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
 ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt")
 
-ICON_EYE = (11.0, 5.6, 12.2)
-ICON_TARGET = (0.9, 3.3, 0.6)
+ICON_EYE = (13.0, 6.4, 12.4)
+ICON_TARGET = (0.3, 3.2, 0.2)
 ICON_FOV = 40
 
 
@@ -85,9 +85,20 @@ def inject(mappings):
           % mappings.count("i3dMapping id="))
 
 
-def scene():
+def scene(ground=False):
+    """The hut scene; for the pictures a grass disc is added under it."""
     import hut as babajaga
-    return babajaga.build_scene()
+    from meshlib import Mesh, disc
+    from model import Node
+
+    root = babajaga.build_scene()
+    if ground:
+        m = Mesh()
+        m.add("grass", *disc(babajaga.YARD + 2.4, 0.0, segments=64, up=True))
+        m.add("dirt", *disc(2.2, 0.02, segments=32, up=True))
+        # move the disc into the world at the height of the terrain
+        root.add(Node("Shape", "renderGround", m, translation="0 -0.02 0"))
+    return root
 
 
 def build_images():
@@ -99,7 +110,7 @@ def build_images():
     os.makedirs(docs, exist_ok=True)
 
     icon = render.render(size=512, eye=ICON_EYE, target=ICON_TARGET, fov=ICON_FOV,
-                         ss=2, root=scene())
+                         ss=2, root=scene(ground=True))
     p = os.path.join(BUILD, "icon_babajaga.png")
     icon.save(p)
     ufo_images._dds(p, os.path.join(MOD, "icon_babajaga.dds"), "bc1", sys.executable)
@@ -108,8 +119,10 @@ def build_images():
                   return_alpha=True, root=scene()).save(
         os.path.join(MOD, "store_babajaga.png"))
 
-    render.render(size=900, eye=(10.5, 3.4, 9.5), target=(0.6, 3.4, 0.4), fov=40, ss=2,
-                  root=scene()).save(os.path.join(docs, "babajaga_hero.png"))
+    render.render(size=900, eye=(16.5, 6.2, 10.0), target=(0.4, 3.5, -0.2), fov=40, ss=2,
+                  root=scene(ground=True)).save(os.path.join(docs, "babajaga_hero.png"))
+    render.render(size=700, eye=(3.4, 1.5, 3.9), target=(0, 1.2, 0), fov=40, ss=2,
+                  root=scene(ground=True)).save(os.path.join(docs, "babajaga_leg.png"))
     print("  icon, store picture, hero render")
 
 
