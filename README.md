@@ -502,7 +502,7 @@ auf der Straße.
 | --- | --- |
 | Preis | 185.000 €, 180 €/Tag Unterhalt |
 | Musik | 6 eigene Club-Tracks (Techno, Deep House, Hard, Minimal, Acid, Closing) |
-| Tasten | `N` = nächster Titel, `M` = Musik an/aus, `R` = Club-Radio (Gamepad: Y / X / L3) |
+| Tasten | `N` = nächster Titel/Sender, `M` = Musik an/aus, `R` = Quelle PA ↔ Radio (Gamepad: Y / X / L3) |
 | Shop | Platzierbare Objekte |
 | MP | ja, Server verwaltet Titelliste und Startzeit |
 
@@ -556,7 +556,15 @@ Was davon technisch geht:
 | MP3-Datei | **nur als OGG** | FS25 lädt OGG Vorbis (und WAV). MP3 vorher umwandeln, Datei nach `sounds/`, Zeile in `sounds/distillerySounds.xml` ergänzen (bis 8 Titel, `bpm` steuert das Blinken). Läuft dann synchron für alle. |
 | Playlist | **ja** | Genau das ist die Titelliste: mehrere Einträge in derselben XML, am Pult umschaltbar. |
 | SoundCloud | **nein** | Lua im Spiel hat keine URL-/HTTP-Funktion; `createSample` nimmt nur Dateinamen. Ein Mod kann keinen SoundCloud-Link öffnen. Nur wenn ein direkter Audio-Stream-Link existiert, geht er über das Spielradio (nächste Zeile). |
-| Internetradio-URL | **nur über das Spielradio** | Sender in die Profildatei `streamingInternetRadios.xml` eintragen (`<streamingInternetRadio href="…"/>`, mp3/aac/m3u/pls) – Anleitung mit Pfaden und Beispiel in [`docs/streaming_radio.md`](docs/streaming_radio.md). Dann schaltet die Taste `R` deinen Spieler auf das Spielradio um. **Das gilt pro Spieler** – die Club-PA läuft für alle anderen weiter. Echtes „ein Stream für die ganze Disco" ist von außen nicht möglich. |
+| Internetradio-URL | **ja, als zweite Quelle am Pult** | Sender in die Profildatei `streamingInternetRadios.xml` eintragen (`<streamingInternetRadio href="…"/>`, mp3/aac/m3u/pls) – Anleitung mit Pfaden und Beispiel in [`docs/streaming_radio.md`](docs/streaming_radio.md). Am DJ-Pult schaltet `R` die **Quelle** um: PA ↔ Club-Radio. Im Radio-Modus wechselt `N` die Sender, `M` pausiert. **Das gilt pro Spieler** – die Club-PA läuft für alle anderen weiter. Echtes „ein Stream für die ganze Disco" ist von außen nicht möglich. |
+
+**Die Quelle am Pult**
+
+Am Set-List-Board sitzen zwei kleine Lampen: **amber = Club-PA** (synchron),
+**cyan = Club-Radio** (dein Stream). `R` schaltet um, im Radio-Modus zeigt die
+Bildschirmmeldung den Sendernamen, der Marker am Board pausiert. Damit ist das
+Internetradio kein Sonderweg mehr, sondern einfach der zweite Eintrag in der
+Auswahl am Mixer – nur eben lokal für den Spieler, der davor steht.
 
 Kurz: **synchron und für alle** ist die eingebaute Playlist. Externe Streams
 bleiben ein Angebot an den einzelnen Spieler über das Spielradio.

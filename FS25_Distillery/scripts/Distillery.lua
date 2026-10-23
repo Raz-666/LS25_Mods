@@ -40,7 +40,7 @@ function Distillery.new(isServer, isClient, customMt)
 	self.startTime = 0
 	self.volume = 0.95
 	self.localSample = nil
-	self.radioMode = false
+	self.source = "pa"            -- "pa" = club playlist (synced) | "radio" = game radio
 	self.inputActions = {}
 
 	-- board geometry (row height + node), filled in onLoad
@@ -86,6 +86,8 @@ function Distillery:onLoad(savegame)
 	self.ballPivot = I3DUtil.indexToObject(self.components, "mirrorBallPivot", self.i3dMappings)
 	self.djNode = I3DUtil.indexToObject(self.components, "djNode", self.i3dMappings)
 	self.markerNode = I3DUtil.indexToObject(self.components, "playlistMarker", self.i3dMappings)
+	self.lampPa = I3DUtil.indexToObject(self.components, "srcLampPa", self.i3dMappings)
+	self.lampRadio = I3DUtil.indexToObject(self.components, "srcLampRadio", self.i3dMappings)
 	if self.markerNode ~= nil then
 		local _, y, _ = getTranslation(self.markerNode)
 		self.markerBaseY = y
@@ -141,7 +143,7 @@ function Distillery:registerInput()
 	local actions = {
 		{action = "DISTILLERY_NEXT_TRACK", callback = "onActionNextTrack", text = "l10n_distillery_action_next"},
 		{action = "DISTILLERY_TOGGLE_MUSIC", callback = "onActionToggleMusic", text = "l10n_distillery_action_toggle"},
-		{action = "DISTILLERY_RADIO", callback = "onActionRadio", text = "l10n_distillery_action_radio"},
+		{action = "DISTILLERY_SOURCE", callback = "onActionSource", text = "l10n_distillery_action_source"},
 	}
 	for _, entry in ipairs(actions) do
 		local ok, eventId = g_inputBinding:registerActionEvent(entry.action, self,
@@ -246,8 +248,9 @@ function Distillery:applyState(trackIndex, playing, startTime, announce)
 end
 
 function Distillery:applyPlayback(announce)
-	if self.radioMode then
-		-- the local player listens to the game radio instead of the club PA
+	if self.source == "radio" then
+		-- this player listens to the game radio; the PA state for everybody
+		-- else keeps running on the server
 		return
 	end
 	if self.playing then
@@ -314,11 +317,14 @@ function Distillery:onActionNextTrack()
 	if not self:getIsAtMixer() then
 		return
 	end
+	if self.source == "radio" then
+		self:nextRadio()
+		return
+	end
 	local nextIndex = self.trackIndex + 1
 	if self.tracks ~= nil and nextIndex > #self.tracks then
 		nextIndex = 1
 	end
-	self.radioMode = false
 	self:requestState(nextIndex, true)
 end
 
@@ -326,40 +332,121 @@ function Distillery:onActionToggleMusic()
 	if not self:getIsAtMixer() then
 		return
 	end
-	self.radioMode = false
+	if self.source == "radio" then
+		self:toggleRadioPlaying()
+		return
+	end
 	self:requestState(self.trackIndex, not self.playing)
 end
 
--- "Radio": hand the local player over to the game's own radio. This is a
--- per-player switch - the club PA (and everybody else) keeps running.
-function Distillery:onActionRadio()
+-- The source switch at the mixer: club playlist (PA, synced for everybody) or
+-- the game radio (a real stream, local to this player). Both are entries of
+-- the same selection - nobody has to hunt for the game's own radio key.
+function Distillery:onActionSource()
 	if not self:getIsAtMixer() then
 		return
 	end
-	if g_soundPlayer == nil then
-		g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
-			self:getL10n("l10n_distillery_radio_unavailable"))
-		return
-	end
-	self.radioMode = not self.radioMode
-	if self.radioMode then
+	if self.source == "pa" then
+		if g_soundPlayer == nil then
+			g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
+				self:getL10n("l10n_distillery_radio_unavailable"))
+			return
+		end
+		self.source = "radio"
 		self:stopLocalPlayback()
-		pcall(function()
-			if not g_soundPlayer:getIsPlaying() then
-				g_soundPlayer:play()
-			end
-		end)
+		self:startRadio()
 		g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
-			self:getL10n("l10n_distillery_radio_on"))
+			string.format("%s: %s", self:getL10n("l10n_distillery_source_radio"),
+				tostring(self:getRadioName())))
 	else
-		pcall(function()
-			if g_soundPlayer:getIsPlaying() then
-				g_soundPlayer:pause()
-			end
-		end)
+		self.source = "pa"
+		self:stopRadio()
 		self:applyPlayback(false)
 		g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
-			self:getL10n("l10n_distillery_radio_off"))
+			string.format("%s: %s", self:getL10n("l10n_distillery_source_pa"),
+				self:getCurrentTrackTitle()))
+	end
+	self:updateSourceLamps()
+end
+
+function Distillery:getRadioName()
+	if g_soundPlayer == nil then
+		return ""
+	end
+	local ok, name = pcall(function()
+		return g_soundPlayer:getChannelName()
+	end)
+	if ok and name ~= nil then
+		return name
+	end
+	return ""
+end
+
+function Distillery:startRadio()
+	if g_soundPlayer == nil then
+		return
+	end
+	pcall(function()
+		if not g_soundPlayer:getIsPlaying() then
+			g_soundPlayer:play()
+		end
+	end)
+end
+
+function Distillery:stopRadio()
+	if g_soundPlayer == nil then
+		return
+	end
+	pcall(function()
+		if g_soundPlayer:getIsPlaying() then
+			g_soundPlayer:pause()
+		end
+	end)
+end
+
+-- next station while the radio source is active (local only)
+function Distillery:nextRadio()
+	if g_soundPlayer == nil then
+		return
+	end
+	pcall(function()
+		g_soundPlayer:nextChannel()
+		g_soundPlayer:play()
+	end)
+	g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
+		string.format("%s: %s", self:getL10n("l10n_distillery_source_radio"),
+			tostring(self:getRadioName())))
+end
+
+function Distillery:toggleRadioPlaying()
+	if g_soundPlayer == nil then
+		return
+	end
+	local playing = false
+	pcall(function()
+		playing = g_soundPlayer:getIsPlaying()
+	end)
+	if playing then
+		self:stopRadio()
+	else
+		self:startRadio()
+	end
+end
+
+function Distillery:getCurrentTrackTitle()
+	local track = self.tracks ~= nil and self.tracks[self.trackIndex or 1] or nil
+	if track ~= nil and track.title ~= nil then
+		return self:getL10n(track.title)
+	end
+	return ""
+end
+
+function Distillery:updateSourceLamps()
+	if self.lampPa ~= nil then
+		setVisibility(self.lampPa, self.source ~= "radio")
+	end
+	if self.lampRadio ~= nil then
+		setVisibility(self.lampRadio, self.source == "radio")
 	end
 end
 
@@ -383,7 +470,7 @@ function Distillery:tick(dt)
 	end
 
 	local beat = 0
-	if self.playing and not self.radioMode then
+	if self.playing and self.source ~= "radio" then
 		local track = self.tracks[self.trackIndex]
 		local bpm = track ~= nil and track.bpm or 128
 		beat = math.floor((g_time - self.startTime * 1000) * bpm / 60000)
@@ -406,8 +493,9 @@ function Distillery:tick(dt)
 		local row = math.max(0, math.min(Distillery.MAX_TRACKS - 1, (self.trackIndex or 1) - 1))
 		local x, _, z = getTranslation(self.markerNode)
 		setTranslation(self.markerNode, x, self.markerBaseY - row * self.rowHeight, z)
-		setVisibility(self.markerNode, self.playing)
+		setVisibility(self.markerNode, self.playing and self.source ~= "radio")
 	end
+	self:updateSourceLamps()
 end
 
 -- ---------------------------------------------------------------------------

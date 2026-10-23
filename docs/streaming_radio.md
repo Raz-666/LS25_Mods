@@ -10,9 +10,11 @@
   Senderliste aus dem Spielprofil und kann Icecast-/Shoutcast-Streams
   (mp3, aac, m3u, pls) abspielen – aber nur auf dem jeweiligen PC und nur, wenn
   der Spieler das zugelassen hat.
-* Die Distillery nutzt diesen Player über die Taste **`R` (Club-Radio)**: sie
-  schaltet deinen eigenen Spieler auf das Spielradio um. Die Club-PA mit der
-  synchronen Titelliste läuft für alle anderen weiter.
+* Die Distillery nimmt das Spielradio als **zweite Quelle in die Auswahl am
+  DJ-Pult** auf: Taste **`R`** schaltet zwischen *Club-PA* (synchronisierte
+  Playlist) und *Club-Radio* (dein Stream) um, `N` wechselt dann die Sender,
+  `M` pausiert. Zwei kleine Lampen am Set-List-Board zeigen die aktive Quelle
+  (amber = PA, cyan = Radio). Die Club-PA läuft für alle anderen weiter.
 
 ## Sender hinzufügen
 
@@ -34,8 +36,8 @@
 ```
 
 3. Im Spiel einmal das Radio öffnen und den Stream bestätigen
-   („Stream erlauben?"). Danach startet die Taste `R` der Distillery genau
-   diesen Sender.
+   („Stream erlauben?"). Danach schaltet `R` am DJ-Pult auf die Radio-Quelle,
+   und `N` blättert durch deine Sender.
 
 ## Warum kein echter „ein Stream für alle"
 

@@ -635,6 +635,31 @@ def playlist_mesh():
     return board, marker, row_h
 
 
+def source_lamps():
+    """Two small lamps next to the board: which source is playing right now.
+
+    Amber = the club playlist (PA, synced for everybody),
+    cyan  = the game radio (local stream for this player).
+    """
+    out = []
+    size = PANEL_H * 0.075
+    for name, mat, dx in (("srcLampPa", "neonAmber", -0.11),
+                          ("srcLampRadio", "neonCyan", 0.11)):
+        mesh = Mesh()
+        mesh.add(mat, *place(box((0, 0, 0), (size * 2.0, size, 0.035))))
+        node = Node("TransformGroup", name,
+                    translation="%g %g %g" % (
+                        PANEL_X - PANEL_W * 0.5 + size * 1.6,
+                        PANEL_Y + PANEL_H * 0.5 + size * 1.6, PANEL_Z + 0.03))
+        # the second lamp sits right next to the first one
+        node.attrs["translation"] = "%g %g %g" % (
+            PANEL_X - PANEL_W * 0.5 + size * 1.6 + (0.0 if dx < 0 else size * 3.0),
+            PANEL_Y + PANEL_H * 0.5 + size * 1.4, PANEL_Z + 0.03)
+        node.add(Node("Shape", name + "Mesh", mesh, materials=[mat]))
+        out.append(node)
+    return out
+
+
 # --------------------------------------------------------------------------
 # collision + areas
 # --------------------------------------------------------------------------
@@ -714,6 +739,8 @@ def build_scene():
     board, marker, _row_h = playlist_mesh()
     root.add(Node("Shape", "playlistMesh", board, materials=["steel", "playlist"]))
     root.add(marker)
+    for lamp in source_lamps():
+        root.add(lamp)
 
     # --- mirror ball ------------------------------------------------------
     pivot = Node("TransformGroup", "mirrorBallPivot", translation="0 4.55 -1.2")

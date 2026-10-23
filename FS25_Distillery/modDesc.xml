@@ -20,7 +20,7 @@ What you get
 
 How to use
 1. Buy it in the shop under "Placeable objects" and place it.
-2. Walk in - the PA starts. Keys: "next track", "music on/off" and "club radio" (see the key settings, remappable, gamepad supported). They are only offered when you stand at the mixer.
+2. Walk in - the PA starts. Keys: "next track", "music on/off" and "source PA / radio" (see the key settings, remappable, gamepad supported). They are only offered when you stand at the mixer. The radio is a full entry of the selection: press the source key to listen to your own stations, press it again to hand back to the synced PA.
 3. Your own tracks: convert them to OGG Vorbis, put them in sounds/ and add a line in sounds/distillerySounds.xml.
 
 Internet radio and streams: the game engine has no URL or HTTP functions for mods, so a mod cannot open a SoundCloud link or an arbitrary stream URL. What works is the game's own radio: add your station to the profile file streamingInternetRadios.xml (see docs/), then the "club radio" key hands your player over to it. That is per player - the club PA keeps running on the synced playlist for everyone else.
@@ -37,7 +37,7 @@ Was du bekommst
 
 So geht's
 1. Im Shop unter "Platzierbare Objekte" kaufen und aufstellen.
-2. Reingehen - die PA startet. Tasten: "Nächster Titel", "Musik an/aus" und "Club-Radio" (siehe Tasteneinstellungen, frei belegbar, gamepadtauglich). Sie werden nur angeboten, wenn du am Mixer stehst.
+2. Reingehen - die PA startet. Tasten: "Nächster Titel", "Musik an/aus" und "Quelle PA / Radio" (siehe Tasteneinstellungen, frei belegbar, gamepadtauglich). Sie werden nur angeboten, wenn du am Mixer stehst. Das Radio ist ein vollwertiger Eintrag der Auswahl: Quellen-Taste drückt = eigene Sender hören, nochmal drücken = zurück zur synchronen PA.
 3. Eigene Titel: als OGG Vorbis umwandeln, in sounds/ legen und in sounds/distillerySounds.xml eine Zeile ergänzen.
 
 Internetradio und Streams: Die Spiel-Engine hat für Mods keine URL- oder HTTP-Funktionen - ein Mod kann also keinen SoundCloud-Link und keine beliebige Stream-URL öffnen. Was funktioniert, ist das Spielradio: Trage deinen Sender in die Profildatei streamingInternetRadios.xml ein (siehe docs/), dann übergibt die Taste "Club-Radio" deinen Spieler dorthin. Das gilt pro Spieler - die Club-PA läuft für alle anderen weiter.
@@ -59,7 +59,7 @@ Marke: Lizard (Grundspiel). Modell, Texturen und Musik werden von den Skripten i
     <actions>
         <action name="DISTILLERY_NEXT_TRACK" category="ONFOOT" axisType="HALF"/>
         <action name="DISTILLERY_TOGGLE_MUSIC" category="ONFOOT" axisType="HALF"/>
-        <action name="DISTILLERY_RADIO" category="ONFOOT" axisType="HALF"/>
+        <action name="DISTILLERY_SOURCE" category="ONFOOT" axisType="HALF"/>
     </actions>
 
     <inputBinding>
@@ -71,7 +71,7 @@ Marke: Lizard (Grundspiel). Modell, Texturen und Musik werden von den Skripten i
             <binding device="KB" input="KEY_M"/>
             <binding device="GAMEPAD" input="BUTTON_X"/>
         </actionBinding>
-        <actionBinding action="DISTILLERY_RADIO">
+        <actionBinding action="DISTILLERY_SOURCE">
             <binding device="KB" input="KEY_R"/>
             <binding device="GAMEPAD" input="BUTTON_LSTICK"/>
         </actionBinding>
@@ -94,9 +94,9 @@ Marke: Lizard (Grundspiel). Modell, Texturen und Musik werden von den Skripten i
             <en>Distillery: music on/off</en>
             <de>Distillery: Musik an/aus</de>
         </text>
-        <text name="input_DISTILLERY_RADIO">
-            <en>Distillery: club radio</en>
-            <de>Distillery: Club-Radio</de>
+        <text name="input_DISTILLERY_SOURCE">
+            <en>Distillery: source PA / radio</en>
+            <de>Distillery: Quelle PA / Radio</de>
         </text>
         <text name="l10n_distillery_action_next">
             <en>Next track</en>
@@ -106,17 +106,17 @@ Marke: Lizard (Grundspiel). Modell, Texturen und Musik werden von den Skripten i
             <en>Music on/off</en>
             <de>Musik an/aus</de>
         </text>
-        <text name="l10n_distillery_action_radio">
+        <text name="l10n_distillery_action_source">
+            <en>Source: PA / radio</en>
+            <de>Quelle: PA / Radio</de>
+        </text>
+        <text name="l10n_distillery_source_pa">
+            <en>Club PA</en>
+            <de>Club-PA</de>
+        </text>
+        <text name="l10n_distillery_source_radio">
             <en>Club radio</en>
             <de>Club-Radio</de>
-        </text>
-        <text name="l10n_distillery_radio_on">
-            <en>Club radio: the game radio takes over for you</en>
-            <de>Club-Radio: das Spielradio übernimmt für dich</de>
-        </text>
-        <text name="l10n_distillery_radio_off">
-            <en>Club radio off - back to the PA</en>
-            <de>Club-Radio aus - zurück zur PA</de>
         </text>
         <text name="l10n_distillery_radio_unavailable">
             <en>No radio available in this game session</en>
