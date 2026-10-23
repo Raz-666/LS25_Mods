@@ -217,7 +217,7 @@
             <part node="leg0" startTime="0.6" endTime="4.0" startRot="0 -30 90" endRot="0 -30 16"/>
             <part node="leg1" startTime="0.6" endTime="4.0" startRot="0 -150 90" endRot="0 -150 16"/>
             <part node="leg2" startTime="0.6" endTime="4.0" startRot="0 -270 90" endRot="0 -270 16"/>
-            <part node="beamNode" startTime="0.6" endTime="4.0" startScale="1.75 18.89 1.75" endScale="0.9 1.0 0.9"/>
+            <part node="beamNodeDamage" startTime="0.6" endTime="4.0" startScale="1.75 18.89 1.75" endScale="0.9 1.0 0.9"/>
             <part node="groundRing" startTime="0" endTime="4.5" startTrans="0 -18.76 0" endTrans="0 -0.88 0" startScale="1.75 1 1.75" endScale="0.9 1 0.9"/>
         </animation>
     </animations>
@@ -403,17 +403,43 @@
         <i3dMapping id="leg1Mesh" node="0>0|3|0"/>
         <i3dMapping id="leg2" node="0>0|4"/>
         <i3dMapping id="leg2Mesh" node="0>0|4|0"/>
-        <i3dMapping id="consoleMesh" node="0>0|5"/>
+        <i3dMapping id="cabin" node="0>0|5"/>
+        <i3dMapping id="consoleMesh" node="0>0|5|0"/>
+        <i3dMapping id="cockpitDetailMesh" node="0>0|5|1"/>
+        <i3dMapping id="patternBoard" node="0>0|5|2"/>
+        <i3dMapping id="patternBoardMesh" node="0>0|5|2|0"/>
+        <i3dMapping id="patternPointer" node="0>0|5|2|1"/>
+        <i3dMapping id="patternPointerMesh" node="0>0|5|2|1|0"/>
+        <i3dMapping id="modeLever" node="0>0|5|3"/>
+        <i3dMapping id="modeLeverMesh" node="0>0|5|3|0"/>
+        <i3dMapping id="focusSlider" node="0>0|5|4"/>
+        <i3dMapping id="focusSliderMesh" node="0>0|5|4|0"/>
+        <i3dMapping id="modeNeedle" node="0>0|5|5"/>
+        <i3dMapping id="modeNeedleMesh" node="0>0|5|5|0"/>
         <i3dMapping id="driverSeatNode" node="0>0|6"/>
         <i3dMapping id="beaconNode" node="0>0|7"/>
         <i3dMapping id="beaconMesh" node="0>0|7|0"/>
-        <i3dMapping id="beamNode" node="0>0|8"/>
-        <i3dMapping id="beamMesh" node="0>0|8|0"/>
-        <i3dMapping id="groundRing" node="0>0|9"/>
-        <i3dMapping id="groundRingMesh" node="0>0|9|0"/>
-        <i3dMapping id="cockpitDetail" node="0>0|10"/>
-        <i3dMapping id="cockpitBeacon1" node="0>0|11"/>
-        <i3dMapping id="cockpitBeacon2" node="0>0|12"/>
+        <i3dMapping id="beamNodeDamage" node="0>0|8"/>
+        <i3dMapping id="beamMeshDamage" node="0>0|8|0"/>
+        <i3dMapping id="beamNodeHarvest" node="0>0|9"/>
+        <i3dMapping id="beamMeshHarvest" node="0>0|9|0"/>
+        <i3dMapping id="beamNodeCultivate" node="0>0|10"/>
+        <i3dMapping id="beamMeshCultivate" node="0>0|10|0"/>
+        <i3dMapping id="beamNodePlow" node="0>0|11"/>
+        <i3dMapping id="beamMeshPlow" node="0>0|11|0"/>
+        <i3dMapping id="beamNodeSow" node="0>0|12"/>
+        <i3dMapping id="beamMeshSow" node="0>0|12|0"/>
+        <i3dMapping id="beamNodeFertilize" node="0>0|13"/>
+        <i3dMapping id="beamMeshFertilize" node="0>0|13|0"/>
+        <i3dMapping id="beamNodeLoad" node="0>0|14"/>
+        <i3dMapping id="beamMeshLoad" node="0>0|14|0"/>
+        <i3dMapping id="beamNodeUnload" node="0>0|15"/>
+        <i3dMapping id="beamMeshUnload" node="0>0|15|0"/>
+        <i3dMapping id="groundRing" node="0>0|16"/>
+        <i3dMapping id="groundRingMesh" node="0>0|16|0"/>
+        <i3dMapping id="cockpitDetail" node="0>0|17"/>
+        <i3dMapping id="cockpitBeacon1" node="0>0|18"/>
+        <i3dMapping id="cockpitBeacon2" node="0>0|19"/>
         <i3dMapping id="collisions" node="0>1"/>
         <i3dMapping id="collisionDome" node="0>1|0"/>
         <i3dMapping id="collisionHull" node="0>1|1"/>

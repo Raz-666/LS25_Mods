@@ -81,91 +81,150 @@ def _ring_of(m, mat, geom, count, radius, y, phase=0.0, scale=(1.0, 1.0, 1.0),
 # --------------------------------------------------------------------------
 # the chicken leg
 # --------------------------------------------------------------------------
+def _bend(geom, fn):
+    """Push a geometry sideways by fn(y) - used for the crooked chicken leg."""
+    v, n, uv, t = geom
+    return [(x + fn(y), y, z) for (x, y, z) in v], n, uv, t
+
+
 def leg_mesh():
-    """The chicken leg: feathered thigh, scaly shank, three fat toes + talons."""
+    """The chicken leg - the way it looks in the old fairy tale films.
+
+    A shaggy feathered thigh, then a long scaly shank made of overlapping
+    plates (not beads), a fat knuckled ankle and four thick toes with claws
+    that dig into the ground.  The whole leg has a slight crooked bend, which
+    is what makes it look alive instead of like a table leg.
+    """
     m = Mesh()
     y0 = HUT_FLOOR
     knee = LEG_TOP
+    ANKLE = 0.52
+
+    def lean(y):
+        """the leg is a bit crooked: leans forward up top, back at the ankle"""
+        t = max(0.0, (y - ANKLE) / (knee - ANKLE))
+        return 0.20 * t * t - 0.03 * math.sin(t * 9.0)
 
     # --- feathered thigh, hanging out of the floor of the cabin ------------
-    m.add("feather", *place(lathe([(0.34, knee - 0.05), (0.50, knee + 0.30),
-                                   (0.66, knee + 0.55), (0.74, y0 - 0.02)],
-                                  segments=22, close_ends=True)))
-    # shaggy feather rows, longer towards the bottom
-    for k, y in enumerate((y0 - 0.05, y0 - 0.22, y0 - 0.40, y0 - 0.58,
-                           y0 - 0.74, y0 - 0.88)):
-        r = 0.70 - 0.075 * k
-        _ring_of(m, "feather", sphere((0, 0, 0), 1.0, 10, 6),
-                 13 + k, r, y, phase=0.24 * k,
-                 scale=(0.115, 0.30 + 0.02 * k, 0.075), tilt=12 + 4 * k)
-        _ring_of(m, "feather", sphere((0, 0, 0), 1.0, 8, 6),
-                 9 + k, r - 0.06, y - 0.06, phase=0.5 + 0.2 * k,
-                 scale=(0.09, 0.24, 0.06), tilt=22 + 4 * k)
-    # a ring of long feathers right at the bottom edge
-    for i in range(11):
-        a = TAU * i / 11 + 0.15
-        m.add("feather", *place(sphere((0, 0, 0), 1.0, 8, 6),
-                                rot=(22, -math.degrees(a), 0),
-                                scale=(0.085, 0.34, 0.065),
-                                translation=(0.34 * math.cos(a), knee + 0.10,
-                                             0.34 * math.sin(a))))
+    m.add("feather", *place(lathe([(0.36, knee - 0.10), (0.52, knee + 0.28),
+                                   (0.70, knee + 0.52), (0.80, y0 - 0.02)],
+                                  segments=24, close_ends=True)))
+    # drooping feather rows: five layers, each a little shorter and darker
+    rows = ((y0 - 0.02, 0.78, 14, 0.20, 0.34),
+            (y0 - 0.16, 0.72, 13, 0.185, 0.32),
+            (y0 - 0.32, 0.65, 12, 0.170, 0.30),
+            (y0 - 0.47, 0.57, 11, 0.155, 0.27),
+            (y0 - 0.61, 0.49, 10, 0.140, 0.24))
+    for k, (y, r, count, wide, length) in enumerate(rows):
+        _ring_of(m, "feather", sphere((0, 0, 0), 1.0, 10, 7), count, r, y,
+                 phase=0.31 * k, scale=(wide, length, wide * 0.62), tilt=26 + 5 * k)
+        # a second, shorter layer tucked between the long feathers
+        _ring_of(m, "feather", sphere((0, 0, 0), 1.0, 8, 6), count - 1, r - 0.07,
+                 y + 0.05, phase=0.31 * k + 0.22,
+                 scale=(wide * 0.72, length * 0.62, wide * 0.5), tilt=16 + 4 * k)
+    # the long feathers that hang over the top of the shank
+    for i in range(9):
+        a = TAU * i / 9 + 0.11
+        m.add("feather", *place(sphere((0, 0, 0), 1.0, 8, 7),
+                                rot=(18 + 4 * (i % 2), -math.degrees(a), 0),
+                                scale=(0.10, 0.40, 0.075),
+                                translation=(0.30 * math.cos(a), knee + 0.02,
+                                             0.30 * math.sin(a))))
 
     # --- the knee ----------------------------------------------------------
-    m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 18, 12, scale=(0.25, 0.22, 0.25)),
-                            translation=(0, knee - 0.02, 0)))
+    m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 20, 14,
+                                   scale=(0.235, 0.215, 0.235)),
+                            translation=(0, knee - 0.03, 0)))
 
     # --- the scaly shank ---------------------------------------------------
-    profile = [(0.180, 0.46), (0.170, 0.62), (0.176, 0.95), (0.186, 1.30),
-               (0.198, 1.65), (0.212, 2.00), (0.232, 2.35), (0.258, knee - 0.05)]
-    m.add("legSkin", *place(lathe(profile, segments=20, close_ends=True)))
-    # big scale bands - this is what makes it read as a chicken leg
+    profile = [(0.150, ANKLE), (0.158, 0.70), (0.168, 1.00), (0.180, 1.32),
+               (0.194, 1.64), (0.208, 1.96), (0.224, 2.28), (0.244, 2.58),
+               (0.258, knee - 0.06)]
+    m.add("legSkin", *place(_bend(lathe(profile, segments=24, close_ends=True), lean)))
+
+    # --- scale bands: broad, shallow plates that overlap like shingles -----
+    # a chicken shank is banded, not beaded.  The bulges are kept very flat so
+    # the scale texture on the skin does the work and the leg does not end up
+    # looking like a stack of washers.
+    bands = 9
+    for r in range(bands):
+        t = r / float(bands - 1)
+        y = ANKLE + 0.10 + t * (knee - 0.32 - ANKLE)
+        radius = 0.152 + 0.104 * t
+        m.add("legSkin", *place(lathe([(radius * 0.995, y - 0.075),
+                                       (radius * 1.022, y - 0.040),
+                                       (radius * 1.030, y + 0.012),
+                                       (radius * 0.998, y + 0.050)],
+                                      segments=24, close_ends=False),
+                                translation=(lean(y), 0, 0)))
+    # the fine ridge where two plates meet, only on every other seam
+    for r in range(bands - 1):
+        t = r / float(bands - 1)
+        y = ANKLE + 0.10 + t * (knee - 0.32 - ANKLE) + 0.095
+        radius = 0.152 + 0.104 * (t + 0.06)
+        m.add("legSkin", *place(torus(radius * 1.020, 0.008, 0, 24, 5),
+                                translation=(lean(y), y, 0)))
+    # a few small warts / feather stubs between the plates
     for i in range(12):
-        y = 0.52 + i * 0.18
-        r = 0.176 + 0.0068 * i
-        m.add("legSkin", *place(torus(r, 0.030, 0, 22, 6), translation=(0, y, 0)))
-    # scales in between, alternating so no two rows line up
-    for i in range(11):
-        y = 0.61 + i * 0.18
-        for j in range(8):
-            a = TAU * j / 8 + (0.39 if i % 2 else 0.0)
-            r = 0.180 + 0.0075 * i
-            m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 8, 6),
-                                    rot=(0, -math.degrees(a), 0),
-                                    scale=(0.085, 0.075, 0.045),
-                                    translation=(r * math.cos(a), y, r * math.sin(a))))
+        a = TAU * (i * 5 % 12) / 12
+        y = ANKLE + 0.30 + (i / 12.0) * (knee - 0.85)
+        t = (y - ANKLE) / (knee - ANKLE)
+        radius = 0.152 + 0.104 * t
+        m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 7, 5,
+                                       scale=(0.026, 0.018, 0.014)),
+                                translation=(radius * math.cos(a) + lean(y), y,
+                                              radius * math.sin(a))))
+
+    # a thin ridge ring where the shank meets the feathers
+    m.add("legSkin", *place(torus(0.262, 0.026, 0, 24, 6),
+                            translation=(lean(knee - 0.08), knee - 0.09, 0)))
 
     # --- the spur on the back of the leg -----------------------------------
-    m.add("claw", *place(cylinder(0.055, 0.0, 0.22, 8, caps=True, top_radius=0.0),
-                         rot=(-146, 0, 0), translation=(0, 1.62, -0.18)))
+    m.add("claw", *place(cylinder(0.052, 0.0, 0.24, 8, caps=True, top_radius=0.0),
+                         rot=(-150, 0, 0),
+                         translation=(lean(1.72) - 0.02, 1.72, -0.20)))
 
-    # --- ankle / heel, wider than the shank --------------------------------
-    m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 18, 12, scale=(0.24, 0.22, 0.24)),
-                            translation=(0, 0.46, 0)))
-    m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 16, 10, scale=(0.20, 0.16, 0.20)),
-                            translation=(0, 0.30, 0)))
+    # --- ankle / heel, wider than the shank, with knuckle bumps ------------
+    m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 20, 14, scale=(0.215, 0.205, 0.215)),
+                            translation=(0, ANKLE, 0)))
+    m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 18, 12, scale=(0.185, 0.150, 0.185)),
+                            translation=(0, 0.33, 0.01)))
+    for i in range(6):
+        a = TAU * i / 6 + 0.2
+        m.add("legSkin", *place(sphere((0, 0, 0), 1.0, 8, 6, scale=(0.062, 0.050, 0.062)),
+                                translation=(0.155 * math.cos(a), 0.60,
+                                             0.155 * math.sin(a))))
 
     # --- the foot: three fat toes forward, one back ------------------------
-    # a cone that grows along +Y, turned to point outwards and down
-    toes = ((0.0, 1.00), (44.0, 0.95), (-44.0, 0.95), (180.0, 0.80))
-    for ang, length in toes:
+    # the toes are smooth tapered sausages with only two soft knuckle rings,
+    # otherwise a chicken foot looks like a bunch of grapes
+    toes = ((0.0, 1.00, 1.02), (38.0, 0.97, 1.00), (-38.0, 0.97, 1.00),
+            (180.0, 0.74, 0.95))
+    for ang, length, lift in toes:
         rad = math.radians(ang)
         dx, dz = math.cos(rad), math.sin(rad)
-        yaw = 90.0 - ang                     # ry that turns +Z towards (dx, dz)
-        segs = ((0.14, 0.150, 0.22), (0.34, 0.130, 0.195),
-                (0.53, 0.108, 0.170), (0.70, 0.090, 0.145),
-                (0.85 * length, 0.072, 0.120))
-        for dist, r, y in segs:
-            m.add("legSkin", *place(sphere((0, 0, 0), r, 12, 8, scale=(1.05, 0.85, 1.30)),
+        yaw = 90.0 - ang
+        # one long, softly bent tube from the ankle to the tip
+        steps = 7
+        for k in range(steps):
+            t = k / float(steps - 1)
+            dist = (0.10 + 0.74 * t) * length
+            r = 0.150 - 0.070 * t
+            y = (0.215 - 0.085 * t * t) * lift
+            m.add("legSkin", *place(sphere((0, 0, 0), r, 14, 10,
+                                           scale=(1.0, 0.94, 1.55)),
                                     rot=(0, yaw, 0),
-                                    translation=(dx * dist * length, y,
-                                                 dz * dist * length)))
-        # talon: one thick hook sitting on the toe tip, buried in the ground
+                                    translation=(dx * dist, y, dz * dist)))
+        # the claw: a thick hook that curves down into the ground
         base = 0.80 * length
-        m.add("claw", *place(lathe([(0.082, 0.0), (0.070, 0.09), (0.050, 0.17),
-                                    (0.024, 0.23), (0.0, 0.27)],
-                                   segments=10, close_ends=True),
-                             rot=(94.0, yaw, 0.0),
-                             translation=(dx * base, 0.105, dz * base)))
+        m.add("claw", *place(lathe([(0.076, 0.0), (0.068, 0.075), (0.054, 0.145),
+                                    (0.032, 0.205), (0.011, 0.245), (0.0, 0.26)],
+                                   segments=12, close_ends=True),
+                             rot=(116.0, yaw, 0.0),
+                             translation=(dx * base, 0.130, dz * base)))
+        m.add("claw", *place(sphere((0, 0, 0), 1.0, 10, 7, scale=(0.048, 0.034, 0.070)),
+                             rot=(0, yaw, 0),
+                             translation=(dx * (base + 0.10), 0.044, dz * (base + 0.10))))
     return m
 
 
@@ -316,6 +375,96 @@ def hut_mesh():
     m.add("woodDark", *place(cylinder(0.14, -hd - 0.34, hd + 0.34, 10, caps=True),
                              rot=(90, 0, 0),
                              translation=(0, y0 + HUT_H + ROOF_H + 0.02, 0)))
+
+    # --- single shingles on both roof slopes ------------------------------
+    # rows of little boards, every row offset by half a board, so the roof
+    # reads as a proper old shingle roof instead of a flat plank
+    angle = math.radians(90 - slope)
+    slope_len = math.hypot(ROOF_H, hw + ROOF_OVER)
+    for side in (-1, 1):
+        rows = 10
+        for r in range(rows):
+            t = (r + 0.5) / rows
+            # point on the roof plane, then lifted along its normal
+            px = side * (hw + ROOF_OVER * 0.5) * (1.0 - t)
+            py = y0 + HUT_H + (ROOF_H + 0.12) * t
+            nx, ny = ROOF_H, side * (hw + ROOF_OVER)
+            ln = math.hypot(nx, ny)
+            px += nx / ln * 0.085
+            py += ny / ln * 0.085
+            width = slope_len / rows * 0.86
+            count = 9
+            span = HUT_D + 0.46
+            step = span / count
+            for j in range(count):
+                z = (j - (count - 1) * 0.5) * step + (step * 0.5 if r % 2 else 0.0)
+                if abs(z) > span * 0.5 - 0.02:
+                    continue
+                m.add("roof", *place(box((0, 0, 0), (width, 0.040, step * 0.94)),
+                                     rot=(0, 0, -side * angle),
+                                     translation=(px, py, z)))
+        # a row of small carved ridge caps along the eave
+        for j in range(7):
+            z = (j - 3) * ((HUT_D + 0.30) / 7)
+            m.add("woodDark", *place(sphere((0, 0, 0), 0.062, 10, 7,
+                                            scale=(1.0, 0.7, 1.0)),
+                                     translation=(side * (hw + ROOF_OVER * 0.55),
+                                                  y0 + HUT_H - 0.24, z)))
+
+    # --- round attic window in both gables --------------------------------
+    for zside in (-1, 1):
+        wz = zside * (hd + 0.36)
+        m.add("woodDark", *place(cylinder(0.34, -0.06, 0.06, 18, caps=True),
+                                 rot=(90, 0, 0),
+                                 translation=(0.10, y0 + HUT_H + 0.42, wz)))
+        m.add("glow", *place(cylinder(0.26, -0.06, 0.10, 18, caps=True),
+                             rot=(90, 0, 0),
+                             translation=(0.10, y0 + HUT_H + 0.42, wz)))
+        # the little cross bars of the window
+        m.add("woodDark", *place(box((0, 0, 0), (0.06, 0.52, 0.06)),
+                                 translation=(0.10, y0 + HUT_H + 0.42, wz + 0.02 * zside)))
+        m.add("woodDark", *place(box((0, 0, 0), (0.52, 0.06, 0.06)),
+                                 translation=(0.10, y0 + HUT_H + 0.42, wz + 0.02 * zside)))
+
+    # --- weather vane: a little rooster on the ridge ----------------------
+    vx = 0.60
+    vy = y0 + HUT_H + ROOF_H
+    m.add("iron", *place(cylinder(0.030, vy, vy + 1.05, 8, caps=True),
+                         translation=(vx, 0, 0)))
+    m.add("iron", *place(sphere((0, 0, 0), 0.055, 10, 8),
+                         translation=(vx, vy + 1.05, 0)))
+    # the rooster: body, tail, head, comb and the arrow through it
+    m.add("iron", *place(sphere((0, 0, 0), 1.0, 12, 9, scale=(0.17, 0.11, 0.10)),
+                         translation=(vx + 0.02, vy + 1.16, 0)))
+    m.add("iron", *place(sphere((0, 0, 0), 1.0, 10, 8, scale=(0.075, 0.085, 0.075)),
+                         translation=(vx + 0.19, vy + 1.22, 0)))
+    m.add("iron", *place(sphere((0, 0, 0), 0.045, 10, 8, scale=(0.55, 1.0, 0.6)),
+                         translation=(vx + 0.20, vy + 1.31, 0)))
+    for k in range(3):
+        m.add("iron", *place(box((0, 0, 0), (0.16, 0.028, 0.020)),
+                             rot=(0, 0, 18 + k * 16),
+                             translation=(vx - 0.13 - k * 0.03, vy + 1.20 + k * 0.05, 0)))
+    m.add("iron", *place(box((0, 0, 0), (0.62, 0.024, 0.024)),
+                         translation=(vx, vy + 1.16, 0)))
+    for s_ in (-1, 1):
+        m.add("iron", *place(box((0, 0, 0), (0.10, 0.10, 0.02)),
+                             rot=(45, 0, 0),
+                             translation=(vx + s_ * 0.32, vy + 1.16, 0)))
+
+    # --- flower boxes under the two front windows -------------------------
+    for x in (-1.62, 1.62):
+        bz = FRONT + 0.24
+        m.add("woodDark", *place(box((0, 0, 0), (0.92, 0.22, 0.26)),
+                                 translation=(x, y0 + 0.72, bz)))
+        m.add("woodDark", *place(box((0, 0, 0), (0.96, 0.05, 0.30)),
+                                 translation=(x, y0 + 0.84, bz)))
+        for k in range(7):
+            fx = x - 0.38 + k * 0.127
+            m.add("moss", *place(sphere((0, 0, 0), 1.0, 7, 5, scale=(0.055, 0.05, 0.07)),
+                                 translation=(fx, y0 + 0.88, bz)))
+            col = "claw" if k % 2 else "glow"
+            m.add(col, *place(sphere((0, 0, 0), 0.045, 8, 6, scale=(1.0, 0.8, 1.0)),
+                              translation=(fx + 0.02, y0 + 0.96, bz + 0.02)))
 
     # --- crooked chimney ---------------------------------------------------
     cx, cz = -1.45, -0.70

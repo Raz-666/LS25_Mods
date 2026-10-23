@@ -334,7 +334,7 @@ def check_landing(veh, mappings):
             err("landing animation does not extend %s" % leg)
         elif not (parts[leg].get("startRot") and parts[leg].get("endRot")):
             err("landing animation: %s needs startRot/endRot" % leg)
-    for node in ("beamNode", "groundRing"):
+    for node in ("beamNodeDamage", "groundRing"):
         if node not in parts:
             warn("landing animation does not animate %s" % node)
     fold = veh.find("foldable/foldingConfigurations/foldingConfiguration/foldingParts")

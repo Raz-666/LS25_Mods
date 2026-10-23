@@ -1,11 +1,15 @@
 # FS25 UFO 2000 – fliegende Untertasse mit Kornkreis-Generator
 
-Zwei kleine Mods für **Farming Simulator 25**:
+Sieben Mods für **Farming Simulator 25**:
 
 | Mod | Was es ist |
 | --- | --- |
 | **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, drei Landebeine und ein Traktorstrahl, der **acht Arbeiten** kann: plattdrücken, ernten, grubbern, pflügen, säen, düngen, aufnehmen, abladen – dazu ein **virtueller Laderaum mit 5 Mio. Litern** |
 | **`dist/FS25_Alien.zip`** | **Zwei** Aliens als aufstellbare Deko – der kleine grüne Kumpel und der Große mit Riesenschädel und Glubschaugen |
+| **`dist/FS25_Disco.zip`** | **Hofdisco** mit Neon, Spiegelkugel, DJ-Pult und 6 eigenen Stücken – im Multiplayer hören alle in der Halle **denselben Song zur selben Zeit** |
+| **`dist/FS25_Autokino.zip`** | **Autokino** mit 13-m-Leinwand und drei kurzen Zeichentrickfilmen samt Soundtrack – Bildnummer aus der Netzwerkzeit, also im MP frame-genau synchron |
+| **`dist/FS25_UFO4500.zip`** | **Mähdrescher-UFO** mit 6-m-Schneidwerk, 15.000-l-Korntank und allem, was ein Drescher können muss |
+| **`dist/FS25_BabaJaga.zip`** | **Baba Jagas Hühnerhütte** – Blockhütte auf echtem Hühnerbein, als vollwertiger Hühnerstall, **ohne Lua** (konsolen-tauglich) |
 | **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, Cockpit 20 m über dem Feld, rollt auf zwei breiten unsichtbaren Rädern, drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide und **landet auf Tastendruck** |
 
 ![UFO 2000](docs/renders/ufo_hero.png)
@@ -15,6 +19,8 @@ Zwei kleine Mods für **Farming Simulator 25**:
 | UFO 2000 | ✅ fliegen, 8 Arbeits-Modi, Laderaum, Cockpit | ❌ eigener Lua-Code |
 | Alien-Maskottchen | ✅ | ⚠️ möglich (nur noch über ModHub einreichen) |
 | UFO 2500 | ✅ | ✅ **kein Lua, nur Grundspiel-Technik** |
+| Hofdisco | ✅ Musik, Titelwahl, MP-Sync | ❌ eigener Lua-Code |
+| Autokino | ✅ drei Filme, MP-Sync | ❌ eigener Lua-Code |
 
 ---
 
@@ -27,6 +33,7 @@ Zwei kleine Mods für **Farming Simulator 25**:
 3. UFO 2000: am Händler unter **Fahrzeuge → Autos** für 42.000 € kaufen.
    UFO 2500: ebd. unter der Marke **Lizard** für 38.000 €.
    Alien: unter **Platzierbare Objekte → Deko** für 750 € aufstellen.
+   Hofdisco / Autokino: unter **Platzierbare Objekte** für 32.000 € / 48.000 €.
    (UFO 2000 und UFO 2500 sind zwei eigenständige Mods – nimm das, was dir
    gefällt, oder beide.)
 
@@ -211,6 +218,21 @@ also die Untertasse stehen, wo sie stand. 🙂
   `BeaconLight`), Kameras innen/außen
 - Strahl und Bodenring als feste Geometrie, Bodenlicht, Sounds
 - Marke `Lizard`, Deutsch + Englisch
+
+**Hofdisco**
+- 5.100 Dreiecke, 18 Shapes – Halle, Giebel mit Pixel-Neonschrift, Schachbrett-
+  Tanzfläche, DJ-Pult, vier Boxentürme, Theke, Tische, drehende Spiegelkugel,
+  drei Lichtgruppen mit je einer echten Punktlicht-Quelle
+- `scripts/Disco.lua`: Playlist, Server-Autorität, Dirty-Flag-Sync,
+  Startzeit-basierte Wiedergabe, Tastenbelegung im Spiel neu belegbar
+- 6 selbst erzeugte OGG-Stücke, 18 Texturen, Shop-Icon
+
+**Autokino**
+- 3.200 Dreiecke, 13 Shapes – Leinwand auf Stahlrahmen, Vorführhäuschen mit
+  Projektor, 24 Parkbuchten, Lampenmasten, Neonschild
+- `scripts/Autokino.lua`: Filmwechsel, Pause, frame-genaue Wiedergabe aus der
+  Netzwerkzeit, MP-Sync über Dirty Flags
+- 3 Filme × 16 Bilder (DDS), 3 Soundtracks, 14 Texturen, Shop-Icon
 
 **Alien-Maskottchen**
 - 4.400 Dreiecke, 2 Shapes (Mesh + unsichtbare Kollision), 7 Texturen
@@ -428,11 +450,94 @@ python tools/build_babajaga_mod.py       # Modell -> Texturen -> XML -> ZIP
 python tools/babajaga/validate.py        # Prüfung ohne Spiel
 ```
 
-## 10. Ehrlicher Hinweis
+## 10. Die Hofdisco (`FS25_Disco`)
+
+Eine aufstellbare Disco-Halle mit Neonlicht, drehender Spiegelkugel, DJ-Pult,
+Theke, Tischen und Schachbrett-Tanzfläche – vor allem aber mit **gemeinsamer
+Musik**: alle, die drin sind, hören dasselbe Stück ab derselben Sekunde.
+
+| | |
+| --- | --- |
+| Preis | 32.000 €, 25 €/Tag Unterhalt |
+| Musik | 6 eigene Stücke (Disco, Techno, Chill, Country, Grusel, Western) |
+| Tasten | `N` = nächster Titel, `M` = Musik an/aus (Gamepad: Y / X) |
+| Shop | Platzierbare Objekte |
+| MP | ja, Server entscheidet Titel und Startzeit |
+
+![Hofdisco außen](docs/renders/disco_hero.png)
+![Hofdisco innen](docs/renders/disco_inside.png)
+
+**So funktioniert die gemeinsame Musik**
+
+* Der Titel ist **kein Stream**, sondern eine OGG-Datei im Mod. Abgespielt wird
+  sie als 3D-Sound an der Spiegelkugel: wer in der Halle steht, hört sie laut,
+  wer draußen ist, hört sie leiser (bzw. gar nicht).
+* Drückt jemand `N`, schickt sein Spiel nur einen **Wunsch** an den Server
+  (`DiscoStateEvent`). Der Server wählt den Titel, setzt die Startzeit auf
+  „jetzt + 1,5 s" und schickt genau diese Zeit an alle.
+* Jeder PC startet die Datei mit der Verzögerung `Startzeit − eigene Zeit`. Damit
+  läuft der Song auf allen Rechnern im selben Takt – auch der Blink der
+  Neon-Gruppen und die drehende Kugel hängen an dieser Zeit, nicht an einem
+  lokalen Timer.
+* Kommt jemand später in die Halle, bekommt er beim Verbinden den aktuellen
+  Zustand (`track`, `playing`, `startTime`) und steigt mittendrin ein.
+
+**Titel austauschen:** `FS25_Disco/sounds/discoSounds.xml` öffnen, eigene
+OGG-Datei nach `sounds/` legen und eine weitere `<music7 .../>`-Zeile eintragen
+(bis zu 8 Stück, `bpm` steuert das Blinken). Kein Neubauen des Mods nötig.
+
+```bash
+python tools/build_disco_mod.py                    # Modell, Texturen, Musik, ZIP
+python tools/venue/validate.py --mod disco         # Prüfung ohne Spiel
+```
+
+## 11. Das Autokino (`FS25_Autokino`)
+
+13-m-Leinwand, Vorführhäuschen, 24 Parkbuchten mit Radstoppern, Lampenmasten –
+und drei kurze Zeichentrickfilme, die wirklich laufen.
+
+| | |
+| --- | --- |
+| Preis | 48.000 €, 35 €/Tag Unterhalt |
+| Filme | Der kleine Traktor, UFO über dem Hof, Der Alien |
+| Bildrate | 16 Einzelbilder je Film, 6 Bilder/s, Endlosschleife |
+| Ton | eigener Soundtrack je Film (Country / Techno / Chill) |
+| Tasten | `F` = nächster Film, `P` = Film an/aus (Gamepad: Y / X) |
+| MP | ja, Bildnummer wird aus der Netzwerkzeit berechnet |
+
+![Autokino](docs/renders/autokino_hero.png)
+![Leinwand](docs/renders/autokino_screen.png)
+
+**Warum Bildersequenz statt Video**
+
+FS25 kann aus Lua keine Videodatei dekodieren – es gibt keine Video-Textur-API.
+Also ist jeder Film eine Reihe von 16 DDS-Texturen, die das Skript im
+Sekundentakt auf das Material der Leinwand legt (`setMaterialDiffuseMapFromFile`).
+Das ist genau die Technik, die das Grundspiel für Werbeplakate benutzt, kostet
+keinen Videocodec und läuft auf jedem PC.
+
+**Warum das im Multiplayer synchron bleibt**
+
+Die Bildnummer ist keine lokale Zählung, sondern wird **berechnet**:
+`frame = (Netzwerkzeit − Startzeit) × 6`. Server und Client rechnen dieselbe
+Formel auf derselben Zeitbasis, deshalb zeigen alle Bildschirme dasselbe Bild –
+auch wenn jemand mitten im Film dazukommt. Der Ton nutzt dieselbe Startzeit,
+also passt Musik und Bild zusammen.
+
+**Eigene Filme:** Bilder als `key_00.dds` … `key_15.dds` nach `textures/film/`
+legen und in `sounds/autokinoSounds.xml` eine `<film .../>`-Zeile ergänzen
+(bis zu 6 Filme, 32 Bilder). Die Bilder müssen 16:9 haben, z. B. 320×180.
+
+```bash
+python tools/build_autokino_mod.py                 # Modell, Filme, Ton, ZIP
+python tools/venue/validate.py --mod autokino      # Prüfung ohne Spiel
+```
+
+## 12. Ehrlicher Hinweis
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit
-„UFO2000", „UFO2500", „UFO4500", „BabaJaga" oder „Alien" zeigen die Stelle, dann bessere ich gezielt nach.
+„UFO2000", „UFO2500", „UFO4500", „BabaJaga", „Alien", „Disco" oder „Autokino" zeigen die Stelle, dann bessere ich gezielt nach.
 
 Beim UFO 2500 sind drei Dinge die ersten Kandidaten für Feinschliff, falls es im
 Spiel komisch aussieht: die Fahrhöhe (Federn/Dämpfer der unsichtbaren Räder,

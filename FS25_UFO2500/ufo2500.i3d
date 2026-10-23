@@ -19,6 +19,14 @@
     <File fileId="13" filename="textures/alienSkin_specular.dds"/>
     <File fileId="14" filename="textures/eyeBlack_diffuse.dds"/>
     <File fileId="15" filename="textures/beam_diffuse.dds"/>
+    <File fileId="16" filename="textures/beamRed_diffuse.dds"/>
+    <File fileId="17" filename="textures/beamGreen_diffuse.dds"/>
+    <File fileId="18" filename="textures/beamBrown_diffuse.dds"/>
+    <File fileId="19" filename="textures/beamOrange_diffuse.dds"/>
+    <File fileId="20" filename="textures/beamLime_diffuse.dds"/>
+    <File fileId="21" filename="textures/beamViolet_diffuse.dds"/>
+    <File fileId="22" filename="textures/beamBlue_diffuse.dds"/>
+    <File fileId="23" filename="textures/beamCyan_diffuse.dds"/>
   </Files>
   <Materials>
     <Material name="collision" materialId="1" diffuseColor="0.6 0.1 0.6 1" specularColor="0.1 0.1 0.1"/>
@@ -57,6 +65,30 @@
     <Material name="beam" materialId="11" alphaBlending="true">
       <Texture fileId="15"/>
     </Material>
+    <Material name="beamRed" materialId="12" alphaBlending="true">
+      <Texture fileId="16"/>
+    </Material>
+    <Material name="beamGreen" materialId="13" alphaBlending="true">
+      <Texture fileId="17"/>
+    </Material>
+    <Material name="beamBrown" materialId="14" alphaBlending="true">
+      <Texture fileId="18"/>
+    </Material>
+    <Material name="beamOrange" materialId="15" alphaBlending="true">
+      <Texture fileId="19"/>
+    </Material>
+    <Material name="beamLime" materialId="16" alphaBlending="true">
+      <Texture fileId="20"/>
+    </Material>
+    <Material name="beamViolet" materialId="17" alphaBlending="true">
+      <Texture fileId="21"/>
+    </Material>
+    <Material name="beamBlue" materialId="18" alphaBlending="true">
+      <Texture fileId="22"/>
+    </Material>
+    <Material name="beamCyan" materialId="19" alphaBlending="true">
+      <Texture fileId="23"/>
+    </Material>
   </Materials>
   <Shapes externalShapesFile="ufo2500.i3d.shapes">
   </Shapes>
@@ -67,73 +99,112 @@
                 <TransformGroup name="visual" translation="0 18.83 0" nodeId="2">
                     <Shape name="hullMesh" shapeId="2" nodeId="3"/>
                     <Shape name="domeGlass" shapeId="3" castsShadows="false" receiveShadows="true" nodeId="4"/>
-                    <TransformGroup name="leg0" translation="1.48956 0.375 0.86" rotation="0 -30 90" nodeId="5">
+                    <TransformGroup name="leg0" translation="1.61081 0.34 0.93" rotation="0 -30 90" nodeId="5">
                         <Shape name="leg0Mesh" shapeId="4" nodeId="6"/>
                     </TransformGroup>
-                    <TransformGroup name="leg1" translation="-1.48956 0.375 0.86" rotation="0 -150 90" nodeId="7">
+                    <TransformGroup name="leg1" translation="-1.61081 0.34 0.93" rotation="0 -150 90" nodeId="7">
                         <Shape name="leg1Mesh" shapeId="5" nodeId="8"/>
                     </TransformGroup>
-                    <TransformGroup name="leg2" translation="-3.15959e-16 0.375 -1.72" rotation="0 -270 90" nodeId="9">
+                    <TransformGroup name="leg2" translation="-3.41676e-16 0.34 -1.86" rotation="0 -270 90" nodeId="9">
                         <Shape name="leg2Mesh" shapeId="6" nodeId="10"/>
                     </TransformGroup>
-                    <Shape name="consoleMesh" shapeId="7" nodeId="11"/>
-                    <TransformGroup name="driverSeatNode" translation="0 1.17 0.02" nodeId="12"/>
-                    <TransformGroup name="beaconNode" translation="0 3.02 0" nodeId="13">
-                        <Shape name="beaconMesh" shapeId="8" nodeId="14"/>
+                    <TransformGroup name="cabin" scale="0.72 1 0.72" nodeId="11">
+                        <Shape name="consoleMesh" shapeId="7" nodeId="12"/>
+                        <Shape name="cockpitDetailMesh" shapeId="8" nodeId="13"/>
+                        <TransformGroup name="patternBoard" translation="-0.56 1.34 0.24" rotation="0 66 0" nodeId="14">
+                            <Shape name="patternBoardMesh" shapeId="9" nodeId="15"/>
+                            <TransformGroup name="patternPointer" translation="-0.15 0.045 0.030" nodeId="16">
+                                <Shape name="patternPointerMesh" shapeId="10" nodeId="17"/>
+                            </TransformGroup>
+                        </TransformGroup>
+                        <TransformGroup name="modeLever" translation="0.56 1.32 0.20" rotation="0 -62 0" nodeId="18">
+                            <Shape name="modeLeverMesh" shapeId="11" nodeId="19"/>
+                        </TransformGroup>
+                        <TransformGroup name="focusSlider" translation="0.30 1.24 0.52" rotation="0 -14 -18" nodeId="20">
+                            <Shape name="focusSliderMesh" shapeId="12" nodeId="21"/>
+                        </TransformGroup>
+                        <TransformGroup name="modeNeedle" translation="0 1.298 0.44" nodeId="22">
+                            <Shape name="modeNeedleMesh" shapeId="13" nodeId="23"/>
+                        </TransformGroup>
                     </TransformGroup>
-                    <TransformGroup name="beamNode" translation="0 0.22 0" visibility="true" scale="1.75 18.89 1.75" nodeId="15">
-                        <Shape name="beamMesh" shapeId="9" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="16"/>
+                    <TransformGroup name="driverSeatNode" translation="0 1.24 0.02" nodeId="24"/>
+                    <TransformGroup name="beaconNode" translation="0 2.92 0" nodeId="25">
+                        <Shape name="beaconMesh" shapeId="14" nodeId="26"/>
                     </TransformGroup>
-                    <TransformGroup name="groundRing" translation="0 -18.76 0" visibility="true" scale="1.75 1 1.75" nodeId="17">
-                        <Shape name="groundRingMesh" shapeId="10" castsShadows="false" receiveShadows="false" nodeId="18"/>
+                    <TransformGroup name="beamNodeDamage" translation="0 0.19 0" visibility="true" scale="1.75 18.86 1.75" nodeId="27">
+                        <Shape name="beamMeshDamage" shapeId="15" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="28"/>
                     </TransformGroup>
-                    <Shape name="cockpitDetail" shapeId="11" nodeId="19"/>
-                    <TransformGroup name="cockpitBeacon1" translation="-0.44 1.62 0.30" nodeId="20"/>
-                    <TransformGroup name="cockpitBeacon2" translation="0.44 1.62 0.30" nodeId="21"/>
+                    <TransformGroup name="beamNodeHarvest" translation="0 0.19 0" visibility="false" nodeId="29">
+                        <Shape name="beamMeshHarvest" shapeId="16" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="30"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNodeCultivate" translation="0 0.19 0" visibility="false" nodeId="31">
+                        <Shape name="beamMeshCultivate" shapeId="17" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="32"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNodePlow" translation="0 0.19 0" visibility="false" nodeId="33">
+                        <Shape name="beamMeshPlow" shapeId="18" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="34"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNodeSow" translation="0 0.19 0" visibility="false" nodeId="35">
+                        <Shape name="beamMeshSow" shapeId="19" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="36"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNodeFertilize" translation="0 0.19 0" visibility="false" nodeId="37">
+                        <Shape name="beamMeshFertilize" shapeId="20" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="38"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNodeLoad" translation="0 0.19 0" visibility="false" nodeId="39">
+                        <Shape name="beamMeshLoad" shapeId="21" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="40"/>
+                    </TransformGroup>
+                    <TransformGroup name="beamNodeUnload" translation="0 0.19 0" visibility="false" nodeId="41">
+                        <Shape name="beamMeshUnload" shapeId="22" castsShadows="false" receiveShadows="false" nonRenderable="false" nodeId="42"/>
+                    </TransformGroup>
+                    <TransformGroup name="groundRing" translation="0 -18.76 0" visibility="true" scale="1.75 1 1.75" nodeId="43">
+                        <Shape name="groundRingMesh" shapeId="23" castsShadows="false" receiveShadows="false" nodeId="44"/>
+                    </TransformGroup>
+                    <Shape name="cockpitDetail" shapeId="24" nodeId="45"/>
+                    <TransformGroup name="cockpitBeacon1" translation="-0.44 1.62 0.30" nodeId="46"/>
+                    <TransformGroup name="cockpitBeacon2" translation="0.44 1.62 0.30" nodeId="47"/>
                 </TransformGroup>
-                <TransformGroup name="collisions" translation="0 18.83 0" nodeId="22">
-                    <Shape name="collisionDome" shapeId="12" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="23"/>
-                    <Shape name="collisionHull" shapeId="13" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="24"/>
+                <TransformGroup name="collisions" translation="0 18.83 0" nodeId="48">
+                    <Shape name="collisionDome" shapeId="25" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="49"/>
+                    <Shape name="collisionHull" shapeId="26" compoundChild="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" density="0.001" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="50"/>
                 </TransformGroup>
-                <TransformGroup name="lights" translation="0 18.83 0" nodeId="25">
-                    <Light name="headLightLeft" translation="0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="26"/>
-                    <Light name="headLightRight" translation="-0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="27"/>
-                    <Light name="workLight" translation="0 0.30 0" rotation="-90 0 0" type="spot" color="0.65 1.0 0.85" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="60" coneAngle="88" dropOff="2" nodeId="28"/>
-                    <Light name="beamLight" translation="0 0.22 0" rotation="-90 0 0" type="spot" color="0.55 1.0 0.95" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="42" coneAngle="52" dropOff="1.5" nodeId="29"/>
-                    <Light name="beaconLight" translation="0 3.02 0" type="point" color="1 0.18 0.12" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="26" nodeId="30"/>
-                    <Light name="tailLight" translation="0 0.72 -2.20" type="point" color="1 0.25 0.15" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="8" nodeId="31"/>
+                <TransformGroup name="lights" translation="0 18.83 0" nodeId="51">
+                    <Light name="headLightLeft" translation="0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="52"/>
+                    <Light name="headLightRight" translation="-0.62 0.66 1.95" rotation="-8 180 0" type="spot" color="0.85 1.0 0.92" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="45" coneAngle="72" dropOff="3" nodeId="53"/>
+                    <Light name="workLight" translation="0 0.30 0" rotation="-90 0 0" type="spot" color="0.65 1.0 0.85" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="60" coneAngle="88" dropOff="2" nodeId="54"/>
+                    <Light name="beamLight" translation="0 0.22 0" rotation="-90 0 0" type="spot" color="0.55 1.0 0.95" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="42" coneAngle="52" dropOff="1.5" nodeId="55"/>
+                    <Light name="beaconLight" translation="0 2.92 0" type="point" color="1 0.18 0.12" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="26" nodeId="56"/>
+                    <Light name="tailLight" translation="0 0.72 -2.20" type="point" color="1 0.25 0.15" emitDiffuse="true" emitSpecular="true" castShadowMap="false" range="8" nodeId="57"/>
                 </TransformGroup>
-                <Shape name="exactFillRootNode" shapeId="14" kinematic="true" compound="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" castsShadows="false" receiveShadows="false" nonRenderable="true" translation="0 18.83 0" nodeId="32"/>
-                <TransformGroup name="enterReferenceNode" translation="0 1.05 2.45" nodeId="33"/>
-                <TransformGroup name="exitPoint" translation="2.7 0.05 0.0" nodeId="34"/>
-                <TransformGroup name="soundMotor" translation="0 19.83 0" nodeId="35"/>
-                <TransformGroup name="outdoorCameraTarget" translation="0 19.98 0" nodeId="36">
-                    <Camera name="outdoorCamera" translation="0 0 -9" rotation="0 180 0" fov="45" nearClip="0.05" farClip="5000" nodeId="37"/>
+                <Shape name="exactFillRootNode" shapeId="27" kinematic="true" compound="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" castsShadows="false" receiveShadows="false" nonRenderable="true" translation="0 18.83 0" nodeId="58"/>
+                <TransformGroup name="enterReferenceNode" translation="0 1.05 2.45" nodeId="59"/>
+                <TransformGroup name="exitPoint" translation="2.7 0.05 0.0" nodeId="60"/>
+                <TransformGroup name="soundMotor" translation="0 19.83 0" nodeId="61"/>
+                <TransformGroup name="outdoorCameraTarget" translation="0 19.98 0" nodeId="62">
+                    <Camera name="outdoorCamera" translation="0 0 -9" rotation="0 180 0" fov="45" nearClip="0.05" farClip="5000" nodeId="63"/>
                 </TransformGroup>
-                <TransformGroup name="indoorCameraTarget" translation="0 20.25 0.12" nodeId="38">
-                    <Camera name="indoorCamera" rotation="0 180 0" fov="60" nearClip="0.03" farClip="5000" nodeId="39"/>
+                <TransformGroup name="indoorCameraTarget" translation="0 20.45 0.02" nodeId="64">
+                    <Camera name="indoorCamera" rotation="-8 180 0" fov="70" nearClip="0.03" farClip="5000" nodeId="65"/>
                 </TransformGroup>
-                <TransformGroup name="wheelFront" translation="0 0.55 1.85" nodeId="40"/>
-                <TransformGroup name="wheelRear" translation="0 0.55 -1.85" nodeId="41"/>
-                <TransformGroup name="wheelOutriggerLeft" translation="-1.95 0.55 0" nodeId="42"/>
-                <TransformGroup name="wheelOutriggerRight" translation="1.95 0.55 0" nodeId="43"/>
-                <TransformGroup name="wheelBrush0" translation="-3.5 0.55 0" nodeId="44"/>
-                <TransformGroup name="wheelBrush1" translation="-3 0.55 0" nodeId="45"/>
-                <TransformGroup name="wheelBrush2" translation="-2.5 0.55 0" nodeId="46"/>
-                <TransformGroup name="wheelBrush3" translation="-2 0.55 0" nodeId="47"/>
-                <TransformGroup name="wheelBrush4" translation="-1.5 0.55 0" nodeId="48"/>
-                <TransformGroup name="wheelBrush5" translation="-1 0.55 0" nodeId="49"/>
-                <TransformGroup name="wheelBrush6" translation="-0.5 0.55 0" nodeId="50"/>
-                <TransformGroup name="wheelBrush7" translation="0 0.55 0" nodeId="51"/>
-                <TransformGroup name="wheelBrush8" translation="0.5 0.55 0" nodeId="52"/>
-                <TransformGroup name="wheelBrush9" translation="1 0.55 0" nodeId="53"/>
-                <TransformGroup name="wheelBrush10" translation="1.5 0.55 0" nodeId="54"/>
-                <TransformGroup name="wheelBrush11" translation="2 0.55 0" nodeId="55"/>
-                <TransformGroup name="wheelBrush12" translation="2.5 0.55 0" nodeId="56"/>
-                <TransformGroup name="wheelBrush13" translation="3 0.55 0" nodeId="57"/>
-                <TransformGroup name="wheelBrush14" translation="3.5 0.55 0" nodeId="58"/>
-                <TransformGroup name="groundEffects" nodeId="59">
-                    <Light name="groundGlow" translation="0 0.45 0" type="point" color="0.45 1.0 0.8" emitDiffuse="true" emitSpecular="false" castShadowMap="false" range="16" nodeId="60"/>
+                <TransformGroup name="wheelFront" translation="0 0.55 1.85" nodeId="66"/>
+                <TransformGroup name="wheelRear" translation="0 0.55 -1.85" nodeId="67"/>
+                <TransformGroup name="wheelOutriggerLeft" translation="-1.95 0.55 0" nodeId="68"/>
+                <TransformGroup name="wheelOutriggerRight" translation="1.95 0.55 0" nodeId="69"/>
+                <TransformGroup name="wheelBrush0" translation="-3.5 0.55 0" nodeId="70"/>
+                <TransformGroup name="wheelBrush1" translation="-3 0.55 0" nodeId="71"/>
+                <TransformGroup name="wheelBrush2" translation="-2.5 0.55 0" nodeId="72"/>
+                <TransformGroup name="wheelBrush3" translation="-2 0.55 0" nodeId="73"/>
+                <TransformGroup name="wheelBrush4" translation="-1.5 0.55 0" nodeId="74"/>
+                <TransformGroup name="wheelBrush5" translation="-1 0.55 0" nodeId="75"/>
+                <TransformGroup name="wheelBrush6" translation="-0.5 0.55 0" nodeId="76"/>
+                <TransformGroup name="wheelBrush7" translation="0 0.55 0" nodeId="77"/>
+                <TransformGroup name="wheelBrush8" translation="0.5 0.55 0" nodeId="78"/>
+                <TransformGroup name="wheelBrush9" translation="1 0.55 0" nodeId="79"/>
+                <TransformGroup name="wheelBrush10" translation="1.5 0.55 0" nodeId="80"/>
+                <TransformGroup name="wheelBrush11" translation="2 0.55 0" nodeId="81"/>
+                <TransformGroup name="wheelBrush12" translation="2.5 0.55 0" nodeId="82"/>
+                <TransformGroup name="wheelBrush13" translation="3 0.55 0" nodeId="83"/>
+                <TransformGroup name="wheelBrush14" translation="3.5 0.55 0" nodeId="84"/>
+                <TransformGroup name="groundEffects" nodeId="85">
+                    <Light name="groundGlow" translation="0 0.45 0" type="point" color="0.45 1.0 0.8" emitDiffuse="true" emitSpecular="false" castShadowMap="false" range="16" nodeId="86"/>
                 </TransformGroup>
             </Shape>
   </Scene>

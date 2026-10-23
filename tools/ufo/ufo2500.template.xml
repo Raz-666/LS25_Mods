@@ -76,7 +76,7 @@
             <part node="leg0" startTime="0.6" endTime="4.0" startRot="0 -30 90" endRot="0 -30 16"/>
             <part node="leg1" startTime="0.6" endTime="4.0" startRot="0 -150 90" endRot="0 -150 16"/>
             <part node="leg2" startTime="0.6" endTime="4.0" startRot="0 -270 90" endRot="0 -270 16"/>
-            <part node="beamNode" startTime="0.6" endTime="4.0" startScale="1.75 18.89 1.75" endScale="0.9 1.0 0.9"/>
+            <part node="beamNodeDamage" startTime="0.6" endTime="4.0" startScale="1.75 18.89 1.75" endScale="0.9 1.0 0.9"/>
             <part node="groundRing" startTime="0" endTime="4.5" startTrans="0 -18.76 0" endTrans="0 -0.88 0" startScale="1.75 1 1.75" endScale="0.9 1 0.9"/>
         </animation>
     </animations>

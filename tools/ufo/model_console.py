@@ -20,7 +20,7 @@ the air:
 import math
 
 import model
-from meshlib import Mesh, box, cylinder, disc, place, sphere, torus
+from meshlib import TAU, Mesh, box, cylinder, disc, place, sphere, torus
 from model import Node, _fmt
 
 HOVER = 18.83            # seat ends up 20.0 m above the ground
@@ -104,56 +104,74 @@ def leg_angles():
 # cockpit interior
 # --------------------------------------------------------------------------
 def cockpit_detail_mesh():
-    """Dashboard, console, screens, buttons and levers - all inside the dome."""
+    """Dashboard, console, screens, buttons and levers - inside the bell jar.
+
+    Laid out for the narrow dome of the PC model: floor, two angled instrument
+    wings, a low pedestal with the mode dial and the seat.  Nothing sticks out
+    of the glass any more.
+    """
     m = Mesh()
 
     # floor plate / seat base
-    m.add("cockpit", *disc(0.95, 1.158, 40))
-    m.add("hullMetal", *place(torus(0.95, 0.028, 0, 40, 6), translation=(0, 1.158, 0)))
-    m.add("hullMetal", *place(cylinder(0.30, 1.16, 1.34, 18, caps=True),
-                              translation=(0, 0, -0.72)))
+    m.add("cockpit", *disc(0.78, 1.158, 40))
+    m.add("hullMetal", *place(torus(0.79, 0.028, 0, 40, 6), translation=(0, 1.158, 0)))
+    m.add("hullMetal", *place(cylinder(0.26, 1.16, 1.34, 18, caps=True),
+                              translation=(0, 0, -0.50)))
 
-    # curved dashboard in front of the pilot
-    m.add("hullMetal", *place(box((0, 0, 0), (1.10, 0.10, 0.26)), rot=(-22, 0, 0),
-                              translation=(0, 1.36, 0.86)))
-    m.add("hullMetal", *place(box((0, 0, 0), (0.42, 0.16, 0.22)), rot=(-18, 0, 0),
-                              translation=(0, 1.29, 1.02)))
+    # low curved desk in front of the pilot
+    for i in range(7):
+        a = math.radians(-54 + i * 18)
+        m.add("cockpit", *place(box((0, 0, 0), (0.30, 0.13, 0.20)),
+                                rot=(0, -math.degrees(a), 0),
+                                translation=(0.66 * math.sin(a), 1.19,
+                                             0.66 * math.cos(a))))
+    m.add("hullMetal", *place(torus(0.76, 0.012, 0, 44, 5), translation=(0, 1.255, 0)))
 
-    # three screens + a row of indicator lights on the dash
-    for i, dx in enumerate((-0.34, 0.0, 0.34)):
-        m.add("lensGreen" if i != 1 else "lensWhite",
-              *place(box((0, 0, 0), (0.26, 0.14, 0.02)), rot=(-22, 0, 0),
-                     translation=(dx, 1.395, 0.80)))
-    for i, dx in enumerate((-0.30, -0.18, -0.06, 0.06, 0.18, 0.30)):
-        m.add("lensRed" if i % 2 == 0 else "lensWhite",
-              *place(sphere((0, 0, 0), 0.018, 8, 6),
-                     translation=(dx, 1.30, 0.94)))
-
-    # side consoles with buttons
+    # two angled instrument wings with green glass
     for side in (-1, 1):
-        m.add("hullMetal", *place(box((0, 0, 0), (0.22, 0.09, 0.52)), rot=(0, 0, 0),
-                                  translation=(side * 0.70, 1.24, 0.30)))
-        for k in range(4):
-            m.add("lensGreen" if (k + (side > 0)) % 2 else "lensRed",
-                  *place(sphere((0, 0, 0), 0.017, 8, 6),
-                         translation=(side * 0.70, 1.29, 0.10 + k * 0.13)))
+        m.add("hullMetal", *place(box((0, 0, 0), (0.36, 0.24, 0.05)),
+                                  rot=(14, side * 26, 0),
+                                  translation=(side * 0.46, 1.34, 0.42)))
+        m.add("lensGreen", *place(box((0, 0, 0), (0.31, 0.19, 0.012)),
+                                  rot=(14, side * 26, 0),
+                                  translation=(side * 0.46, 1.342, 0.392)))
+        for b in range(4):
+            m.add("lensWhite" if b % 2 == 0 else "lensRed",
+                  *place(box((0, 0, 0), (0.035, 0.012, 0.022)),
+                         rot=(14, side * 26, 0),
+                         translation=(side * (0.34 + b * 0.070), 1.238, 0.48)))
 
-    # throttle lever + joystick
-    m.add("hullMetal", *place(cylinder(0.022, 0.0, 0.20, 8, caps=True),
-                              rot=(0, 0, 18), translation=(0.56, 1.20, 0.44)))
-    m.add("lensRed", *place(sphere((0, 0, 0), 0.045, 10, 6),
-                            translation=(0.62, 1.39, 0.44)))
+    # the mode dial on the centre pedestal
+    m.add("hullMetal", *place(cylinder(0.16, 1.19, 1.26, 20, caps=True),
+                              translation=(0, 0, 0.44)))
+    m.add("hullMetal", *place(cylinder(0.185, 1.25, 1.275, 20, caps=True),
+                              translation=(0, 0, 0.44)))
+    for i in range(8):
+        a = TAU * i / 8
+        m.add("lensGreen", *place(box((0, 0, 0), (0.035, 0.010, 0.055)),
+                                  rot=(0, -math.degrees(a), 0),
+                                  translation=(0.115 * math.cos(a), 1.282,
+                                               0.44 + 0.115 * math.sin(a))))
+    m.add("lensWhite", *place(disc(0.10, 1.285, 24, up=True), translation=(0, 0, 0.44)))
+    m.add("lensRed", *place(sphere((0, 0, 0), 0.032, 10, 8),
+                            translation=(0, 1.29, 0.44)))
+
+    # throttle levers left and right of the seat
+    m.add("hullMetal", *place(cylinder(0.020, 0.0, 0.18, 8, caps=True),
+                              rot=(-24, 0, 9), translation=(0.33, 1.17, 0.14)))
+    m.add("lensRed", *place(sphere((0, 0, 0), 0.034, 10, 6),
+                            translation=(0.37, 1.33, 0.05)))
     m.add("hullMetal", *place(cylinder(0.020, 0.0, 0.16, 8, caps=True),
-                              rot=(0, 0, -12), translation=(-0.56, 1.20, 0.42)))
-    m.add("hullMetal", *place(sphere((0, 0, 0), 0.05, 10, 6),
-                              translation=(-0.58, 1.36, 0.42)))
+                              rot=(-24, 0, -9), translation=(-0.33, 1.17, 0.14)))
+    m.add("hullMetal", *place(sphere((0, 0, 0), 0.04, 10, 6),
+                              translation=(-0.37, 1.31, 0.05)))
 
-    # overhead switch panel between the two beacon lights
-    m.add("hullMetal", *place(box((0, 0, 0), (0.66, 0.05, 0.20)), rot=(14, 0, 0),
-                              translation=(0, 1.72, 0.18)))
+    # overhead switch panel between the beacon lights
+    m.add("hullMetal", *place(box((0, 0, 0), (0.46, 0.05, 0.18)), rot=(14, 0, 0),
+                              translation=(0, 1.66, 0.10)))
     for k in range(3):
-        m.add("lensWhite", *place(box((0, 0, 0), (0.10, 0.02, 0.06)), rot=(14, 0, 0),
-                                  translation=(-0.20 + k * 0.20, 1.755, 0.18)))
+        m.add("lensWhite", *place(box((0, 0, 0), (0.08, 0.02, 0.05)), rot=(14, 0, 0),
+                                  translation=(-0.14 + k * 0.14, 1.695, 0.10)))
     return m
 
 
@@ -177,10 +195,16 @@ def build_scene(hover=HOVER):
             rot = leg.attrs["rotation"].split()
             leg.attrs["rotation"] = "%s %s %s" % (rot[0], rot[1], _fmt([z_rest]))
 
-    # 3) the beam is always on and ends just above the ground
-    beam = find(root, "beamNode")
+    # 3) the beam is always on and ends just above the ground.
+    # The PC model has one cone per working mode; the console edition only has
+    # the crop circle brush, so it keeps a single green cone and hides the rest.
+    height = hover + 0.19 - BEAM_BOTTOM
+    for mode_id, _material in model.BEAMS:
+        other = find(root, "beamNode" + mode_id[0].upper() + mode_id[1:])
+        if other is not None:
+            other.attrs["visibility"] = "false"
+    beam = find(root, "beamNodeDamage")
     if beam is not None:
-        height = hover + 0.22 - BEAM_BOTTOM
         beam.attrs["visibility"] = "true"
         beam.attrs["scale"] = "%s %s %s" % (_fmt([BEAM_RADIUS]), _fmt([height]),
                                             _fmt([BEAM_RADIUS]))
