@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <text name="ufo_name"><de>UFO 2000</de><en>UFO 2000</en></text>
+    <text name="brand_ufo2000"><de>UFO-Werke</de><en>UFO Works</en></text>
+    <text name="function_ufo"><de>Fluggerät</de><en>Aircraft</en></text>
+    <text name="typeDesc_ufo"><de>UFO 2000 – kleine Untertasse mit Kornkreis-Generator</de><en>UFO 2000 - small saucer with a crop circle generator</en></text>
+    <text name="configuration_ufo_motor"><de>Antigravitations-Antrieb</de><en>Anti-gravity drive</en></text>
+
+    <text name="ufo_action_menu"><de>Kornkreis-Menü</de><en>Crop circle menu</en></text>
+    <text name="ufo_action_toggleHover"><de>Abheben / Landen</de><en>Take off / land</en></text>
+    <text name="ufo_action_ascend"><de>Steigen / Muster</de><en>Climb / pattern</en></text>
+    <text name="ufo_action_descend"><de>Sinken / Muster</de><en>Descend / pattern</en></text>
+    <text name="ufo_action_beam"><de>Traktorstrahl</de><en>Tractor beam</en></text>
+
+    <text name="ufo_mode_damage"><de>Plattdrücken (Kornkreis)</de><en>Flatten (crop circle)</en></text>
+    <text name="ufo_mode_harvest"><de>Ernten</de><en>Harvest</en></text>
+    <text name="ufo_mode_cultivate"><de>Grubbern</de><en>Cultivate</en></text>
+    <text name="ufo_mode_plow"><de>Pflügen</de><en>Plow</en></text>
+    <text name="ufo_mode_sow"><de>Säen</de><en>Sow</en></text>
+    <text name="ufo_mode_fertilize"><de>Düngen</de><en>Fertilize</en></text>
+    <text name="ufo_mode_load"><de>Aufnehmen (Sog)</de><en>Load (suction)</en></text>
+    <text name="ufo_mode_unload"><de>Abladen (Strahl)</de><en>Unload (beam)</en></text>
+    <text name="ufo_notify_mode"><de>Strahl-Modus: %s</de><en>Beam mode: %s</en></text>
+    <text name="ufo_menu_modeHint"><de>K: nächster Modus · J/L: Strahl / Saatgut · Z: Strahl an</de><en>K: next mode · J/L: beam / seed · Z: beam on</en></text>
+    <text name="ufo_hud_cargo"><de>Laderaum</de><en>Cargo hold</en></text>
+    <text name="ufo_hud_sow"><de>Saatgut</de><en>Seed</en></text>
+    <text name="ufo_action_mode"><de>Strahl-Modus (8 Funktionen)</de><en>Beam mode (8 functions)</en></text>
+    <text name="ufo_action_penWide"><de>Strahl weiter</de><en>Beam wider</en></text>
+    <text name="ufo_action_penNarrow"><de>Strahl enger</de><en>Beam narrower</en></text>
+    <text name="ufo_action_unload"><de>Abladen (über Anhänger/Abkippstelle)</de><en>Unload (over trailer / tip station)</en></text>
+    <text name="ufo_action_infinite"><de>Korntank unendlich</de><en>Endless grain tank</en></text>
+
+    <text name="ufo_hud_mode"><de>Strahl</de><en>Beam</en></text>
+    <text name="ufo_hud_modeHarvest"><de>Ernten</de><en>Harvest</en></text>
+    <text name="ufo_hud_modeDamage"><de>Plattdrücken</de><en>Flatten</en></text>
+    <text name="ufo_hud_tank"><de>Korntank</de><en>Grain tank</en></text>
+    <text name="ufo_hud_tankEndless"><de>unendlich</de><en>endless</en></text>
+    <text name="ufo_hud_unloading"><de>Lädt ab:</de><en>Unloading:</en></text>
+    <text name="ufo_menu_keysMode"><de>K: Modus · J/L: Strahl enger/weiter</de><en>K: mode · J/L: beam focus</en></text>
+    <text name="ufo_menu_keysTank"><de>I: unendlich · U: abtanken</de><en>I: endless · U: unload</en></text>
+    <text name="ufo_notify_modeHarvest"><de>Strahl-Modus: ERNTEN – das Korn geht in den Tank</de><en>Beam mode: HARVEST – the crop goes into the tank</en></text>
+    <text name="ufo_notify_modeDamage"><de>Strahl-Modus: PLATTDRÜCKEN – Kornkreise ohne Ernte</de><en>Beam mode: FLATTEN – crop circles without harvesting</en></text>
+    <text name="ufo_notify_tankEndless"><de>Korntank: unendlich</de><en>Grain tank: endless</en></text>
+    <text name="ufo_notify_tankNormal"><de>Korntank: normal (25.000 l)</de><en>Grain tank: normal (25,000 l)</en></text>
+    <text name="ufo_menu_title"><de>Bodenmuster (drückt die Ernte platt)</de><en>Ground patterns (presses the crop down)</en></text>
+    <text name="ufo_menu_hint"><de>Bild auf / Bild ab: Auswahl · Z: anwenden · M: schließen</de><en>Page Up / Page Down: select · Z: apply · M: close</en></text>
+    <text name="ufo_hud_height"><de>Höhe</de><en>Height</en></text>
+    <text name="ufo_hud_pattern"><de>Muster</de><en>Pattern</en></text>
+    <text name="ufo_hud_radius"><de>Radius</de><en>Radius</en></text>
+    <text name="ufo_hud_pen"><de>Stift: einfach fliegen und malen</de><en>Pen: just fly and draw</en></text>
+    <text name="ufo_hint_controls"><de>UFO 2000: V = abheben/landen, Joystick-Achse oder Bild auf/ab = Höhe, Z = Strahl an/aus, M = Bodenmuster-Menü</de><en>UFO 2000: V = take off/land, joystick axis or Page Up/Down = altitude, Z = beam on/off, M = pattern menu</en></text>
+
+    <text name="ufo_circle_circle"><de>Kreis</de><en>Circle</en></text>
+    <text name="ufo_circle_ring"><de>Ring</de><en>Ring</en></text>
+    <text name="ufo_circle_tripleRing"><de>Drei Ringe</de><en>Three rings</en></text>
+    <text name="ufo_circle_spiral"><de>Spirale</de><en>Spiral</en></text>
+    <text name="ufo_circle_flower"><de>Blüte</de><en>Flower</en></text>
+    <text name="ufo_circle_star"><de>Stern</de><en>Star</en></text>
+    <text name="ufo_circle_alien"><de>Alien-Gesicht</de><en>Alien face</en></text>
+    <text name="ufo_circle_flowerOfLife"><de>Blume des Lebens</de><en>Flower of life</en></text>
+    <text name="ufo_circle_sun"><de>Sonne</de><en>Sun</en></text>
+    <text name="ufo_circle_manual"><de>Manuell (50-cm-Stift)</de><en>Manual (50 cm pen)</en></text>
+</l10n>

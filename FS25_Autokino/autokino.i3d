@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<i3D name="autokino" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
+  <Asset>
+    <Export program="tools/ufo/model.py (procedural FS25 pipeline)" version="1.0"/>
+  </Asset>
+  <Files>
+    <File fileId="1" filename="textures/gravel_diffuse.dds"/>
+    <File fileId="2" filename="textures/gravel_specular.dds"/>
+    <File fileId="3" filename="textures/asphalt_diffuse.dds"/>
+    <File fileId="4" filename="textures/asphalt_specular.dds"/>
+    <File fileId="5" filename="textures/concrete_diffuse.dds"/>
+    <File fileId="6" filename="textures/concrete_specular.dds"/>
+    <File fileId="7" filename="textures/darkMetal_diffuse.dds"/>
+    <File fileId="8" filename="textures/darkMetal_specular.dds"/>
+    <File fileId="9" filename="textures/plank_diffuse.dds"/>
+    <File fileId="10" filename="textures/plank_specular.dds"/>
+    <File fileId="11" filename="textures/screen_diffuse.dds"/>
+    <File fileId="12" filename="textures/neonPink_diffuse.dds"/>
+    <File fileId="13" filename="textures/neonCyan_diffuse.dds"/>
+    <File fileId="14" filename="textures/neonYellow_diffuse.dds"/>
+  </Files>
+  <Materials>
+    <Material name="collision" materialId="1" diffuseColor="0.6 0.1 0.6 1" specularColor="0.1 0.1 0.1"/>
+    <Material name="gravel" materialId="2">
+      <Texture fileId="1"/>
+      <Glossmap fileId="2"/>
+    </Material>
+    <Material name="asphalt" materialId="3">
+      <Texture fileId="3"/>
+      <Glossmap fileId="4"/>
+    </Material>
+    <Material name="concrete" materialId="4">
+      <Texture fileId="5"/>
+      <Glossmap fileId="6"/>
+    </Material>
+    <Material name="darkMetal" materialId="5">
+      <Texture fileId="7"/>
+      <Glossmap fileId="8"/>
+    </Material>
+    <Material name="plank" materialId="6">
+      <Texture fileId="9"/>
+      <Glossmap fileId="10"/>
+    </Material>
+    <Material name="screen" materialId="7">
+      <Texture fileId="11"/>
+    </Material>
+    <Material name="neonPink" materialId="8">
+      <Texture fileId="12"/>
+    </Material>
+    <Material name="neonCyan" materialId="9">
+      <Texture fileId="13"/>
+    </Material>
+    <Material name="neonYellow" materialId="10">
+      <Texture fileId="14"/>
+    </Material>
+  </Materials>
+  <Shapes externalShapesFile="autokino.i3d.shapes">
+  </Shapes>
+  <Dynamics>
+  </Dynamics>
+  <Scene>
+            <TransformGroup name="autokino" nodeId="1">
+                <Shape name="lotMesh" shapeId="1" nodeId="2"/>
+                <Shape name="frameMesh" shapeId="2" nodeId="3"/>
+                <Shape name="screenMesh" shapeId="3" nodeId="4"/>
+                <Shape name="boothMesh" shapeId="4" nodeId="5"/>
+                <Shape name="detailMesh" shapeId="5" nodeId="6"/>
+                <Shape name="neonSign" shapeId="6" translation="0 0 0" nodeId="7"/>
+                <Light name="screenLight" type="point" range="45" diffuseColor="0.85 0.85 1.0 1" castShadowMap="false" decayRate="2" translation="0 6.0 -8.0" nodeId="8"/>
+                <Shape name="colScreen" shapeId="7" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="9"/>
+                <Shape name="colBooth" shapeId="8" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="10"/>
+                <Shape name="colMast1" shapeId="9" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="11"/>
+                <Shape name="colMast2" shapeId="10" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="12"/>
+                <Shape name="colMast3" shapeId="11" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="13"/>
+                <Shape name="colMast4" shapeId="12" dynamic="false" compound="true" collisionFilterGroup="0x1" collisionFilterMask="0x1" castsShadows="false" receiveShadows="false" nonRenderable="true" nodeId="14"/>
+                <Shape name="cinemaTrigger" shapeId="13" trigger="true" static="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x110000" castsShadows="false" receiveShadows="false" nonRenderable="true" translation="0 3 2" nodeId="15"/>
+                <TransformGroup name="filmSoundNode" translation="0 3.0 -8.0" nodeId="16"/>
+                <TransformGroup name="testArea1" translation="-22 0 19" nodeId="17">
+                    <TransformGroup name="testArea1End" translation="44 0 -36" nodeId="18"/>
+                </TransformGroup>
+                <TransformGroup name="clearArea1" translation="-24 0 -18" nodeId="19">
+                    <TransformGroup name="clearArea1Width" translation="48 0 0" nodeId="20"/>
+                    <TransformGroup name="clearArea1Height" translation="0 0 39" nodeId="21"/>
+                </TransformGroup>
+                <TransformGroup name="levelArea1" translation="-24 0 -18" nodeId="22">
+                    <TransformGroup name="levelArea1Width" translation="48 0 0" nodeId="23"/>
+                    <TransformGroup name="levelArea1Height" translation="0 0 39" nodeId="24"/>
+                </TransformGroup>
+                <TransformGroup name="paintArea1" translation="-24 0 -18" nodeId="25">
+                    <TransformGroup name="paintArea1Width" translation="48 0 0" nodeId="26"/>
+                    <TransformGroup name="paintArea1Height" translation="0 0 39" nodeId="27"/>
+                </TransformGroup>
+                <TransformGroup name="foliageArea1" translation="-24 0 -18" nodeId="28">
+                    <TransformGroup name="foliageArea1Width" translation="48 0 0" nodeId="29"/>
+                    <TransformGroup name="foliageArea1Height" translation="0 0 39" nodeId="30"/>
+                </TransformGroup>
+                <TransformGroup name="indoorArea1" translation="-3 0.05 14.6" nodeId="31">
+                    <TransformGroup name="indoorArea1Width" translation="6 0 0" nodeId="32"/>
+                    <TransformGroup name="indoorArea1Height" translation="0 0 3" nodeId="33"/>
+                </TransformGroup>
+            </TransformGroup>
+  </Scene>
+</i3D>

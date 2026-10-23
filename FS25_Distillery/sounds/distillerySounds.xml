@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--
+  FS25_Distillery - the set list of the club.
+
+  Every entry is a normal base game sound sample.  `file` is the OGG file,
+  `loops="0"` means "forever", `bpm` drives the neon blinking and the marker
+  bar, `title` is the l10n key that is announced when the record changes.
+
+  Own tracks: convert your file to OGG Vorbis (44.1 kHz, stereo), copy it into
+  sounds/ and add another <musicN .../> line - the script reads up to 8.
+  rowHeight is the distance between two rows of the set list board.
+-->
+<sounds volume="0.95" rowHeight="0.273">
+    <music1 file="sounds/anthem.ogg" loops="0" bpm="132" title="l10n_distillery_track_anthem"
+            volumeScale="0.92" innerRadius="9" outerRadius="55" priority="HIGH"
+            fadeIn="0.6" fadeOut="1.0" supportsReverb="true"/>
+    <music2 file="sounds/afterdark.ogg" loops="0" bpm="126" title="l10n_distillery_track_afterdark"
+            volumeScale="0.92" innerRadius="9" outerRadius="55" priority="HIGH"
+            fadeIn="0.6" fadeOut="1.0" supportsReverb="true"/>
+    <music3 file="sounds/kohle.ogg" loops="0" bpm="138" title="l10n_distillery_track_kohle"
+            volumeScale="0.92" innerRadius="9" outerRadius="55" priority="HIGH"
+            fadeIn="0.6" fadeOut="1.0" supportsReverb="true"/>
+    <music4 file="sounds/rohrwerk.ogg" loops="0" bpm="124" title="l10n_distillery_track_rohrwerk"
+            volumeScale="0.92" innerRadius="9" outerRadius="55" priority="HIGH"
+            fadeIn="0.6" fadeOut="1.0" supportsReverb="true"/>
+    <music5 file="sounds/untergrund.ogg" loops="0" bpm="140" title="l10n_distillery_track_untergrund"
+            volumeScale="0.92" innerRadius="9" outerRadius="55" priority="HIGH"
+            fadeIn="0.6" fadeOut="1.0" supportsReverb="true"/>
+    <music6 file="sounds/letzteRunde.ogg" loops="0" bpm="118" title="l10n_distillery_track_letzteRunde"
+            volumeScale="0.95" innerRadius="9" outerRadius="55" priority="HIGH"
+            fadeIn="0.6" fadeOut="1.4" supportsReverb="true"/>
+</sounds>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<placeable type="disco" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/placeable.xsd">
+    <annotation>
+        FS25_Disco - a farm disco. Walk in, the music starts. The owner (or any
+        visitor) picks the next track with the action keys; the track is chosen
+        by the server and starts at the same time on every client, so everyone
+        in the hall hears the same song at the same beat.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_disco_name</name>
+        <image>store_disco.png</image>
+        <price>32000</price>
+        <functions>
+            <function>$l10n_disco_function</function>
+        </functions>
+        <lifetime>1000</lifetime>
+        <dailyUpkeep>25</dailyUpkeep>
+        <rotation>0</rotation>
+        <brand>LIZARD</brand>
+        <species>PLACEABLE</species>
+        <category>placeableMisc</category>
+        <brush>
+            <type>placeable</type>
+            <category>object</category>
+        </brush>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <storeIconRendering>
+            <settings cameraXRot="-20" cameraYRot="40" advancedBoundingBox="true"/>
+        </storeIconRendering>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>disco.i3d</filename>
+        <boughtWithFarmland>true</boughtWithFarmland>
+        <canBeDeleted>true</canBeDeleted>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testArea1" endNode="testArea1End"/>
+        </testAreas>
+        <sounds>
+            <place template="smallImp"/>
+            <placeLayered template="buildingPlacement"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearArea1" widthNode="clearArea1Width" heightNode="clearArea1Height"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="10" maxSlope="60" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelArea1" widthNode="levelArea1Width" heightNode="levelArea1Height" groundType="dirt"/>
+        </levelAreas>
+        <paintAreas>
+            <paintArea startNode="paintArea1" widthNode="paintArea1Width" heightNode="paintArea1Height" groundType="grass"/>
+        </paintAreas>
+    </leveling>
+
+    <indoorAreas>
+        <indoorArea startNode="indoorArea1" widthNode="indoorArea1Width" heightNode="indoorArea1Height"/>
+    </indoorAreas>
+
+    <foliageAreas>
+        <foliageArea startNode="foliageArea1" widthNode="foliageArea1Width" heightNode="foliageArea1Height"/>
+    </foliageAreas>
+
+    <ai>
+        <updateAreas>
+            <updateArea startNode="testArea1" endNode="testArea1End"/>
+        </updateAreas>
+    </ai>
+
+    <!-- I3D_MAPPINGS -->
+    <i3dMappings>
+        <i3dMapping id="disco" node="0>"/>
+        <i3dMapping id="shellMesh" node="0>0"/>
+        <i3dMapping id="interiorMesh" node="0>1"/>
+        <i3dMapping id="lightPink" node="0>2"/>
+        <i3dMapping id="neonPink" node="0>2|0"/>
+        <i3dMapping id="lampPink" node="0>2|1"/>
+        <i3dMapping id="lightCyan" node="0>3"/>
+        <i3dMapping id="neonCyan" node="0>3|0"/>
+        <i3dMapping id="lampCyan" node="0>3|1"/>
+        <i3dMapping id="lightYellow" node="0>4"/>
+        <i3dMapping id="neonYellow" node="0>4|0"/>
+        <i3dMapping id="lampYellow" node="0>4|1"/>
+        <i3dMapping id="mirrorBallPivot" node="0>5"/>
+        <i3dMapping id="mirrorBall" node="0>5|0"/>
+        <i3dMapping id="mirrorBallRod" node="0>5|1"/>
+        <i3dMapping id="neonSign" node="0>6"/>
+        <i3dMapping id="colBack" node="0>7"/>
+        <i3dMapping id="colLeft" node="0>8"/>
+        <i3dMapping id="colRight" node="0>9"/>
+        <i3dMapping id="colRoof" node="0>10"/>
+        <i3dMapping id="colBar" node="0>11"/>
+        <i3dMapping id="colStage" node="0>12"/>
+        <i3dMapping id="colFrontL" node="0>13"/>
+        <i3dMapping id="colFrontR" node="0>14"/>
+        <i3dMapping id="discoTrigger" node="0>15"/>
+        <i3dMapping id="musicNode" node="0>16"/>
+        <i3dMapping id="testArea1" node="0>17"/>
+        <i3dMapping id="testArea1End" node="0>17|0"/>
+        <i3dMapping id="clearArea1" node="0>18"/>
+        <i3dMapping id="clearArea1Width" node="0>18|0"/>
+        <i3dMapping id="clearArea1Height" node="0>18|1"/>
+        <i3dMapping id="levelArea1" node="0>19"/>
+        <i3dMapping id="levelArea1Width" node="0>19|0"/>
+        <i3dMapping id="levelArea1Height" node="0>19|1"/>
+        <i3dMapping id="paintArea1" node="0>20"/>
+        <i3dMapping id="paintArea1Width" node="0>20|0"/>
+        <i3dMapping id="paintArea1Height" node="0>20|1"/>
+        <i3dMapping id="indoorArea1" node="0>21"/>
+        <i3dMapping id="indoorArea1Width" node="0>21|0"/>
+        <i3dMapping id="indoorArea1Height" node="0>21|1"/>
+        <i3dMapping id="foliageArea1" node="0>22"/>
+        <i3dMapping id="foliageArea1Width" node="0>22|0"/>
+        <i3dMapping id="foliageArea1Height" node="0>22|1"/>
+    </i3dMappings>
+    <!-- /I3D_MAPPINGS -->
+</placeable>

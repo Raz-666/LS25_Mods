@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<placeable type="distillery" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/placeable.xsd">
+    <annotation>
+        FS25_Distillery - the Leipzig techno club. A reused brick factory with a
+        main floor, bar wing, foyer and beer garden. The PA keeps running for
+        everybody: the server owns the set list (index + common start time), so
+        every player hears the same record at the same second. The lit set list
+        board at the DJ booth shows the tracks, the amber marker bar shows which
+        one is running, and any player standing at the mixer can skip it.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_distillery_name</name>
+        <image>store_distillery.png</image>
+        <price>185000</price>
+        <functions>
+            <function>$l10n_distillery_function</function>
+        </functions>
+        <lifetime>1000</lifetime>
+        <dailyUpkeep>180</dailyUpkeep>
+        <rotation>0</rotation>
+        <brand>LIZARD</brand>
+        <species>PLACEABLE</species>
+        <category>placeableMisc</category>
+        <brush>
+            <type>placeable</type>
+            <category>object</category>
+        </brush>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <storeIconRendering>
+            <settings cameraXRot="-14" cameraYRot="28" cameraZoom="0.6" advancedBoundingBox="true"/>
+        </storeIconRendering>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>distillery.i3d</filename>
+        <boughtWithFarmland>true</boughtWithFarmland>
+        <canBeDeleted>true</canBeDeleted>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testArea1" endNode="testArea1End"/>
+        </testAreas>
+        <sounds>
+            <place template="smallImp"/>
+            <placeLayered template="buildingPlacement"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearArea1" widthNode="clearArea1Width" heightNode="clearArea1Height"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="10" maxSlope="60" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelArea1" widthNode="levelArea1Width" heightNode="levelArea1Height" groundType="dirt"/>
+        </levelAreas>
+        <paintAreas>
+            <paintArea startNode="paintArea1" widthNode="paintArea1Width" heightNode="paintArea1Height" groundType="concrete"/>
+        </paintAreas>
+    </leveling>
+
+    <indoorAreas>
+        <indoorArea startNode="indoorArea1" widthNode="indoorArea1Width" heightNode="indoorArea1Height"/>
+    </indoorAreas>
+
+    <foliageAreas>
+        <foliageArea startNode="foliageArea1" widthNode="foliageArea1Width" heightNode="foliageArea1Height"/>
+    </foliageAreas>
+
+    <ai>
+        <updateAreas>
+            <updateArea startNode="testArea1" endNode="testArea1End"/>
+        </updateAreas>
+    </ai>
+
+    <!-- I3D_MAPPINGS -->
+    <i3dMappings>
+        <i3dMapping id="distillery" node="0>"/>
+        <i3dMapping id="shellMesh" node="0>0"/>
+        <i3dMapping id="stageMesh" node="0>1"/>
+        <i3dMapping id="floorMesh" node="0>2"/>
+        <i3dMapping id="propsMesh" node="0>3"/>
+        <i3dMapping id="rigMesh" node="0>4"/>
+        <i3dMapping id="lightPink" node="0>5"/>
+        <i3dMapping id="neonPink" node="0>5|0"/>
+        <i3dMapping id="lightCyan" node="0>6"/>
+        <i3dMapping id="neonCyan" node="0>6|0"/>
+        <i3dMapping id="lightAmber" node="0>7"/>
+        <i3dMapping id="neonAmber" node="0>7|0"/>
+        <i3dMapping id="gardenMesh" node="0>8"/>
+        <i3dMapping id="paMesh" node="0>9"/>
+        <i3dMapping id="signMesh" node="0>10"/>
+        <i3dMapping id="playlistMesh" node="0>11"/>
+        <i3dMapping id="playlistMarker" node="0>12"/>
+        <i3dMapping id="playlistMarkerMesh" node="0>12|0"/>
+        <i3dMapping id="mirrorBallPivot" node="0>13"/>
+        <i3dMapping id="mirrorBall" node="0>13|0"/>
+        <i3dMapping id="mirrorBallRod" node="0>13|1"/>
+        <i3dMapping id="lights" node="0>14"/>
+        <i3dMapping id="headLight1" node="0>14|0"/>
+        <i3dMapping id="headLight2" node="0>14|1"/>
+        <i3dMapping id="headLight3" node="0>14|2"/>
+        <i3dMapping id="headLight4" node="0>14|3"/>
+        <i3dMapping id="headLight5" node="0>14|4"/>
+        <i3dMapping id="headLight6" node="0>14|5"/>
+        <i3dMapping id="headLight7" node="0>14|6"/>
+        <i3dMapping id="headLight8" node="0>14|7"/>
+        <i3dMapping id="barLight" node="0>14|8"/>
+        <i3dMapping id="foyerLight" node="0>14|9"/>
+        <i3dMapping id="gardenLight" node="0>14|10"/>
+        <i3dMapping id="colMainFront" node="0>15"/>
+        <i3dMapping id="colMainBack" node="0>16"/>
+        <i3dMapping id="colMainWest" node="0>17"/>
+        <i3dMapping id="colBarFront" node="0>18"/>
+        <i3dMapping id="colBarBack" node="0>19"/>
+        <i3dMapping id="colBarEast" node="0>20"/>
+        <i3dMapping id="colStage" node="0>21"/>
+        <i3dMapping id="colBarCounter" node="0>22"/>
+        <i3dMapping id="colPA1" node="0>23"/>
+        <i3dMapping id="colPA2" node="0>24"/>
+        <i3dMapping id="colPA3" node="0>25"/>
+        <i3dMapping id="colPA4" node="0>26"/>
+        <i3dMapping id="colGardenBar" node="0>27"/>
+        <i3dMapping id="clubTrigger" node="0>28"/>
+        <i3dMapping id="djTrigger" node="0>29"/>
+        <i3dMapping id="musicNode" node="0>30"/>
+        <i3dMapping id="djNode" node="0>31"/>
+        <i3dMapping id="testArea1" node="0>32"/>
+        <i3dMapping id="testArea1End" node="0>32|0"/>
+        <i3dMapping id="clearArea1" node="0>33"/>
+        <i3dMapping id="clearArea1Width" node="0>33|0"/>
+        <i3dMapping id="clearArea1Height" node="0>33|1"/>
+        <i3dMapping id="levelArea1" node="0>34"/>
+        <i3dMapping id="levelArea1Width" node="0>34|0"/>
+        <i3dMapping id="levelArea1Height" node="0>34|1"/>
+        <i3dMapping id="paintArea1" node="0>35"/>
+        <i3dMapping id="paintArea1Width" node="0>35|0"/>
+        <i3dMapping id="paintArea1Height" node="0>35|1"/>
+        <i3dMapping id="indoorArea1" node="0>36"/>
+        <i3dMapping id="indoorArea1Width" node="0>36|0"/>
+        <i3dMapping id="indoorArea1Height" node="0>36|1"/>
+        <i3dMapping id="foliageArea1" node="0>37"/>
+        <i3dMapping id="foliageArea1Width" node="0>37|0"/>
+        <i3dMapping id="foliageArea1Height" node="0>37|1"/>
+    </i3dMappings>
+    <!-- /I3D_MAPPINGS -->
+</placeable>

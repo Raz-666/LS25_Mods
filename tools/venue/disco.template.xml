@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<placeable type="disco" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/placeable.xsd">
+    <annotation>
+        FS25_Disco - a farm disco. Walk in, the music starts. The owner (or any
+        visitor) picks the next track with the action keys; the track is chosen
+        by the server and starts at the same time on every client, so everyone
+        in the hall hears the same song at the same beat.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_disco_name</name>
+        <image>store_disco.png</image>
+        <price>32000</price>
+        <functions>
+            <function>$l10n_disco_function</function>
+        </functions>
+        <lifetime>1000</lifetime>
+        <dailyUpkeep>25</dailyUpkeep>
+        <rotation>0</rotation>
+        <brand>LIZARD</brand>
+        <species>PLACEABLE</species>
+        <category>placeableMisc</category>
+        <brush>
+            <type>placeable</type>
+            <category>object</category>
+        </brush>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <storeIconRendering>
+            <settings cameraXRot="-20" cameraYRot="40" advancedBoundingBox="true"/>
+        </storeIconRendering>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>disco.i3d</filename>
+        <boughtWithFarmland>true</boughtWithFarmland>
+        <canBeDeleted>true</canBeDeleted>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testArea1" endNode="testArea1End"/>
+        </testAreas>
+        <sounds>
+            <place template="smallImp"/>
+            <placeLayered template="buildingPlacement"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearArea1" widthNode="clearArea1Width" heightNode="clearArea1Height"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="10" maxSlope="60" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelArea1" widthNode="levelArea1Width" heightNode="levelArea1Height" groundType="dirt"/>
+        </levelAreas>
+        <paintAreas>
+            <paintArea startNode="paintArea1" widthNode="paintArea1Width" heightNode="paintArea1Height" groundType="grass"/>
+        </paintAreas>
+    </leveling>
+
+    <indoorAreas>
+        <indoorArea startNode="indoorArea1" widthNode="indoorArea1Width" heightNode="indoorArea1Height"/>
+    </indoorAreas>
+
+    <foliageAreas>
+        <foliageArea startNode="foliageArea1" widthNode="foliageArea1Width" heightNode="foliageArea1Height"/>
+    </foliageAreas>
+
+    <ai>
+        <updateAreas>
+            <updateArea startNode="testArea1" endNode="testArea1End"/>
+        </updateAreas>
+    </ai>
+
+    <!-- I3D_MAPPINGS -->
+    <i3dMappings>
+    </i3dMappings>
+    <!-- /I3D_MAPPINGS -->
+</placeable>

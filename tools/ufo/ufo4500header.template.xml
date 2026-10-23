@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<vehicle type="UFO4500Header" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/vehicle.xsd">
+    <annotation>
+        UFO 4500 header - a 6 m cutter that only works together with the
+        UFO 4500 combine. Base game cutter logic, no Lua.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_ufo4500header_name</name>
+        <specs>
+            <workingWidth>6</workingWidth>
+            <combination xmlFilename="ufo4500.xml"/>
+        </specs>
+        <functions>
+            <function>$l10n_function_ufo4500header</function>
+        </functions>
+        <image>store_ufo4500header.png</image>
+        <price>24000</price>
+        <lifetime>600</lifetime>
+        <rotation>0</rotation>
+        <brand>LIZARD</brand>
+        <category>cutters</category>
+        <shopFoldingState>1</shopFoldingState>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <typeDesc>$l10n_typeDesc_ufo4500header</typeDesc>
+        <filename>ufo4500header.i3d</filename>
+        <size width="6.4" length="1.6" height="1.2"/>
+        <speedLimit value="25"/>
+        <components>
+            <component centerOfMass="0 0 0.4" solverIterationCount="10" mass="1400"/>
+        </components>
+        <schemaOverlay attacherJointPosition="0 0" name="COMBINE_HEADER"/>
+        <mapHotspot type="CUTTER"/>
+    </base>
+
+    <attachable>
+        <inputAttacherJoints>
+            <inputAttacherJoint node="headerAttacher" jointType="cutter">
+                <heightNode node="heightLeft"/>
+                <heightNode node="heightRight"/>
+                <heightNode node="heightCenter"/>
+                <distanceToGround lower="0.10" upper="1.60"/>
+            </inputAttacherJoint>
+        </inputAttacherJoints>
+    </attachable>
+
+    <groundReferenceNodes>
+        <groundReferenceNode node="groundRef" threshold="0.5"/>
+    </groundReferenceNodes>
+
+    <workAreas>
+        <workArea type="cutter" functionName="processCutterArea">
+            <area startNode="areaStart" widthNode="areaWidth" heightNode="areaHeight"/>
+            <groundReferenceNode index="1"/>
+            <testAreas autoGenerate="true"/>
+        </workArea>
+    </workAreas>
+
+    <cutter fruitTypes="WHEAT BARLEY OAT CANOLA MAIZE SUNFLOWER SOYBEAN SORGHUM">
+        <animationNodes>
+            <animationNode node="reelNode" rotSpeed="-260" rotAxis="1" turnOnFadeTime="2" turnOffFadeTime="2"/>
+            <animationNode node="augerNode" rotSpeed="320" rotAxis="1" turnOnFadeTime="2" turnOffFadeTime="2"/>
+        </animationNodes>
+    </cutter>
+
+    <turnOnVehicle turnedOnByAttacherVehicle="true">
+        <sounds>
+            <start template="DEFAULT_TEDDER" volumeScale="0.6"/>
+            <work template="DEFAULT_TEDDER" volumeScale="0.6"/>
+            <work template="cropCutting" volumeScale="0.5"/>
+        </sounds>
+    </turnOnVehicle>
+
+    <!-- I3D_MAPPINGS -->
+    <i3dMappings>
+    </i3dMappings>
+    <!-- /I3D_MAPPINGS -->
+</vehicle>
