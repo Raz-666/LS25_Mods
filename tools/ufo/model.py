@@ -205,8 +205,11 @@ def dome_mesh():
     return m
 
 
-def cockpit_console_mesh():
+def cockpit_console_mesh(hoop_y=1.98, hoop=0.56):
     """Everything the pilot sees from the seat: console, screens, levers, lamps.
+
+    `hoop_y` / `hoop` place the overhead instrument hoop; the harvester has a
+    much taller dome and a pilot with a big head, so it hangs it higher.
 
     Laid out for the narrow bell jar: two instrument wings left and right, a
     low pedestal straight ahead and the whole centre of the glass kept clear so
@@ -295,21 +298,23 @@ def cockpit_console_mesh():
                                   translation=(side * 0.23, 1.28, -0.06)))
 
     # --- overhead instrument hoop (you see it through the glass) ----------
-    hoop = 0.56
-    m.add("hullMetal", *place(torus(hoop, 0.012, 0, 40, 6), translation=(0, 1.98, 0)))
+    m.add("hullMetal", *place(torus(hoop, 0.012, 0, 40, 6),
+                              translation=(0, hoop_y, 0)))
     for i in range(8):
         a = TAU * i / 8
         m.add("hullMetal", *place(box((0, 0, 0), (0.065, 0.032, 0.030)),
                                   rot=(0, -math.degrees(a) + 90, 0),
-                                  translation=(hoop * math.cos(a), 1.955, hoop * math.sin(a))))
+                                  translation=(hoop * math.cos(a), hoop_y - 0.025,
+                                               hoop * math.sin(a))))
         mat = ("lensGreen", "lensRed", "lensWhite")[i % 3]
         m.add(mat, *place(sphere((0, 0, 0), 0.013, 8, 6),
-                          translation=(hoop * math.cos(a), 1.925, hoop * math.sin(a))))
+                          translation=(hoop * math.cos(a), hoop_y - 0.055,
+                                       hoop * math.sin(a))))
     # the hoop hangs from two thin brackets at the side of the glass
     for side in (-1, 1):
         m.add("hullMetal", *place(cylinder(0.008, 0.0, 0.30, 6, caps=True),
                                   rot=(0, 0, side * 10),
-                                  translation=(side * hoop * 0.92, 1.98, 0)))
+                                  translation=(side * hoop * 0.92, hoop_y, 0)))
 
     # --- little holo projector on the right of the pedestal ---------------
     m.add("hullMetal", *place(cylinder(0.040, 1.19, 1.30, 10, caps=True),
@@ -659,19 +664,31 @@ class Writer:
         if not mats:
             mats = list(mesh.order)
 
+        # The node may name the material the shape should use while the mesh
+        # itself carries a generic slot - the tractor beam is one such case:
+        # one cone mesh, eight nodes, eight colours.  In that case the geometry
+        # is taken as is and re-slotted to the node's material, instead of
+        # silently producing an empty shape.
+        source = [m for m in mats if m in mesh.parts]
+        if source:
+            slots = [(m, m) for m in source]
+        else:
+            source = [m for m in mesh.order if m != "collision"]
+            slots = list(zip(source, mats[:len(source)]))
+
         verts, normals, uvs, tris = [], [], [], []
         subsets = []
-        for mat in mats:
-            if mat not in mesh.parts:
+        for part, slot in slots:
+            if part not in mesh.parts:
                 continue
-            pv, pn, puv, pt = mesh.parts[mat]
+            pv, pn, puv, pt = mesh.parts[part]
             first_vertex = len(verts)
             first_index = 3 * len(tris)
             verts.extend(pv)
             normals.extend(pn)
             uvs.extend(puv)
             tris.extend(pt)
-            subsets.append((first_vertex, len(pv), first_index, 3 * len(pt), mat))
+            subsets.append((first_vertex, len(pv), first_index, 3 * len(pt), slot))
 
         self.stats["tris"] += len(tris)
         self.stats["verts"] += len(verts)
@@ -683,7 +700,8 @@ class Writer:
                   "receiveShadows", "nonRenderable"):
             if k in node.attrs:
                 attr.append((k, node.attrs[k]))
-        mid_list = [self.material_id(m) for m in mats if m in mesh.parts]
+        mid_list = [self.material_id(slot) for _part, slot in slots
+                    if _part in mesh.parts]
         attr.append(("materialIds", " ".join(str(m) for m in mid_list)))
 
         lines = ["      <IndexedTriangleSet %s>" % _attrs(attr)]

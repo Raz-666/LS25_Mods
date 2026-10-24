@@ -1,6 +1,6 @@
 # FS25 UFO 2000 – fliegende Untertasse mit Kornkreis-Generator
 
-Sieben Mods für **Farming Simulator 25**:
+Acht Mods für **Farming Simulator 25**:
 
 | Mod | Was es ist |
 | --- | --- |
@@ -10,6 +10,8 @@ Sieben Mods für **Farming Simulator 25**:
 | **`dist/FS25_Autokino.zip`** | **Autokino** mit 13-m-Leinwand und drei kurzen Zeichentrickfilmen samt Soundtrack – Bildnummer aus der Netzwerkzeit, also im MP frame-genau synchron |
 | **`dist/FS25_UFO4500.zip`** | **Mähdrescher-UFO** mit 6-m-Schneidwerk, 15.000-l-Korntank und allem, was ein Drescher können muss |
 | **`dist/FS25_BabaJaga.zip`** | **Baba Jagas Hühnerhütte** – Blockhütte auf echtem Hühnerbein, als vollwertiger Hühnerstall, **ohne Lua** (konsolen-tauglich) |
+| **`dist/FS25_CropHarvester.zip`** | **UFO 01 Crop Harvester** – kompakte Untertasse mit großer Glaskuppel, Captain Zorp am Pult und einem **Traktorstrahl in acht Farben**: ernten, grubbern, pflügen, säen, düngen, Kornkreise malen, laden, abladen. 6–30 m Arbeitsbreite, 1.000.000 l Korntank, schwebt 2–15 m |
+| **`dist/FS25_Distillery.zip`** | **Club „Distillery Leipzig"** – Halle mit Bühne, großen PA-Türmen, Lichtanlage und DJ-Pult; die Titelliste hängt sichtbar an der Wand, **jeder Spieler** darf am Pult umschalten, und alle hören im MP denselben Song (auch das Spielradio ist als Quelle wählbar) |
 | **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, Cockpit 20 m über dem Feld, rollt auf zwei breiten unsichtbaren Rädern, drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide und **landet auf Tastendruck** |
 
 ![UFO 2000](docs/renders/ufo_hero.png)
@@ -21,6 +23,8 @@ Sieben Mods für **Farming Simulator 25**:
 | UFO 2500 | ✅ | ✅ **kein Lua, nur Grundspiel-Technik** |
 | Hofdisco | ✅ Musik, Titelwahl, MP-Sync | ❌ eigener Lua-Code |
 | Autokino | ✅ drei Filme, MP-Sync | ❌ eigener Lua-Code |
+| Crop Harvester | ✅ acht Strahl-Modi, Kornkreise, Cockpit | ❌ eigener Lua-Code |
+| Distillery-Club | ✅ MP-synchrone Playlist, Radioquelle | ❌ eigener Lua-Code |
 
 ---
 
@@ -409,6 +413,86 @@ i3d-Mappings, dass der Drescher wirklich ein `combine` mit 15.000-l-Tank ist,
 dass das Schneidwerk exakt 6 m Arbeitsbreite hat und dass die Untertasse 1,70 m
 über den unsichtbaren Rädern schwebt.
 
+## 8b. Der Ernte-Ufo: `FS25_CropHarvester` (UFO 01)
+
+Das ist der Flieger aus dem Blueprint: eine kompakte Untertasse mit **einer
+großen Glaskuppel**, in der Captain Zorp ziemlich eng hinter den Hebeln sitzt.
+Kein Mähwerk, kein Anbaugerät – **alles macht der Strahl unter dem Bauch**.
+
+![UFO 01 Crop Harvester](docs/renders/cropharvester_hero.png)
+
+| Was | Wert |
+| --- | --- |
+| Arbeitsbreite | 6 m bis 30 m, stufenlos (Radius 3–15 m) |
+| Strahl | 8 Modi, jeder mit eigener Farbe und eigenem Sound |
+| Korntank | 1.000.000 l (der Blueprint sagt „praktisch unendlich") |
+| Virtueller Tank | 5.000.000 l für alles, was der Strahl einsaugt |
+| Schweben | 2 m bis 15 m, stufenlos |
+| Preis | 96.000 € |
+
+### Die acht Modi
+
+| Taste | Modus | Farbe | Was passiert |
+| --- | --- | --- | --- |
+| 1 | Ernten | **grün** | Getreide wird gemäht, das Korn geht in den Tank, kein Verlust |
+| 2 | Grubbern | **violett** | Boden wird bearbeitet, Steine bleiben liegen |
+| 3 | Pflügen | **violett (dunkler)** | tiefe Bearbeitung wie ein Pflug |
+| 4 | Säen + Düngen | **blau** | Saat und Dünger in einem Überflug |
+| 5 | Düngen | **hellblau** | nur Dünger |
+| 6 | Kornkreise | **gelb** | drückt Muster ins Feld, ohne Ertrag zu vernichten |
+| 7 | Aufladen | **rot** | hebt Anhänger und Paletten an und saugt sie leer |
+| 8 | Abladen | **orange** | verteilt den Tankinhalt wieder |
+
+![Strahl im Erntemodus](docs/renders/cropharvester_beam.png)
+
+### Steuerung
+
+Alles über die normalen Spiel-Tasten, Gamepad inklusive – keine Extra-Belegung
+nötig. Im Fahrzeug:
+
+* **Bild ↑ / Bild ↓** – höher / tiefer schweben
+* **1 … 8** – Modus direkt wählen (der Hebel im Cockpit springt mit)
+* **+ / −** – Strahl weiter / enger stellen
+* **Leertaste** – Strahl an / aus
+* **K** – virtueller Tank: unendlich / normal
+* **O** – Abladen am Trigger
+
+Das Cockpit zeigt rechts das Muster-Rad mit Zeiger, links die Modus-Tafel, dazu
+ein Hologramm über dem Pult. Zorp wippt beim Schweben mit dem Kopf und
+verschwindet, sobald du einsteigst – dann sitzt dort dein eigener Charakter.
+
+### Kornkreise
+
+Der letzte Eintrag im Muster-Rad ist der **freie Stift**: mit `+`/`−` stellst du
+den Radius in 50-cm-Schritten ein und malst die Figur selbst, während du fliegst.
+Die anderen Einträge sind fertige Geometrien (Ring, Dreifachring, Spirale,
+Blume, Stern, Alien, Blume des Lebens, Sonne), die der Strahl von allein ins Feld
+drückt. Ertrag geht dabei nicht verloren – das Korn landet im Tank.
+
+![Captain Zorp im Cockpit](docs/renders/cropharvester_pilot.png)
+
+### Bauen und prüfen
+
+```bash
+python tools/build_crop_harvester_mod.py     # Modell, Texturen, Ton, XML, ZIP
+python tools/ufo/validate_crop.py            # statische Prüfung ohne Spiel
+python tools/ufo/luatest_crop.py             # Lua-Testflug ohne Spiel
+```
+
+Der Mod ist **eigenständig** – er braucht weder das UFO 2000 noch den Alien-Mod
+und kann parallel zu beiden installiert werden (`FS25_CropHarvester` hat eine
+eigene Specialization `cropHarvester`, eine eigene Lua-Kopie und eigene
+`crop_*`-Tasten).
+
+### Was dabei am UFO 2000 repariert wurde
+
+Beim Bauen ist aufgefallen, dass der **Traktorstrahl in allen bisherigen
+Untertassen unsichtbar war**: Das Modell benutzte ein generisches Strahl-Mesh
+und schrieb pro Modus nur den Materialnamen um – beim Export entstanden dadurch
+leere Shapes ohne Material. `tools/ufo/model.py` ordnet die Geometrie jetzt dem
+Material des Nodes zu, deshalb haben **UFO 2000, UFO 2500, UFO 4500 und der
+Crop Harvester** wieder einen sichtbaren, farbigen Strahl.
+
 ## 9. Baba Jagas Hühnerhütte (Konsolen-tauglich)
 
 Ein aufstellbarer **Hühnerstall** der anderen Art: eine Blockhütte auf einem
@@ -620,7 +704,7 @@ python tools/venue/validate.py --mod autokino      # Prüfung ohne Spiel
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit
-„UFO2000", „UFO2500", „UFO4500", „BabaJaga", „Alien", „Disco", „Distillery" oder „Autokino" zeigen die Stelle, dann bessere ich gezielt nach.
+„UFO2000", „UFO2500", „UFO4500", „BabaJaga", „Alien", „Disco", „Distillery", „Autokino" oder „CropHarvester" zeigen die Stelle, dann bessere ich gezielt nach.
 
 Beim UFO 2500 sind drei Dinge die ersten Kandidaten für Feinschliff, falls es im
 Spiel komisch aussieht: die Fahrhöhe (Federn/Dämpfer der unsichtbaren Räder,
