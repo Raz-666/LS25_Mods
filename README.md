@@ -506,7 +506,14 @@ Crop Harvester** wieder einen sichtbaren, farbigen Strahl.
 
 Ein aufstellbarer **Hühnerstall** der anderen Art: eine Blockhütte auf einem
 riesigen Hühnerbein, mit Schindeldach, krummem Schornstein, Laterne, zwei
-Futertrögen, Schild und einem eingelegten Hühnerhof.
+Futertrögen, einem Schild **„BABA JAGA"** und einem eingelegten Hühnerhof.
+
+Das Bein ist ein richtiges Vogelbein: ein Federrock aus fünf Lagen langer
+Federn, ein geschuppter Schaft mit überlappenden Platten, ein dickes
+Sprunggelenk und drei Zehen nach vorn plus einer nach hinten – jede Zehe ein
+durchgehendes Rohr mit einer Kralle, die sich in den Boden krallt. Auf den
+Zaunecken sitzen **Vogelschädel** auf Pfählen, das Schild ist ein bemaltes
+Brett mit der Aufschrift.
 
 | | |
 | --- | --- |

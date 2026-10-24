@@ -42,6 +42,7 @@ MAT_LOOK = {
     "iron": ((0.16, 0.16, 0.17), 0.5, 0.0, 1.0),
     "bone": ((0.86, 0.83, 0.72), 0.2, 0.0, 1.0),
     "rope": ((0.55, 0.44, 0.26), 0.1, 0.0, 1.0),
+    "sign": ((0.95, 0.92, 0.86), 0.15, 0.0, 1.0),
     "grass": ((0.34, 0.46, 0.20), 0.05, 0.0, 1.0),
     "dirt": ((0.42, 0.34, 0.24), 0.05, 0.0, 1.0),
 }
@@ -173,6 +174,43 @@ def render(eye=(6.8, 3.2, 9.2), target=(0, 1.05, 0), size=1024, fov=38.0, ss=2,
     opaque = [t for t in tris if MAT_LOOK.get(t[0], (0, 0, 0, 1))[3] >= 0.99]
     transparent = [t for t in tris if MAT_LOOK.get(t[0], (0, 0, 0, 1))[3] < 0.99]
 
+    near = -0.05
+    rot_v, tr_v = view[:3, :3], view[:3, 3]
+
+    def view_z(pts):
+        return (pts @ rot_v.T + tr_v)[:, 2]
+
+    def clip_near(A, B, C, za, zb, zc, NA, NB, NC, UA, UB, UC):
+        """Cut a triangle at the near plane (Sutherland-Hodgman in view space).
+
+        Without this a triangle with one corner behind the camera vanishes
+        completely - that is why a large ground plane used to disappear in
+        front of the camera and leave a hole in the picture.
+        """
+        P = (A, B, C)
+        Z = (za, zb, zc)
+        N = (NA, NB, NC)
+        U = (UA, UB, UC)
+        inside = [z < near for z in Z]
+        if not any(inside):
+            return []
+        out = []
+        for i in range(3):
+            j = (i + 1) % 3
+            if inside[i]:
+                out.append((P[i], N[i], U[i]))
+            if inside[i] != inside[j]:
+                d = Z[j] - Z[i]
+                t = 1.0 if abs(d) < 1e-9 else (near - Z[i]) / d
+                out.append((P[i] + t * (P[j] - P[i]),
+                            N[i] + t * (N[j] - N[i]),
+                            U[i] + t * (U[j] - U[i])))
+        tris = []
+        for k in range(1, len(out) - 1):
+            (pa, na_, ua_), (pb, nb_, ub_), (pc, nc_, uc_) = out[0], out[k], out[k + 1]
+            tris.append((pa, na_, ua_, pb, nb_, ub_, pc, nc_, uc_))
+        return tris
+
     def draw(batch, sort_transparent):
         items = []
         for mat, A, B, C, NA, NB, NC, UA, UB, UC in batch:
@@ -180,18 +218,34 @@ def render(eye=(6.8, 3.2, 9.2), target=(0, 1.05, 0), size=1024, fov=38.0, ss=2,
             if n == 0:
                 continue
             pts = np.stack([A, B, C], axis=1).reshape(-1, 3)
-            P = project(pts).reshape(n, 3, 3)
-            keep = np.all(P[:, :, 2] < -0.05, axis=1)
-            if not keep.any():
+            vzd = view_z(pts).reshape(n, 3)
+            fully_in = np.all(vzd < near, axis=1)
+            partly = (~fully_in) & (vzd.min(axis=1) < near)
+
+            for i in np.nonzero(partly)[0]:
+                for pa, na_, ua_, pb, nb_, ub_, pc, nc_, uc_ in clip_near(
+                        A[i], B[i], C[i], vzd[i, 0], vzd[i, 1], vzd[i, 2],
+                        NA[i], NB[i], NC[i], UA[i], UB[i], UC[i]):
+                    P = project(np.stack([pa, pb, pc]))
+                    area = (P[1, 0] - P[0, 0]) * (P[2, 1] - P[0, 1]) - \
+                           (P[2, 0] - P[0, 0]) * (P[1, 1] - P[0, 1])
+                    if abs(area) > 1e-9:
+                        items.append((P[:, 2].mean(), mat, P, na_, nb_, nc_,
+                                      ua_, ub_, uc_))
+
+            if not fully_in.any():
                 continue
-            P = P[keep]
-            NA2, NB2, NC2 = NA[keep], NB[keep], NC[keep]
+            sel = np.nonzero(fully_in)[0]
+            vidx = (sel[:, None] * 3 + np.arange(3)[None, :]).ravel()
+            P = project(pts.reshape(-1, 3)[vidx]).reshape(len(sel), 3, 3)
+            NA2, NB2, NC2 = NA[sel], NB[sel], NC[sel]
+            UA2, UB2, UC2 = UA[sel], UB[sel], UC[sel]
             area = (P[:, 1, 0] - P[:, 0, 0]) * (P[:, 2, 1] - P[:, 0, 1]) - \
                    (P[:, 2, 0] - P[:, 0, 0]) * (P[:, 1, 1] - P[:, 0, 1])
             valid = np.abs(area) > 1e-9
             for i in np.nonzero(valid)[0]:
-                items.append((P[i, :, 2].mean(), mat, P[i], NA2[i], NB2[i], NC2[i],
-                              UA[i], UB[i], UC[i]))
+                items.append((P[i, :, 2].mean(), mat, P[i], NA2[i], NB2[i],
+                              NC2[i], UA2[i], UB2[i], UC2[i]))
         if sort_transparent:
             items.sort(key=lambda it: it[0])
         for _z, mat, p, na, nb, nc, ua, ub, uc in items:

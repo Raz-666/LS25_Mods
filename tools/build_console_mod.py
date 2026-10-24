@@ -187,6 +187,24 @@ def landed_scene(scene=None):
     return root
 
 
+def with_ground(scene, mat="grass", size=400.0):
+    """A flat plate at y = 0 so the beam, the light ring and the landing have
+    something to stand on in the renders.
+
+    The plate is deliberately huge: it ends far behind the craft, so the far
+    edge reads as a horizon.  (The renderer cuts triangles at the near plane,
+    otherwise this plate would vanish in front of the camera.)
+    """
+    import meshlib
+    from model import Node
+
+    m = meshlib.Mesh()
+    m.add(mat, *meshlib.place(meshlib.box((0, 0, 0), (size, 0.5, size)),
+                              translation=(0, -0.27, 0)))
+    scene.children.insert(0, Node("Shape", "renderGround", mesh=m, materials=[mat]))
+    return scene
+
+
 def build_images():
     step("images")
     import model_console
@@ -216,13 +234,29 @@ def build_images():
     store.save(os.path.join(mod, "store_ufo2500.png"))
 
     # 3) documentation renders
-    render.render(size=900, eye=(24.0, 15.0, 27.0), target=(0, 9.8, 0), fov=34, ss=2,
-                  beam=True, root=scene).save(os.path.join(docs, "ufo2500_hero.png"))
-    render.render(size=760, eye=(14.0, 22.0, 18.0), target=(0, 16.5, 0), fov=38, ss=2,
-                  beam=True, root=scene).save(os.path.join(docs, "ufo2500_top.png"))
-    render.render(size=760, eye=(9.6, 4.6, 10.2), target=(0, 1.5, 0), fov=40, ss=2,
-                  beam=True, root=landed_scene()).save(
-        os.path.join(docs, "ufo2500_landed.png"))
+    # the saucer close up, three-quarter from above (it flies, so no ground)
+    render.render(size=900, eye=(16.0, 26.0, 17.0), target=(0.0, 19.2, 0.0), fov=32,
+                  ss=2, root=model_console.build_scene()).save(
+        os.path.join(docs, "ufo2500_top.png"))
+    # the whole thing: craft up in the air, beam reaching the ground, ring lit
+    # (camera far away + long lens, so the ground plate stays in front of it)
+    flying = with_ground(model_console.build_scene(), "grass")
+    render.render(size=900, eye=(40.0, 7.0, 44.0), target=(0.0, 11.5, 0.0), fov=30,
+                  ss=2, beam=True, root=flying).save(
+        os.path.join(docs, "ufo2500_hero.png"))
+    # landed: craft on its legs at street level, light ring lying on the grass
+    landed = landed_scene()
+    visual = model_console.find(landed, "visual")
+    # the legs reach down to y = -0.51 in the visual node, so this puts the
+    # feet exactly on the grass and the ring on the ground under the hull
+    visual.attrs["translation"] = "0 0.51 0"
+    model_console.find(landed, "groundRing").attrs["translation"] = "0 -0.49 0"
+    beam_node = model_console.find(landed, "beamNode")
+    if beam_node is not None:
+        beam_node.attrs["visibility"] = "false"
+    landed = with_ground(landed, "grass")
+    render.render(size=900, eye=(12.0, 3.4, 13.5), target=(0.0, 1.6, 0.0), fov=34,
+                  ss=2, root=landed).save(os.path.join(docs, "ufo2500_landed.png"))
     print("  icon, store picture, 3 doc renders")
 
 

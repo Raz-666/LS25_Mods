@@ -109,6 +109,14 @@ def build_images():
     docs = os.path.join(REPO, "docs", "renders")
     os.makedirs(docs, exist_ok=True)
 
+    # the real textures, so the render shows bark, shingles and the sign
+    tex_dir = os.path.join(BUILD, "babajaga_tex")
+    mapping = {}
+    for name in os.listdir(tex_dir):
+        if name.endswith("_diffuse.png"):
+            mapping[name[:-len("_diffuse.png")]] = os.path.join(tex_dir, name)
+    render.load_textures(mapping)
+
     icon = render.render(size=512, eye=ICON_EYE, target=ICON_TARGET, fov=ICON_FOV,
                          ss=2, root=scene(ground=True))
     p = os.path.join(BUILD, "icon_babajaga.png")

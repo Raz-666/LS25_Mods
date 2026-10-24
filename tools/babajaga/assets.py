@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _UFO = os.path.join(os.path.dirname(_HERE), "ufo")
@@ -106,7 +106,30 @@ def stone(size=256):
     return _to_img(np.clip(rgb, 0, 1))
 
 
+def sign(size=256):
+    """Old painted board: dark wood with carved, pale lettering."""
+    base = planks(size).convert("RGB")
+    img = base.copy()
+    d = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                                  int(size * 0.185))
+    except OSError:
+        font = ImageFont.load_default()
+    lines = ("BABA", "JAGA")
+    for i, word in enumerate(lines):
+        w = d.textlength(word, font=font)
+        x, y = (size - w) * 0.5, size * (0.14 + i * 0.36)
+        # a dark groove under the letters, then the pale paint on top
+        d.text((x + 2, y + 2), word, font=font, fill=(24, 15, 8))
+        d.text((x, y), word, font=font, fill=(226, 206, 160))
+    # a weathered border
+    d.rectangle([3, 3, size - 4, size - 4], outline=(58, 38, 22), width=3)
+    return img
+
+
 TEXTURES = {
+    "sign_diffuse": (sign, "bc1", True),
     "woodLog_diffuse": (bark, "bc1", True),
     "woodLog_specular": (lambda: specular("dark"), "bc1", True),
     "woodDark_diffuse": (planks, "bc1", True),
