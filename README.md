@@ -5,7 +5,7 @@ Acht Mods für **Farming Simulator 25**:
 | Mod | Was es ist |
 | --- | --- |
 | **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, drei Landebeine und ein Traktorstrahl, der **acht Arbeiten** kann: plattdrücken, ernten, grubbern, pflügen, säen, düngen, aufnehmen, abladen – dazu ein **virtueller Laderaum mit 5 Mio. Litern** |
-| **`dist/FS25_Alien.zip`** | **Zwei** Aliens als aufstellbare Deko – der kleine grüne Kumpel und der Große mit Riesenschädel und Glubschaugen |
+| **`dist/FS25_Alien.zip`** | **Drei** Aliens als aufstellbare Deko – der kleine grüne Kumpel, der Große mit Riesenschädel und Glubschaugen und **Captain Zorp** aus dem Cockpit-Blueprint (Brille auf der Stirn, Fluganzug, Namensschild) |
 | **`dist/FS25_Disco.zip`** | **Hofdisco** mit Neon, Spiegelkugel, DJ-Pult und 6 eigenen Stücken – im Multiplayer hören alle in der Halle **denselben Song zur selben Zeit** |
 | **`dist/FS25_Autokino.zip`** | **Autokino** mit 13-m-Leinwand und drei kurzen Zeichentrickfilmen samt Soundtrack – Bildnummer aus der Netzwerkzeit, also im MP frame-genau synchron |
 | **`dist/FS25_UFO4500.zip`** | **Mähdrescher-UFO** mit 6-m-Schneidwerk, 15.000-l-Korntank und allem, was ein Drescher können muss |
@@ -19,7 +19,7 @@ Acht Mods für **Farming Simulator 25**:
 | Mod | PC / Mac | Xbox / PlayStation |
 | --- | --- | --- |
 | UFO 2000 | ✅ fliegen, 8 Arbeits-Modi, Laderaum, Cockpit | ❌ eigener Lua-Code |
-| Alien-Maskottchen | ✅ | ⚠️ möglich (nur noch über ModHub einreichen) |
+| Alien-Maskottchen (3 Figuren, inkl. Captain Zorp) | ✅ | ⚠️ möglich (nur noch über ModHub einreichen) |
 | UFO 2500 | ✅ | ✅ **kein Lua, nur Grundspiel-Technik** |
 | Hofdisco | ✅ Musik, Titelwahl, MP-Sync | ❌ eigener Lua-Code |
 | Autokino | ✅ drei Filme, MP-Sync | ❌ eigener Lua-Code |
@@ -36,7 +36,9 @@ Acht Mods für **Farming Simulator 25**:
 2. Spiel starten, im Hauptmenü unter **Mods** die Häkchen setzen.
 3. UFO 2000: am Händler unter **Fahrzeuge → Autos** für 42.000 € kaufen.
    UFO 2500: ebd. unter der Marke **Lizard** für 38.000 €.
-   Alien: unter **Platzierbare Objekte → Deko** für 750 € aufstellen.
+   Alien: unter **Platzierbare Objekte → Deko** – Maskottchen 750 €,
+   der Große 1.200 €, Captain Zorp 1.500 €.
+   Crop Harvester: am Händler unter der Marke **CropHarvester** für 96.000 €.
    Hofdisco / Autokino: unter **Platzierbare Objekte** für 32.000 € / 48.000 €.
    (UFO 2000 und UFO 2500 sind zwei eigenständige Mods – nimm das, was dir
    gefällt, oder beide.)
@@ -238,9 +240,11 @@ also die Untertasse stehen, wo sie stand. 🙂
   Netzwerkzeit, MP-Sync über Dirty Flags
 - 3 Filme × 16 Bilder (DDS), 3 Soundtracks, 14 Texturen, Shop-Icon
 
-**Alien-Maskottchen**
-- 4.400 Dreiecke, 2 Shapes (Mesh + unsichtbare Kollision), 7 Texturen
-- Platzierbar, frei drehbar, wieder aufnehmbar, Preis 750 €
+**Alien-Maskottchen (drei Figuren)**
+- Maskottchen 5.400 Dreiecke, der Große 9.500, Captain Zorp 4.000
+- je 2 Shapes (Mesh + unsichtbare Kollision), 11 Texturen
+- Platzierbar, frei drehbar, wieder aufnehmbar, 750 / 1.200 / 1.500 €
+- Captain Zorp trägt Fluganzug, Brille auf der Stirn und ein „ZORP"-Schild
 
 ### Feintuning
 

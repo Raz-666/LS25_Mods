@@ -87,8 +87,14 @@ def main():
             err("store item %s does not exist" % item.get("xmlFilename"))
     check_xsd(os.path.join(MOD, "modDesc.xml"), sd, "modDesc.xsd")
 
-    place = load(os.path.join(MOD, "alien.xml"))
-    check_xsd(os.path.join(MOD, "alien.xml"), sd, "placeable.xsd")
+    xmls = [it.get("xmlFilename") for it in desc.findall("storeItems/storeItem")]
+    for name in xmls:
+        path = os.path.join(MOD, name)
+        if not os.path.isfile(path):
+            continue
+        check_xsd(path, sd, "placeable.xsd")
+
+    place = load(os.path.join(MOD, xmls[0] if xmls else "alien.xml"))
     if place is not None:
         # every file=""/texture reference must exist
         base = MOD
@@ -102,13 +108,13 @@ def main():
         else:
             scene = load(os.path.join(base, i3d))
             shapes = 0 if scene is None else len(list(scene.iter("Shape")))
-            ok("alien.i3d: %d shapes" % shapes)
+            ok("%s: %d shapes" % (i3d, shapes))
             files = [] if scene is None else [f.get("filename") for f in scene.iter("File")]
             for f in files:
                 if not os.path.isfile(os.path.join(base, f)):
                     err("i3d texture %s is missing" % f)
             if files:
-                ok("alien.i3d: %d textures present" % len(files))
+                ok("%s: %d textures present" % (i3d, len(files)))
             check_xsd(os.path.join(base, i3d), sd, "i3d-1.6.xsd")
 
     # l10n
