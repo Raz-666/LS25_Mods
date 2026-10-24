@@ -454,7 +454,7 @@ ZORP_XML = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 MODDESC = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
     <author>Arena.ai Agent Mode</author>
-    <version>1.1.0.0</version>
+    <version>1.2.0.0</version>
 
     <title>
         <en>Alien Mascot</en>

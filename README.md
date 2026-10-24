@@ -731,6 +731,24 @@ python tools/build_autokino_mod.py                 # Modell, Filme, Ton, ZIP
 python tools/venue/validate.py --mod autokino      # Prüfung ohne Spiel
 ```
 
+## 12b. Schnelltest – was ich zuerst anschauen würde
+
+Die neun ZIPs aus `dist/` in den Mods-Ordner legen, Spiel starten, dann in dieser
+Reihenfolge:
+
+1. **Shop → Platzierbare Objekte → Deko**: Alien 1.2.0.0 (750/1.200/1.500 €) –
+   Captain Zorp hat jetzt den weißen Fliegerhelm mit Brille auf der Stirn.
+2. **Shop → Fahrzeuge**: UFO 01 Crop Harvester 1.1.0.0 einmal kaufen – Strahl
+   testen (8 Modi mit `X`/`Y`), dazu die beiden Heckflossen ansehen.
+3. **Shop → Platzierbare Objekte → Distillery 1.1.0.0** (185.000 €) aufstellen,
+   um das Haus laufen (Turm, Graffiti, Feuerleiter) und dann **durch den Garten**
+   gehen: Barhütte, Sitzgruppen, zwei Pergolen, zwei Chill-out-Ecken.
+4. **Baba Jaga 1.1.0.0** (18.500 €) aufstellen: Bein, Schild mit Schrift,
+   Schädel auf den Zaunpfählen; Weizen in den Trigger, Hühner einsetzen.
+
+Wenn etwas nicht lädt oder komisch aussieht: `log.txt` schicken, Zeilen mit dem
+Mod-Namen. Die Mods-Ordner im Spiel heißen wie die Zips (`FS25_Distillery` usw.).
+
 ## 13. Ehrlicher Hinweis
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
