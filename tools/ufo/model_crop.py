@@ -116,6 +116,28 @@ def decal(mesh, mat, centre, width, height, yaw, uv=None):
     quad(mesh, mat, pts, uv)
 
 
+def fin(mesh, mat, yaw, r0, length, height, thick=0.06):
+    """A small triangular tail fin, standing on the edge of the hull."""
+    a = math.radians(yaw)
+    nx, nz = math.sin(a), math.cos(a)          # outwards
+    tx, tz = math.cos(a), -math.sin(a)         # sideways
+    y0 = 0.80
+    prof = ((0.0, -0.18), (length * 0.70, height), (length, -0.10))
+    verts, tris = [], []
+    for side in (-1, 1):
+        for (dr, dy) in prof:
+            verts.append(((r0 + dr) * nx + side * thick * tx, y0 + dy,
+                          (r0 + dr) * nz + side * thick * tz))
+    # the two flat sides
+    tris += [(0, 2, 1), (3, 4, 5)]
+    # the three edges
+    for i in range(3):
+        j = (i + 1) % 3
+        tris += [(i, j, j + 3), (i, j + 3, i + 3)]
+    normal = (tx, 0.0, tz)
+    mesh.add(mat, verts, [normal] * 6, [(0.0, 0.0)] * 6, tris)
+
+
 # --------------------------------------------------------------------------
 # hull + dome
 # --------------------------------------------------------------------------
@@ -148,6 +170,9 @@ def hull_mesh():
               1.00, 0.32, yaw, uv=(0.0, 0.0, 0.72, 1.0))
     decal(m, "decal", (0.0, 0.64, 2.505), 0.72, 0.28, 0.0,
           uv=(0.72, 0.0, 1.0, 1.0))
+    # the two tail fins from the sheet: a triangular fin on each rear quarter
+    for yaw in (146.0, -146.0):
+        fin(m, "hullPaint", yaw, 2.16, 0.95, 0.78, 0.08)
     return m
 
 
