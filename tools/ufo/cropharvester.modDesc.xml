@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+    <author>Arena.ai Agent Mode</author>
+    <version>1.1.0.0</version>
+
+    <title>
+        <en>UFO 01 Crop Harvester</en>
+        <de>UFO 01 Erntemaschine</de>
+    </title>
+
+    <description>
+        <en>$l10n_crop_description</en>
+        <de>$l10n_crop_description</de>
+    </description>
+
+    <iconFilename>icon_cropharvester.dds</iconFilename>
+    <multiplayer supported="true"/>
+
+    <brands>
+        <brand name="CropHarvester" title="$l10n_brand_crop" image="brand_cropharvester.dds"/>
+    </brands>
+
+    <specializations>
+        <specialization name="cropHarvester" className="CropHarvester" filename="scripts/CropHarvester.lua"/>
+    </specializations>
+
+    <vehicleTypes>
+        <!-- everything a drivable vehicle needs: engine, fuel, enter/leave, lights,
+             honk, cameras ... plus our hover flight specialization -->
+        <type name="CropHarvester" parent="baseDrivable" filename="$dataS/scripts/vehicles/Vehicle.lua">
+            <specialization name="cropHarvester"/>
+        </type>
+    </vehicleTypes>
+
+    <actions>
+        <action name="crop_menu" category="VEHICLE" axisType="HALF"/>
+        <action name="crop_altitudeUp" category="VEHICLE" axisType="HALF"/>
+        <action name="crop_altitudeDown" category="VEHICLE" axisType="HALF"/>
+        <action name="crop_beamMode" category="VEHICLE"/>
+        <action name="crop_penUp" category="VEHICLE" axisType="HALF"/>
+        <action name="crop_penDown" category="VEHICLE" axisType="HALF"/>
+        <action name="crop_unload" category="VEHICLE"/>
+        <action name="crop_infinite" category="VEHICLE"/>
+    </actions>
+
+    <inputBinding>
+        <actionBinding action="crop_menu">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_m" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_altitudeUp">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_pageUp" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_altitudeDown">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_pageDown" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_beamMode">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_k" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_penUp">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_l" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_penDown">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_j" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_unload">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_u" index="1"/>
+        </actionBinding>
+        <actionBinding action="crop_infinite">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_i" index="1"/>
+        </actionBinding>
+    </inputBinding>
+
+    <storeItems>
+        <storeItem xmlFilename="crop.xml"/>
+    </storeItems>
+</modDesc>
