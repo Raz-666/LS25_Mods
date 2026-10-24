@@ -530,10 +530,10 @@ def main():
         "suit": os.path.join(REPO, "build", "crop_textures", "suit_diffuse.png"),
         "badge": os.path.join(REPO, "build", "zorpBadge_diffuse.png"),
     })
-    ufo_render.render(size=512, eye=(1.35, 1.55, 2.0), target=(0, 0.95, 0), fov=38, ss=2,
+    ufo_render.render(size=512, eye=(1.60, 1.80, 2.50), target=(0, 0.92, 0), fov=36, ss=2,
                       background=(0.95, 0.97, 0.94), return_alpha=True,
                       root=build_scene_zorp()).save(os.path.join(MOD, "store_zorp.png"))
-    ufo_render.render(size=700, eye=(1.9, 1.9, 2.6), target=(0, 0.95, 0), fov=38, ss=2,
+    ufo_render.render(size=700, eye=(2.2, 2.1, 3.0), target=(0, 0.92, 0), fov=36, ss=2,
                       root=build_scene_zorp()).save(
                           os.path.join(REPO, "docs", "renders", "alien_zorp.png"))
     print("   icon_alien.dds, store_alien.png, store_alienLeader.png, store_zorp.png")
