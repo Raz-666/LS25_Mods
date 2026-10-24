@@ -28,6 +28,8 @@ TILE = {
     "cobble": 2.0, "gravel": 3.0,
     "steel": 1.2, "woodDark": 1.5, "speaker": 1.2,
     "stage": 2.0, "mirror": 1.0,
+    "brickRed": 2.4, "graffitiDense": 5.2, "window": 1.2, "roof": 2.0,
+    "lightFlower": 9.0,
 }
 
 

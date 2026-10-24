@@ -57,6 +57,8 @@ MATERIALS = [
     {"name": "eyeBlack", "diffuse": "eyeBlack_diffuse.dds", "gloss": None},
     {"name": "suit", "diffuse": "suit_diffuse.dds", "gloss": "suit_specular.dds"},
     {"name": "goggle", "diffuse": "goggle_diffuse.dds", "gloss": None},
+    {"name": "helmet", "diffuse": "helmet_diffuse.dds", "gloss": "helmet_specular.dds"},
+    {"name": "helmetTrim", "diffuse": "helmetTrim_diffuse.dds", "gloss": None},
     {"name": "decal", "diffuse": "decal_diffuse.dds", "gloss": None},
     {"name": "beam", "diffuse": "beam_diffuse.dds", "gloss": None, "alpha": True},
     {"name": "beamGreen", "diffuse": "beamGreen_diffuse.dds", "gloss": None, "alpha": True},
@@ -212,27 +214,47 @@ def pilot_mesh():
                              translation=(0, 0.640, 0.180)))
     # --- goggles pushed up on the forehead --------------------------------
     # a rubber strap around the skull, sitting just above the eyes ...
-    m.add("goggle", *place(torus(0.163, 0.016, 0, 28, 6),
-                           rot=(-16, 0, 0), translation=(0, 0.868, 0.012)))
+    m.add("goggle", *place(torus(0.152, 0.015, 0, 28, 6),
+                           rot=(-34, 0, 0), translation=(0, 0.905, 0.086)))
     # ... and the two lenses tilted up onto the brow so they read from the
     # front instead of vanishing inside the head
     for sx in (-1, 1):
-        m.add("goggle", *place(cylinder(0.055, 0.0, 0.030, 16, caps=True),
-                               rot=(52, 0, 0),
-                               translation=(0.072 * sx, 0.878, 0.150)))
-        m.add("lensWhite", *place(disc(0.042, 0.0, 16, up=False),
-                                  rot=(52, 0, 0),
-                                  translation=(0.072 * sx, 0.890, 0.164)))
-    m.add("hullMetal", *place(box((0, 0, 0), (0.062, 0.014, 0.014)),
-                              rot=(16, 0, 0),
-                              translation=(0, 0.896, 0.142)))
+        m.add("goggle", *place(cylinder(0.050, 0.0, 0.032, 16, caps=True),
+                               rot=(56, 0, 0),
+                               translation=(0.066 * sx, 0.902, 0.152)))
+        m.add("lensWhite", *place(disc(0.037, 0.0, 16, up=False),
+                                  rot=(56, 0, 0),
+                                  translation=(0.066 * sx, 0.910, 0.167)))
+    m.add("hullMetal", *place(box((0, 0, 0), (0.057, 0.013, 0.013)),
+                              rot=(34, 0, 0),
+                              translation=(0, 0.910, 0.150)))
+    # --- flight helmet: a white bowl with an orange trim, worn open so the
+    # goggles rest on the forehead (see the Zorp concept sheet) -------------
+    # the helmet sits ON the head: a bowl from the temples up, open at the
+    # face so the eyes and the grin stay visible
+    m.add("helmet", *place(lathe([
+        (0.176, 0.852), (0.186, 0.878), (0.190, 0.906), (0.182, 0.934),
+        (0.162, 0.956), (0.126, 0.972), (0.068, 0.984), (0.0, 0.988),
+    ], 30, close_ends=True), translation=(0, 0, 0.006)))
+    m.add("helmetTrim", *place(torus(0.180, 0.017, 0, 28, 6),
+                               translation=(0, 0.854, 0.006)))
+    # the ear cups
+    for sx in (-1, 1):
+        m.add("helmetTrim", *place(cylinder(0.058, 0.0, 0.05, 16, caps=True),
+                                   rot=(0, 0, 90 * sx),
+                                   translation=(0.181 * sx, 0.900, 0.010)))
+    # a little antenna stub and the chin strap ends
+    m.add("hullMetal", *place(cylinder(0.012, 0.0, 0.10, 8, caps=True),
+                              rot=(0, 0, 14),
+                              translation=(0.155, 0.968, -0.045)))
+
     # --- communication antennae ------------------------------------------
     for sx in (-1, 1):
         m.add("alienSkin", *place(cylinder(0.011, 0.0, 0.16, 8, caps=True),
                                   rot=(0, 0, -20 * sx),
                                   translation=(0.085 * sx, 0.88, -0.01)))
         m.add("lensGreen", *place(sphere((0, 0, 0), 0.030, 12, 8),
-                                  translation=(0.115 * sx, 1.03, -0.01)))
+                                  translation=(0.120 * sx, 1.012, -0.010)))
     # --- arms on the levers, gloves ---------------------------------------
     for sx in (-1, 1):
         m.add("suit", *place(sphere((0, 0, 0), 0.060, 14, 10, scale=(1.0, 2.0, 1.0)),

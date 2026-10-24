@@ -91,11 +91,33 @@ def goggle(size=128):
     return _to_img(np.clip(arr, 0, 1))
 
 
+def helmet(size=256):
+    """White flight helmet with a scratch here and there."""
+    n = _noise(size, 48, seed=71)
+    arr = np.dstack([0.86 + 0.06 * n, 0.87 + 0.06 * n, 0.84 + 0.06 * n])
+    img = _to_img(np.clip(arr, 0, 1))
+    d = ImageDraw.Draw(img)
+    for i in range(7):
+        x, y = (i * 41) % size, (i * 67) % size
+        d.line([(x, y), (x + 18, y + 5)], fill=(198, 198, 192), width=1)
+    return img
+
+
+def helmet_trim(size=128):
+    """The orange trim and ear cups."""
+    n = _noise(size, 20, seed=73)
+    arr = np.dstack([0.86 + 0.08 * n, 0.42 + 0.08 * n, 0.10 + 0.05 * n])
+    return _to_img(np.clip(arr, 0, 1))
+
+
 TEXTURES = {
     "decal_diffuse": (decal, "bc1", True),
     "suit_diffuse": (suit, "bc1", True),
     "suit_specular": (lambda: specular("paint"), "bc1", True),
     "goggle_diffuse": (goggle, "bc1", True),
+    "helmet_diffuse": (helmet, "bc1", True),
+    "helmet_specular": (lambda: specular("paint"), "bc1", True),
+    "helmetTrim_diffuse": (helmet_trim, "bc1", True),
 }
 
 

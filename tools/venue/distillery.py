@@ -28,16 +28,23 @@ from triggers import PLAYER, VEHICLE, trigger_mask, trigger_node
 from venue import area, line_area, neon_sign, quad, slab
 
 # --- footprint ------------------------------------------------------------
-MX0, MX1 = -10.0, 10.0          # main floor
-MZ0, MZ1 = -12.0, 3.0
-MH = 6.5
-BX0, BX1 = 10.0, 24.0           # bar wing
+# The house from the photos: a long, tall brick hall with the square tower at
+# the corner, a lower bar wing beside it and the beer garden behind.
+MX0, MX1 = -10.0, 10.0          # main floor (20 m wide)
+MZ0, MZ1 = -12.0, 3.0           # 15 m deep
+MH = 11.5                       # eaves - tall enough for two storeys + trusses
+BX0, BX1 = 10.0, 24.0           # bar wing (14 m)
 BZ0, BZ1 = -12.0, 3.0
-BH = 5.2
-GX0, GX1 = 10.0, 24.0           # garden
+BH = 7.4
+GX0, GX1 = 10.0, 24.0           # garden (14 x 18 m, right behind the bar wing)
 GZ0, GZ1 = 3.0, 21.0
 STREET_Z = -16.0
 WALL = 0.40
+
+# the brick tower of the old distillery - the landmark of the house
+TOWER_X0, TOWER_X1 = 3.0, 8.4
+TOWER_Z0, TOWER_Z1 = MZ0 - 3.2, MZ0 + 2.2
+TOWER_H = 18.5
 
 # The set list at the DJ booth. Titles and order are shared by the playlist
 # texture, the board geometry, the sounds xml and the script.
@@ -73,6 +80,13 @@ MATERIALS = [
     {"name": "collision", "diffuse": None, "color": "0.6 0.1 0.6 1",
      "specular": "0.1 0.1 0.1"},
     {"name": "brick", "diffuse": "brick_diffuse.dds", "gloss": "brick_specular.dds"},
+    {"name": "brickRed", "diffuse": "brickRed_diffuse.dds",
+     "gloss": "brickRed_specular.dds"},
+    {"name": "graffitiDense", "diffuse": "graffitiDense_diffuse.dds",
+     "gloss": "graffitiDense_specular.dds"},
+    {"name": "window", "diffuse": "windowDiffuse.dds", "gloss": None},
+    {"name": "roof", "diffuse": "roofTile_diffuse.dds", "gloss": "roofTile_specular.dds"},
+    {"name": "lightFlower", "diffuse": "lightFlower_diffuse.dds", "gloss": None},
     {"name": "brickDark", "diffuse": "brickDark_diffuse.dds",
      "gloss": "brickDark_specular.dds"},
     {"name": "brickGraffiti", "diffuse": "brickGraffiti_diffuse.dds",
@@ -123,6 +137,11 @@ LOOK = {
     "speaker": ((0.09, 0.09, 0.10), 0.15, 0.0, 1.0),
     "woodDark": ((0.25, 0.17, 0.12), 0.20, 0.0, 1.0),
     "stage": ((0.09, 0.03, 0.10), 0.55, 0.20, 1.0),
+    "brickRed": ((0.62, 0.28, 0.14), 0.25, 0.0, 1.0),
+    "graffitiDense": ((0.45, 0.30, 0.26), 0.20, 0.10, 1.0),
+    "window": ((0.10, 0.12, 0.16), 0.85, 0.10, 1.0),
+    "roof": ((0.16, 0.16, 0.18), 0.30, 0.0, 1.0),
+    "lightFlower": ((0.80, 0.74, 0.62), 0.15, 0.75, 1.0),
     "mirror": ((0.62, 0.66, 0.72), 0.95, 0.20, 1.0),
     "neonCyan": ((0.30, 0.80, 1.0), 0.3, 0.95, 1.0),
     "neonPink": ((1.0, 0.25, 0.60), 0.3, 0.95, 1.0),
@@ -148,6 +167,30 @@ def wall(m, mat, x0, x1, z0, z1, h0, h1):
          (abs(x1 - x0), abs(h1 - h0), abs(z1 - z0)))
 
 
+def tri(m, mat, pts, facing="+z", tile=2.0):
+    """One flat triangle of wall (used for the gables).
+
+    `pts` are three corner points; they are re-ordered so the face looks
+    towards `facing`.
+    """
+    a, b, c = pts
+    ux, uy, uz = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+    vx, vy, vz = (c[0] - a[0], c[1] - a[1], c[2] - a[2])
+    nx, ny, nz = (uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx)
+    ln = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    n = (nx / ln, ny / ln, nz / ln)
+    want = {"+z": (0, 0, 1), "-z": (0, 0, -1), "+x": (1, 0, 0), "-x": (-1, 0, 0)}[facing]
+    if n[0] * want[0] + n[1] * want[1] + n[2] * want[2] < 0:
+        b, c = c, b
+        n = (-n[0], -n[1], -n[2])
+    span = math.sqrt(ux * ux + uy * uy + uz * uz)
+    rise = math.sqrt(vx * vx + vy * vy + vz * vz)
+    us = max(1.0, span / tile)
+    vs = max(1.0, rise / tile)
+    uvs = [(0.0, vs), (us * 0.5, 0.0), (us, vs)]
+    m.add(mat, [a, b, c], [n] * 3, uvs, [(0, 1, 2)])
+
+
 def billboard(mesh, mat, centre, width, height, facing="+z", uv=None):
     """A flat quad with a texture, used for signs and posters.
 
@@ -166,6 +209,9 @@ def billboard(mesh, mat, centre, width, height, facing="+z", uv=None):
                (cx, cy + hh, cz - hw), (cx, cy + hh, cz + hw)],
         "-x": [(cx, cy - hh, cz - hw), (cx, cy - hh, cz + hw),
                (cx, cy + hh, cz + hw), (cx, cy + hh, cz - hw)],
+        # lying flat on the floor, readable from the south (the DJ side)
+        "+y": [(cx - hw, cy, cz + hh), (cx + hw, cy, cz + hh),
+               (cx + hw, cy, cz - hh), (cx - hw, cy, cz - hh)],
     }[facing]
     # FS25 / DirectX UV convention: v = 0 is the TOP row of the texture, and
     # the corners are ordered bottom-left .. top-left, so the v values run the
@@ -195,107 +241,182 @@ def drum(mesh, mat, pos, radius, height, rot=(90, 0, 0), segments=18):
 # exterior shell
 # --------------------------------------------------------------------------
 def shell_mesh():
+    """The house from the photos: long brick hall, square tower, pitched roof,
+    tagged facade, and the forecourt where the queue stands."""
     m = Mesh()
-    # street + pavement
-    wall(m, "cobble", -26.0, 30.0, STREET_Z, -12.6, -0.32, 0.0)
-    wall(m, "concrete", -26.0, 30.0, -12.6, -12.0, -0.32, 0.02)
+    # --- street / forecourt ------------------------------------------------
+    wall(m, "cobble", -30.0, 34.0, STREET_Z, -12.6, -0.34, 0.0)
+    wall(m, "concrete", -30.0, 34.0, -12.6, -12.0, -0.34, 0.02)
     # ground under the buildings
-    wall(m, "concreteDark", MX0 - 1.0, BX1 + 1.0, MZ0 - 0.5, BZ1 + 0.5, -0.36, 0.0)
+    wall(m, "concreteDark", MX0 - 1.0, BX1 + 1.0, MZ0 - 0.5, BZ1 + 0.5, -0.38, 0.0)
     # garden
-    wall(m, "gravel", GX0, GX1, GZ0, GZ1, -0.34, 0.0)
+    wall(m, "gravel", GX0, GX1, GZ0, GZ1, -0.36, 0.0)
 
     # --- main floor -------------------------------------------------------
-    # floor
     wall(m, "concreteDark", MX0, MX1, MZ0, MZ1, 0.0, 0.06)
-    # walls: front (street side, graffiti brick), back, west, east
-    wall(m, "brick", MX0 - WALL, MX1, MZ0 - WALL, MZ0, 0.0, MH)
-    wall(m, "brick", MX0 - WALL, MX1 + WALL, MZ1, MZ1 + WALL, 0.0, MH)
-    wall(m, "brick", MX0 - WALL, MX0, MZ0, MZ1, 0.0, MH)
-    wall(m, "brickDark", MX1, MX1 + WALL, MZ0, BZ0, 0.0, MH)  # behind the stage wall
-    # parapet / flat roof
-    wall(m, "concreteDark", MX0 - WALL, MX1 + WALL, MZ0 - WALL, MZ1 + WALL, MH, MH + 0.35)
-    for (x0, x1, z0, z1) in ((MX0 - 0.6, MX0 + 0.2, MZ0, MZ1),
-                             (MX1 - 0.2, MX1 + 0.6, MZ0, MZ1),
-                             (MX0, MX1, MZ0 - 0.6, MZ0 + 0.2)):
-        wall(m, "brick", x0, x1, z0, z1, MH + 0.35, MH + 0.95)   # parapet wall
-    # roof deck + skylights
-    wall(m, "concreteDark", MX0, MX1, MZ0, MZ1, MH + 0.30, MH + 0.40)
-    for sx in (-5.5, 0.0, 5.5):
-        wall(m, "steel", sx - 1.4, sx + 1.4, -8.5, -6.5, MH + 0.42, MH + 0.62)
+    # the facade carries the tags, the flanks are plain brick
+    wall(m, "graffitiDense", MX0 - WALL, MX1, MZ0 - WALL, MZ0, 0.0, 4.6)
+    wall(m, "brickRed", MX0 - WALL, MX1, MZ0 - WALL, MZ0, 4.6, MH)
+    wall(m, "brickRed", MX0 - WALL, MX1 + WALL, MZ1, MZ1 + WALL, 0.0, MH)
+    wall(m, "brickRed", MX0 - WALL, MX0, MZ0, MZ1, 0.0, MH)
+    wall(m, "brickRed", MX1, MX1 + WALL, MZ0, BZ0, 0.0, MH)   # behind the stage wall
 
-    # --- bar wing ---------------------------------------------------------
-    wall(m, "concreteDark", BX0, BX1, BZ0, BZ1, 0.0, 0.06)
-    wall(m, "brick", BX0, BX1 + WALL, BZ0 - WALL, BZ0, 0.0, BH)
-    wall(m, "brick", BX0, BX1 + WALL, BZ1, BZ1 + WALL, 0.0, BH)
-    wall(m, "brick", BX1, BX1 + WALL, BZ0, BZ1, 0.0, BH)
-    wall(m, "concreteDark", BX0, BX1 + WALL, BZ0 - WALL, BZ1 + WALL, BH, BH + 0.3)
-    wall(m, "brick", BX1, BX1 + 0.5, BZ0, BZ1, BH + 0.3, BH + 0.7)
+    # --- pitched roof (the photo shows a real saddle roof, not a flat deck) --
+    ridge_y = MH + 3.6
+    mid_z = (MZ0 + MZ1) * 0.5
+    half = (MZ1 - MZ0) * 0.5 + WALL
+    slope = math.degrees(math.atan2(ridge_y - MH, half))
+    length = math.hypot(ridge_y - MH, half)
+    for sign in (1, -1):
+        m.add("roof", *place(box((0, 0, 0), (MX1 - MX0 + 2 * WALL, 0.22, length)),
+                             rot=(sign * slope, 0, 0),
+                             translation=((MX0 + MX1) * 0.5,
+                                          (MH + ridge_y) * 0.5 - 0.05,
+                                          mid_z + sign * half * 0.5)))
+    # ridge cap + two chimney stacks
+    m.add("roof", *place(box((0, 0, 0), (MX1 - MX0 + 2 * WALL, 0.16, 0.5)),
+                         translation=((MX0 + MX1) * 0.5, ridge_y + 0.06, mid_z)))
+    for cx in (-8.2, 7.4):
+        m.add("brickRed", *place(box((0, 0, 0), (0.9, 2.0, 0.9)),
+                                 translation=(cx, ridge_y - 0.7, mid_z - 0.4)))
+    # gable ends: a real triangle of brick under each roof slope
+    gx0, gx1 = MX0 - WALL, MX1 + WALL
+    gmid = (MX0 + MX1) * 0.5
+    for zc in (MZ0 - WALL * 0.5, MZ1 + WALL * 0.5):
+        tri(m, "brickRed",
+            [(gx0, MH, zc), (gmid, ridge_y, zc), (gx1, MH, zc)],
+            "+z" if zc < 0 else "-z", tile=2.4)
+        # a small round window in the gable, like the photos
+        m.add("window", *place(disc(0.55, 0.0, segments=20),
+                               rot=(90, 0, 0),
+                               translation=(gmid + 3.0, MH + 1.05,
+                                            zc + (0.06 if zc < 0 else -0.06))))
+
+    # --- the tower --------------------------------------------------------
+    tx0, tx1, tz0, tz1 = TOWER_X0, TOWER_X1, TOWER_Z0, TOWER_Z1
+    wall(m, "graffitiDense", tx0, tx1, tz0, tz1, 0.0, 4.6)
+    wall(m, "brickRed", tx0, tx1, tz0, tz1, 4.6, TOWER_H)
+    # the tower cap: a flat slab and a small parapet
+    wall(m, "concreteDark", tx0 - 0.25, tx1 + 0.25, tz0 - 0.25, tz1 + 0.25,
+         TOWER_H, TOWER_H + 0.35)
+    wall(m, "brickRed", tx0 - 0.25, tx1 + 0.25, tz0 - 0.25, tz1 + 0.25,
+         TOWER_H + 0.35, TOWER_H + 0.95)
+    # tall narrow windows on the two visible sides
+    for y in (6.2, 9.2, 12.2, 15.2):
+        for i in range(3):
+            x = tx0 + 0.7 + i * 1.6
+            wall(m, "window", x, x + 0.75, tz0 - 0.06, tz0 + 0.02, y, y + 1.7)
+            wall(m, "steel", x - 0.07, x + 0.82, tz0 - 0.10, tz0 - 0.04, y - 0.07, y)
+            wall(m, "steel", x - 0.07, x + 0.82, tz0 - 0.10, tz0 - 0.04, y + 1.7, y + 1.77)
+        for i in range(2):
+            z = tz0 + 1.4 + i * 3.0
+            wall(m, "window", tx1 - 0.02, tx1 + 0.06, z, z + 0.85, y, y + 1.7)
+    # the little balcony with the iron railing from the photo
+    wall(m, "concreteDark", tx0 - 0.1, tx0 + 2.2, tz0 - 0.75, tz0 - 0.10, 8.4, 8.55)
+    for i in range(7):
+        x = tx0 - 0.05 + i * 0.35
+        wall(m, "steel", x, x + 0.05, tz0 - 0.72, tz0 - 0.66, 8.55, 9.5)
+    wall(m, "steel", tx0 - 0.1, tx0 + 2.25, tz0 - 0.74, tz0 - 0.66, 9.45, 9.55)
 
     # --- facade openings --------------------------------------------------
-    # cut the entrance by building the front wall in pieces
-    # (drawn again over the wall block, slightly in front, in the same brick)
     # entrance door: x -1.6 .. 1.6, y 0 .. 3.2
     wall(m, "concreteDark", -1.7, 1.7, MZ0 - WALL - 0.02, MZ0 - WALL + 0.06, 0.0, 3.25)
-    # two big windows: x -7.6..-4.6 and x -3.8..-2.6, y 2.0..4.4
+    # two big shop windows at eye height, one tall window band above
     for (x0, x1) in ((-7.8, -4.8), (-3.9, -2.4)):
-        wall(m, "concreteDark", x0, x1, MZ0 - WALL - 0.02, MZ0 - WALL + 0.06, 2.0, 4.4)
-        wall(m, "steel", x0, x1, MZ0 - WALL - 0.10, MZ0 - WALL - 0.02, 2.0, 2.08)
-        wall(m, "steel", x0, x1, MZ0 - WALL - 0.10, MZ0 - WALL - 0.02, 4.32, 4.4)
+        wall(m, "window", x0, x1, MZ0 - WALL - 0.02, MZ0 - WALL + 0.06, 1.0, 4.3)
+        wall(m, "steel", x0, x1, MZ0 - WALL - 0.10, MZ0 - WALL - 0.02, 1.0, 1.08)
+        wall(m, "steel", x0, x1, MZ0 - WALL - 0.10, MZ0 - WALL - 0.02, 4.22, 4.3)
         for k in range(1, 4):
             xx = x0 + (x1 - x0) * k / 4.0
             wall(m, "steel", xx - 0.05, xx + 0.05, MZ0 - WALL - 0.10, MZ0 - WALL - 0.02,
-                 2.0, 4.4)
+                 1.0, 4.3)
+    # upper storey: five tall windows with a steel frame, like the photos
+    for i in range(5):
+        x = -8.4 + i * 3.3
+        wall(m, "window", x, x + 1.5, MZ0 - WALL - 0.02, MZ0 - WALL + 0.06, 6.4, 9.6)
+        wall(m, "steel", x - 0.08, x + 1.58, MZ0 - WALL - 0.12, MZ0 - WALL - 0.02,
+             6.32, 6.42)
+        wall(m, "steel", x - 0.08, x + 1.58, MZ0 - WALL - 0.12, MZ0 - WALL - 0.02,
+             9.58, 9.68)
+        wall(m, "steel", x + 0.72, x + 0.80, MZ0 - WALL - 0.12, MZ0 - WALL - 0.02,
+             6.4, 9.6)
+        wall(m, "steel", x - 0.08, x + 0.02, MZ0 - WALL - 0.12, MZ0 - WALL - 0.02,
+             6.4, 9.6)
+        wall(m, "steel", x + 1.50, x + 1.60, MZ0 - WALL - 0.12, MZ0 - WALL - 0.02,
+             6.4, 9.6)
     # door frame + handles
     for sx in (-1, 1):
         wall(m, "steel", sx * 1.7 - 0.06, sx * 1.7 + 0.06, MZ0 - 0.7, MZ0 - 0.6, 0.0, 3.3)
     wall(m, "steel", -1.8, 1.8, MZ0 - 0.7, MZ0 - 0.6, 3.2, 3.35)
     wall(m, "woodDark", -0.06, 0.06, MZ0 - 0.68, MZ0 - 0.62, 0.0, 3.2)  # door gap
+    # the yellow cable the crew taped across the yard in the photo
+    m.add("neonAmber", *place(cylinder(0.05, 0.0, 0.05, 8, caps=True),
+                              translation=(-9.0, 0.02, -13.4), rot=(0, 14, 0)))
+
+    # --- bar wing ---------------------------------------------------------
+    wall(m, "concreteDark", BX0, BX1, BZ0, BZ1, 0.0, 0.06)
+    wall(m, "graffitiDense", BX0, BX1 + WALL, BZ0 - WALL, BZ0, 0.0, 3.6)
+    wall(m, "brickRed", BX0, BX1 + WALL, BZ0 - WALL, BZ0, 3.6, BH)
+    wall(m, "brickRed", BX0, BX1 + WALL, BZ1, BZ1 + WALL, 0.0, BH)
+    wall(m, "brickRed", BX1, BX1 + WALL, BZ0, BZ1, 0.0, BH)
+    # shed roof over the bar wing
+    sag = 2.2
+    slope2 = math.degrees(math.atan2(sag, (BX1 - BX0) * 0.5))
+    m.add("roof", *place(box((0, 0, 0), (math.hypot(sag, (BX1 - BX0) * 0.5), 0.20,
+                                             BZ1 - BZ0 + 2 * WALL)),
+                         rot=(0, 0, slope2),
+                         translation=((BX0 + BX1) * 0.5, BH + sag * 0.5,
+                                      (BZ0 + BZ1) * 0.5)))
+    # a couple of windows towards the garden and the street
+    for z in (-9.0, -5.5, -2.0, 1.0):
+        wall(m, "window", BX1 + WALL - 0.02, BX1 + WALL + 0.06, z, z + 1.3, 2.4, 4.2)
+    for x in (12.0, 14.4, 16.8, 19.2, 21.6):
+        wall(m, "window", x, x + 1.3, BZ1 + WALL - 0.02, BZ1 + WALL + 0.06, 2.4, 4.2)
 
     # --- fire escape ------------------------------------------------------
     fx = MX0 - 1.15
-    # vertical ladder + landings on the west facade
-    for y in (3.4, 4.6):
+    for y in (4.6, 8.4):
         wall(m, "steel", fx - 0.7, fx + 0.7, -9.2, -6.4, y, y + 0.10)
-        # railing
         for z in (-9.2, -6.4):
             wall(m, "steel", fx - 0.68, fx + 0.68, z - 0.04, z + 0.04, y + 0.1, y + 1.1)
         wall(m, "steel", fx - 0.7, fx + 0.7, -9.24, -9.16, y + 1.02, y + 1.10)
-    # the stair flight between the two landings
-    m.add("steel", *place(box((0, 0, 0), (1.0, 0.10, 4.6)),
-                          translation=(fx, 4.0, -7.8), rot=(-24, 0, 0)))
-    # steps as small plates
-    for i in range(9):
-        t = i / 8.0
+    m.add("steel", *place(box((0, 0, 0), (1.0, 0.10, 5.2)),
+                          translation=(fx, 6.5, -7.8), rot=(-38, 0, 0)))
+    for i in range(11):
+        t = i / 10.0
         m.add("steel", *place(box((0, 0, 0), (1.0, 0.06, 0.30)),
-                              translation=(fx, 3.45 + t * 1.05, -9.0 + t * 2.4)))
-    # ladder to the roof
+                              translation=(fx, 4.7 + t * 3.7, -9.0 + t * 2.6)))
     for z in (-6.6, -6.2):
-        wall(m, "steel", fx - 0.04, fx + 0.04, z, z + 0.06, 4.6, MH + 0.9)
-    for i in range(6):
-        wall(m, "steel", fx - 0.04, fx + 0.04, -6.6, -6.14, 4.8 + i * 0.32,
-             4.86 + i * 0.32)
+        wall(m, "steel", fx - 0.04, fx + 0.04, z, z + 0.06, 8.4, MH + 0.9)
+    for i in range(8):
+        wall(m, "steel", fx - 0.04, fx + 0.04, -6.6, -6.14, 8.5 + i * 0.34,
+             8.56 + i * 0.34)
 
     # --- street fittings --------------------------------------------------
     lamp = Mesh()
-    lamp.add("steel", *place(cylinder(0.09, 0.0, 7.2, 10, caps=True),
+    lamp.add("steel", *place(cylinder(0.09, 0.0, 8.4, 10, caps=True),
                              translation=(-8.5, 0.0, -13.4)))
     lamp.add("steel", *place(box((0, 0, 0), (0.12, 0.12, 1.7)),
-                             translation=(-8.5, 7.0, -12.7)))
+                             translation=(-8.5, 8.2, -12.7)))
     lamp.add("neonWhite", *place(box((0, 0, 0), (0.5, 0.10, 0.8)),
-                                 translation=(-8.5, 6.9, -12.0)))
+                                 translation=(-8.5, 8.1, -12.0)))
     m.add("steel", *lamp.parts["steel"])
     m.add("neonWhite", *lamp.parts["neonWhite"])
-    for x in (-12.0, -10.6, 4.6, 6.0):
+    for x in (-12.0, -10.6, 4.6, 6.0, -2.4):
         m.add("steel", *place(cylinder(0.08, 0.0, 0.95, 8, caps=True),
                               translation=(x, 0.0, -13.1)))
-    # barrier rails of the queue
+    # barrier rails of the queue in front of the door
     for i in range(4):
-        x = -6.0 + i * 2.2
+        x = -6.6 + i * 2.2
         m.add("steel", *place(cylinder(0.04, 0.0, 1.05, 6, caps=True),
-                              translation=(x, 0.0, -13.6)))
+                              translation=(x, 0.0, -13.9)))
         if i < 3:
             m.add("steel", *place(box((0, 0, 0), (2.2, 0.05, 0.05)),
-                                  translation=(x + 1.1, 1.0, -13.6)))
+                                  translation=(x + 1.1, 1.0, -13.9)))
+    # a couple of bollards at the garden gate
+    for z in (4.0, 6.0):
+        m.add("steel", *place(cylinder(0.08, 0.0, 1.0, 8, caps=True),
+                              translation=(GX0 + 0.4, 0.0, z)))
     return m
 
 
@@ -342,6 +463,9 @@ def dance_floor_mesh():
     m = Mesh()
     # slightly lighter concrete island with steel edging
     wall(m, "concrete", -7.2, 7.2, -3.6, 2.4, 0.06, 0.09)
+    # the yellow flower of light on the floor - the gobo from the photo, laid
+    # 12 cm over the concrete so it never fights with the floor itself
+    billboard(m, "lightFlower", (0.0, 0.12, -0.6), 6.6, 6.6, "+y")
     for (x0, x1, z0, z1) in ((-7.3, 7.3, -3.7, -3.6), (-7.3, 7.3, 2.4, 2.5),
                              (-7.3, -7.2, -3.7, 2.5), (7.2, 7.3, -3.7, 2.5)):
         wall(m, "steel", x0, x1, z0, z1, 0.06, 0.10)
@@ -481,6 +605,41 @@ def interior_props():
     # --- wardrobe hooks and posters --------------------------------------
     for i in range(3):
         billboard(m, "graffiti", (MX0 + 0.06, 2.6, -6.0 + i * 3.0), 1.6, 1.1, "+x")
+
+    # --- the columns from the plan ("Säulen") between floor and bar ------
+    for z in (-10.0, -6.4, -2.8, 0.8):
+        m.add("steel", *place(cylinder(0.20, 0.06, 4.10, 12, caps=True),
+                              translation=(MX1 - 1.4, 0.0, z)))
+        m.add("concreteDark", *place(box((0, 0, 0), (0.62, 0.10, 0.62)),
+                                     translation=(MX1 - 1.4, 0.11, z)))
+        m.add("concreteDark", *place(box((0, 0, 0), (0.62, 0.14, 0.62)),
+                                     translation=(MX1 - 1.4, 4.10, z)))
+    # a steel beam across the hall on top of them
+    wall(m, "steel", MX1 - 1.6, MX1 - 1.2, MZ0 + 0.4, MZ1 - 0.4, 4.12, 4.42)
+
+    # --- "2nd floor house": the VIP box over the east side ---------------
+    hx0, hx1 = MX1 - 6.0, MX1 - 0.2
+    hz0, hz1 = MZ0 + 0.4, MZ0 + 4.6
+    wall(m, "woodDark", hx0, hx1, hz0, hz1, 5.55, 5.70)          # floor
+    wall(m, "steel", hx0 - 0.10, hx0, hz0, hz1, 5.55, 6.55)      # railing posts
+    wall(m, "steel", hx0 - 0.06, hx0 - 0.02, hz0, hz1, 6.45, 6.55)
+    for z in (hz0 + 0.2, hz0 + 1.6, hz0 + 3.0, hz0 + 4.3):
+        wall(m, "steel", hx0 - 0.09, hx0 - 0.01, z - 0.04, z + 0.04, 5.7, 6.5)
+    # stairs up along the east wall
+    for i in range(14):
+        m.add("steel", *place(box((0, 0, 0), (1.1, 0.06, 0.28)),
+                              translation=(hx1 - 0.7, 0.42 + i * 0.36,
+                                           MZ1 - 2.0 - i * 0.34)))
+    # its own little bar on the platform
+    wall(m, "woodDark", hx1 - 2.1, hx1 - 1.4, hz0 + 1.0, hz0 + 3.4, 5.70, 6.70)
+    wall(m, "steel", hx1 - 2.16, hx1 - 1.34, hz0 + 0.94, hz0 + 3.46, 6.70, 6.78)
+    wall(m, "neonAmber", hx1 - 2.12, hx1 - 2.08, hz0 + 1.1, hz0 + 3.3, 6.85, 6.92)
+    # a few stools
+    for z in (hz0 + 1.4, hz0 + 2.2, hz0 + 3.0):
+        m.add("steel", *place(cylinder(0.05, 5.70, 6.28, 8, caps=True),
+                              translation=(hx1 - 2.6, 0.0, z)))
+        m.add("woodDark", *place(disc(0.18, 0.0, segments=12),
+                                 translation=(hx1 - 2.6, 6.30, z)))
     return m
 
 
@@ -524,6 +683,70 @@ def tree(m, x, z, h=6.0, r=1.9):
         m.add("leaf", *place(sphere((0, 0, 0), 1.0, segments=12, rings=7),
                              translation=(x + off * 0.6, dy, z + off * 0.4),
                              scale=(rr, rr * 0.8, rr)))
+
+
+def bistro_table(m, x, z, chairs=4, r=0.62, rot0=0.0):
+    """A round beer-garden table with wicker chairs around it (SITZBEREICHE)."""
+    m.add("woodDark", *place(disc(r, 0.0, segments=18),
+                             translation=(x, 0.74, z)))
+    m.add("steel", *place(cylinder(0.06, 0.0, 0.74, 8, caps=True),
+                          translation=(x, 0.0, z)))
+    m.add("steel", *place(disc(0.30, 0.0, segments=12), translation=(x, 0.03, z)))
+    for i in range(chairs):
+        a = math.radians(rot0 + 360.0 * i / chairs)
+        cx, cz = x + math.cos(a) * (r + 0.55), z + math.sin(a) * (r + 0.55)
+        m.add("woodDark", *place(box((0, 0, 0), (0.44, 0.06, 0.44)),
+                                 translation=(cx, 0.45, cz)))
+        m.add("woodDark", *place(box((0, 0, 0), (0.44, 0.40, 0.05)),
+                                 rot=(8, -math.degrees(a) + 90, 0),
+                                 translation=(cx + math.cos(a) * 0.20, 0.66,
+                                              cz + math.sin(a) * 0.20)))
+        for sx in (-1, 1):
+            for sz in (-1, 1):
+                m.add("steel", *place(box((0, 0, 0), (0.04, 0.45, 0.04)),
+                                      translation=(cx + sx * 0.18, 0.22,
+                                                   cz + sz * 0.18)))
+
+
+def canopy(m, x0, x1, z0, z1, h=3.1):
+    """A covered area (ÜBERDACHTER BEREICH): posts, a wooden roof, string lights."""
+    for (x, z) in ((x0, z0), (x1, z0), (x0, z1), (x1, z1)):
+        m.add("woodDark", *place(cylinder(0.11, 0.0, h, 8, caps=True),
+                                 translation=(x, 0.0, z)))
+    m.add("woodDark", *place(box((0, 0, 0), (x1 - x0 + 0.7, 0.14, z1 - z0 + 0.7)),
+                             translation=((x0 + x1) * 0.5, h + 0.10,
+                                          (z0 + z1) * 0.5)))
+    # slats so it reads as a pergola rather than a solid box
+    for i in range(int((z1 - z0) / 0.5) + 1):
+        z = z0 + i * 0.5
+        m.add("woodDark", *place(box((0, 0, 0), (x1 - x0 + 0.9, 0.06, 0.10)),
+                                 translation=((x0 + x1) * 0.5, h + 0.24, z)))
+    # string lights along the front beam
+    for i in range(9):
+        t = i / 8.0
+        m.add("neonAmber", *place(sphere((0, 0, 0), 0.05, segments=8, rings=5),
+                                  translation=(x0 + t * (x1 - x0), h - 0.14,
+                                               z0 - 0.05)))
+
+
+def lounge(m, x, z, w=3.0, d=2.2, rot=0.0):
+    """A chill-out corner (CHILL-OUT ECKE): two sofas, a crate table and a rug."""
+    a = math.radians(rot)
+    for (dx, dz, length) in ((0.0, -d * 0.5, w), (0.0, d * 0.5, w),
+                             (-w * 0.5, 0.0, d), (w * 0.5, 0.0, d)):
+        cx = dx * math.cos(a) - dz * math.sin(a) + x
+        cz = dx * math.sin(a) + dz * math.cos(a) + z
+        m.add("speaker", *place(box((0, 0, 0), (length, 0.40, 0.80)),
+                                rot=(0, -math.degrees(a), 0),
+                                translation=(cx, 0.24, cz)))
+        m.add("speaker", *place(box((0, 0, 0), (length, 0.55, 0.18)),
+                                rot=(0, -math.degrees(a), 0),
+                                translation=(cx, 0.60, cz)))
+    # a low crate in the middle with a lamp on it
+    m.add("woodDark", *place(box((0, 0, 0), (0.9, 0.45, 0.7)),
+                             translation=(x, 0.24, z)))
+    m.add("neonAmber", *place(sphere((0, 0, 0), 0.10, segments=10, rings=7),
+                              translation=(x, 0.60, z)))
 
 
 def garden_mesh():
@@ -587,6 +810,21 @@ def garden_mesh():
                       (GX0 + 5.6, GZ0 + 14.0, 180), (GX0 + 9.0, GZ0 + 14.0, 180),
                       (GX0 + 2.0, GZ0 + 12.0, 90), (GX1 - 1.2, GZ0 + 12.0, 270)):
         bench(x, z, r)
+
+    # --- the seating groups from the plan (SITZBEREICHE) ------------------
+    for (x, z, n) in ((GX0 + 7.6, GZ0 + 8.4, 4), (GX0 + 10.6, GZ0 + 8.4, 4),
+                      (GX0 + 7.6, GZ0 + 11.6, 4), (GX0 + 10.6, GZ0 + 11.6, 4),
+                      (GX0 + 4.2, GZ0 + 9.6, 3), (GX0 + 12.2, GZ0 + 5.6, 3),
+                      (GX0 + 2.6, GZ0 + 16.4, 4), (GX0 + 8.6, GZ0 + 16.4, 4)):
+        bistro_table(m, x, z, chairs=n)
+
+    # --- covered areas (ÜBERDACHTE BEREICHE) ------------------------------
+    canopy(m, GX0 + 6.4, GX0 + 12.6, GZ0 + 6.6, GZ0 + 13.4)
+    canopy(m, GX1 - 5.4, GX1 - 0.9, GZ0 + 3.4, GZ0 + 8.8)
+
+    # --- two chill-out corners (CHILL-OUT ECKEN) --------------------------
+    lounge(m, GX0 + 3.6, GZ0 + 17.2, 3.4, 2.4, 0.0)
+    lounge(m, GX1 - 2.8, GZ0 + 11.4, 3.0, 2.2, 90.0)
 
     # --- trees ------------------------------------------------------------
     for (x, z) in ((GX0 + 1.0, GZ1 - 1.6), (GX0 + 6.6, GZ1 - 1.2),
@@ -697,6 +935,15 @@ def collision_nodes():
         block("colPA%d" % (i + 1), (x, 1.8, z), (1.5, 3.6, 1.2))
     # garden bar hut
     block("colGardenBar", (GX0 + 3.1, 1.3, GZ0 + 4.5), (4.8, 2.6, 3.2))
+    # the tower and the canopy posts from the plans
+    block("colTower", ((TOWER_X0 + TOWER_X1) * 0.5, TOWER_H * 0.5,
+                       (TOWER_Z0 + TOWER_Z1) * 0.5),
+          (TOWER_X1 - TOWER_X0, TOWER_H, TOWER_Z1 - TOWER_Z0))
+    for i, (x, z) in enumerate(((GX0 + 6.4, GZ0 + 6.6), (GX0 + 12.6, GZ0 + 6.6),
+                                (GX0 + 6.4, GZ0 + 13.4), (GX0 + 12.6, GZ0 + 13.4),
+                                (GX1 - 5.4, GZ0 + 3.4), (GX1 - 0.9, GZ0 + 3.4),
+                                (GX1 - 5.4, GZ0 + 8.8), (GX1 - 0.9, GZ0 + 8.8))):
+        block("colPost%d" % i, (x, 1.55, z), (0.24, 3.1, 0.24))
     return out
 
 
@@ -795,6 +1042,8 @@ def build_scene():
                   (GX1 - MX0) + 6.0, (GZ1 - STREET_Z) + 4.0))
     root.add(area("indoorArea1", MX0 + 0.2, 0.05, MZ0 + 0.2,
                   (MX1 - MX0) - 0.4, (MZ1 - MZ0) - 0.4))
+    root.add(area("outdoorArea1", GX0 + 0.2, 0.02, GZ0 + 0.2,
+                  (GX1 - GX0) - 0.4, (GZ1 - GZ0) - 0.4))
     root.add(area("foliageArea1", MX0 - 3.0, 0.0, STREET_Z - 2.0,
                   (GX1 - MX0) + 6.0, (GZ1 - STREET_Z) + 4.0))
     return root

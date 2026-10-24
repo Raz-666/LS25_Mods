@@ -5,7 +5,7 @@ Acht Mods für **Farming Simulator 25**:
 | Mod | Was es ist |
 | --- | --- |
 | **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, drei Landebeine und ein Traktorstrahl, der **acht Arbeiten** kann: plattdrücken, ernten, grubbern, pflügen, säen, düngen, aufnehmen, abladen – dazu ein **virtueller Laderaum mit 5 Mio. Litern** |
-| **`dist/FS25_Alien.zip`** | **Drei** Aliens als aufstellbare Deko – der kleine grüne Kumpel, der Große mit Riesenschädel und Glubschaugen und **Captain Zorp** aus dem Cockpit-Blueprint (Brille auf der Stirn, Fluganzug, Namensschild) |
+| **`dist/FS25_Alien.zip`** | **Drei** Aliens als aufstellbare Deko – der kleine grüne Kumpel, der Große mit Riesenschädel und Glubschaugen und **Captain Zorp** aus dem Cockpit-Blueprint (Fliegerhelm mit Brille auf der Stirn, Fluganzug, Namensschild) |
 | **`dist/FS25_Disco.zip`** | **Hofdisco** mit Neon, Spiegelkugel, DJ-Pult und 6 eigenen Stücken – im Multiplayer hören alle in der Halle **denselben Song zur selben Zeit** |
 | **`dist/FS25_Autokino.zip`** | **Autokino** mit 13-m-Leinwand und drei kurzen Zeichentrickfilmen samt Soundtrack – Bildnummer aus der Netzwerkzeit, also im MP frame-genau synchron |
 | **`dist/FS25_UFO4500.zip`** | **Mähdrescher-UFO** mit 6-m-Schneidwerk, 15.000-l-Korntank und allem, was ein Drescher können muss |
@@ -241,10 +241,15 @@ also die Untertasse stehen, wo sie stand. 🙂
 - 3 Filme × 16 Bilder (DDS), 3 Soundtracks, 14 Texturen, Shop-Icon
 
 **Alien-Maskottchen (drei Figuren)**
-- Maskottchen 5.400 Dreiecke, der Große 9.500, Captain Zorp 4.000
-- je 2 Shapes (Mesh + unsichtbare Kollision), 11 Texturen
+- Maskottchen 11.500 Dreiecke, der Große 9.500, Captain Zorp 7.200
+- je 2 Shapes (Mesh + unsichtbare Kollision), 17 Texturen
 - Platzierbar, frei drehbar, wieder aufnehmbar, 750 / 1.200 / 1.500 €
-- Captain Zorp trägt Fluganzug, Brille auf der Stirn und ein „ZORP"-Schild
+- Maskottchen und der Große nach der Vorlage: großer Kopf, riesige glänzende
+  Mandelaugen, dünne Ärmchen und Beine, **geringelte Socken** (einer rot, einer
+  blau), rosige Wangen, schüchternes Lächeln, Fühler mit Leuchtkugeln
+- Captain Zorp trägt Fluganzug, **weißen Fliegerhelm mit orangem Rand und
+  Ohrmuscheln**, die schwarze Brille hoch auf die Stirn geschoben, dazu das
+  „ZORP"-Namensschild – dieselbe Figur wie im Cockpit des Crop Harvester
 
 ### Feintuning
 
@@ -581,10 +586,11 @@ python tools/venue/validate.py --mod disco         # Prüfung ohne Spiel
 
 ## 11. Der Club: Distillery Leipzig (`FS25_Distillery`)
 
-Nachgebaut nach dem Referenz-PDF: eine alte Backsteinfabrik, Hauptfloor ca.
-35 × 20 m, dazu Bar-Flügel, Foyer und Biergarten – mit **„DISTILLERY / LEIPZIG"**
-als Leuchtschrift über dem Eingang, Graffiti an der Fassade und Kopfsteinpflaster
-auf der Straße.
+Nachgebaut nach dem Grundriss aus der Vorlage – **innen und außen getrennt**, so
+wie im Plan eingezeichnet: eine alte Backsteinfabrik mit **Turm** und
+Satteldach, Hauptfloor 20 × 15 m, Bar-Flügel 15 × 15 m und ein **Außenbereich
+(Garten) 14 × 18 m** – mit **„DISTILLERY / LEIPZIG"** als Leuchtschrift über dem
+Eingang, Graffiti an der Fassade und Kopfsteinpflaster auf der Straße.
 
 | | |
 | --- | --- |
@@ -598,17 +604,26 @@ auf der Straße.
 ![Hauptfloor mit PA und Titelliste](docs/renders/distillery_floor.png)
 ![Biergarten](docs/renders/distillery_garden.png)
 
-**Was aus dem PDF drin ist**
+**Was aus dem Grundriss drin ist**
 
-* **Hauptfloor**: DJ-Pult auf einer Bühne, **vier große PA-Türme** (je zwei Bässe
-  und vier Hörner, ca. 3,7 m hoch) links und rechts der Tanzfläche, Traversen mit
-  acht Moving Heads, Neonbänder, Spiegelkugel, Beton-Tanzfläche, Lüftungskanäle.
-* **Hauptbar** im Seitenflügel: lange Theke, Zapfhähne, Rückwandregale mit
-  Flaschen, LED unter der Theke.
-* **Foyer/Kasse** mit Garderobentheke und Drehkreuz, **Sanitärbereich**,
-  **Bühnenrand/Mezzanine** mit Treppe, **Feuerleiter** über das Dach.
-* **Garten**: Barhütte **„BAR 01"**, Bänke, Pergola, Sträucher, Lichterketten.
-* **Fassade**: roter/dunkler Klinker, Graffiti-Decals, Leuchtschrift, „EST. 2018".
+* **Innen – Hauptfloor (20 × 15 m)**: DJ-Pult auf einer Bühne, **vier große
+  PA-Türme** (je zwei Bässe und vier Hörner, ca. 3,7 m hoch) links und rechts der
+  Tanzfläche, Traversen mit acht Moving Heads, Neonbänder, Spiegelkugel,
+  Beton-Tanzfläche mit **Blüten-Decal**, vier tragende Säulen mit Unterzug,
+  Lüftungskanäle.
+* **Innen – Flügel (15 × 15 m)**: **Hauptbar** mit langer Theke, Zapfhähnen,
+  Rückwandregalen und LED unter der Theke, dazu eine **VIP-Empore im 1. OG** mit
+  Brüstung, Blick auf die Tanzfläche und eigener Treppe.
+* **Innen – drumherum**: **Foyer/Kasse** mit Garderobentheke und Drehkreuz,
+  **Sanitärbereich**, **Lagerraum**, **Treppe ins 2. OG**, **Feuerleiter** über
+  das Dach.
+* **Außen – Garten (14 × 18 m)**: Barhütte **„BAR 01"** mit Flaschenregal und
+  Tresen, **acht Bistro-Sitzgruppen**, **zwei überdachte Bereiche** (Pergola mit
+  Segeltuch), **zwei Chill-out-Ecken** mit Sofas und Kistentisch, Steinweg,
+  Bäume und Sträucher, Lichterketten.
+* **Gebäude in der Totalen**: roter Klinker mit Graffiti-Band, **Turm mit
+  Balkon (ca. 18,5 m)**, Satteldach mit **gemauerten Dreiecksgiebeln** und rundem
+  Giebelfenster, Dachgauben, Leuchtschrift, „EST. 2018".
 
 **Die Titelliste am DJ-Pult (das Kernstück)**
 

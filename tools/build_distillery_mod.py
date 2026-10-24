@@ -125,11 +125,14 @@ def load_textures():
     import render
 
     mapping = {}
+    # texture file name -> material name in the i3d (they differ in two cases)
+    alias = {"roofTile_diffuse": "roof", "windowDiffuse": "window"}
     for name in club_textures.TEXTURES:
-        if not name.endswith("_diffuse"):
-            continue
-        mat = name[:-len("_diffuse")]
-        mapping[mat] = os.path.join(BUILD, "distillery_tex", name + ".png")
+        if name in alias:
+            mapping[alias[name]] = os.path.join(BUILD, "distillery_tex", name + ".png")
+        elif name.endswith("_diffuse"):
+            mapping[name[:-len("_diffuse")]] = os.path.join(
+                BUILD, "distillery_tex", name + ".png")
     render.load_textures(mapping)
 
 
@@ -154,13 +157,20 @@ def build_images():
                   return_alpha=True, root=scene()).save(
         os.path.join(MOD, "store_distillery.png"))
 
-    render.render(size=1000, eye=(2.0, 6.2, -40.0), target=(-1.0, 5.0, -12.0),
-                  fov=40, ss=2, root=scene()).save(os.path.join(docs, "distillery_hero.png"))
-    render.render(size=900, eye=(0.6, 1.75, 1.6), target=(-1.4, 2.6, -9.0),
-                  fov=66, ss=2, root=scene()).save(os.path.join(docs, "distillery_floor.png"))
-    render.render(size=1000, eye=(33.0, 9.0, 28.0), target=(15.0, 1.8, 11.0),
+    # the whole house in three-quarter view, like the photo of the corner
+    render.render(size=1000, eye=(-31.0, 15.0, -33.0), target=(6.0, 7.5, -2.0),
+                  fov=42, ss=2, root=scene()).save(os.path.join(docs, "distillery_hero.png"))
+    # facade head-on (the entrance photo)
+    render.render(size=900, eye=(-1.0, 8.5, -40.0), target=(-1.0, 7.0, -12.0),
+                  fov=40, ss=2, root=scene()).save(os.path.join(docs, "distillery_facade.png"))
+    # dance floor: flower of light, board, PA
+    render.render(size=900, eye=(0.6, 2.05, 2.4), target=(-1.0, 2.0, -9.0),
+                  fov=68, ss=2, root=scene()).save(os.path.join(docs, "distillery_floor.png"))
+    render.render(size=900, eye=(4.0, 4.6, 1.2), target=(-0.5, 0.4, -3.0),
+                  fov=60, ss=2, root=scene()).save(os.path.join(docs, "distillery_flower.png"))
+    render.render(size=1000, eye=(34.0, 12.0, 32.0), target=(15.0, 1.5, 11.0),
                   fov=46, ss=2, root=scene()).save(os.path.join(docs, "distillery_garden.png"))
-    print("  icon, store picture, distillery_hero/floor/garden.png")
+    print("  icon, store picture, distillery_hero/facade/floor/flower/garden.png")
 
 
 def make_zip():

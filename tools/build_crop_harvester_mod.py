@@ -288,6 +288,8 @@ def build_images():
         "eyeBlack": ((0.03, 0.05, 0.07), 0.9, 0.0, 1.0),
         "suit": ((0.32, 0.46, 0.25), 0.35, 0.0, 1.0),
         "goggle": ((0.20, 0.21, 0.23), 0.6, 0.0, 1.0),
+        "helmet": ((0.88, 0.89, 0.86), 0.45, 0.0, 1.0),
+        "helmetTrim": ((0.84, 0.42, 0.12), 0.35, 0.0, 1.0),
         "decal": ((0.88, 0.90, 0.92), 0.4, 0.25, 1.0),
         "beam": ((0.4, 1.0, 0.5), 0.1, 0.9, 0.30),
         "beamGreen": ((0.35, 1.0, 0.40), 0.1, 0.9, 0.34),
@@ -300,6 +302,8 @@ def build_images():
         "decal": os.path.join(BUILD, "crop_textures", "decal_diffuse.png"),
         "suit": os.path.join(BUILD, "crop_textures", "suit_diffuse.png"),
         "goggle": os.path.join(BUILD, "crop_textures", "goggle_diffuse.png"),
+        "helmet": os.path.join(BUILD, "crop_textures", "helmet_diffuse.png"),
+        "helmetTrim": os.path.join(BUILD, "crop_textures", "helmetTrim_diffuse.png"),
     })
 
     docs = os.path.join(REPO, "docs", "renders")

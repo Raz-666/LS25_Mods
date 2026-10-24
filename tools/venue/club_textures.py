@@ -6,6 +6,7 @@ for the dance floor, cobblestones for the street, rusty steel for stairs and
 ducts, PA cabinet cloth, stage wood and the neon tube colours.
 """
 
+import math
 import os
 import subprocess
 import sys
@@ -24,6 +25,35 @@ _to_img = ufo_textures._to_img
 specular = ufo_textures.specular
 
 import signs  # noqa: E402
+
+REFERENCE = os.path.join(os.path.dirname(os.path.dirname(_HERE)),
+                           "docs", "reference")
+
+
+def photo_palette(name, count=10, box=None, size=64):
+    """Dominant colours of a reference photo, or None when it is missing.
+
+    The facade brick, the graffiti strokes and the dance floor tint are all
+    sampled from the pictures in `docs/reference/`, so the mod really carries
+    the colours of the building instead of guessed ones.
+    """
+    path = os.path.join(REFERENCE, name)
+    if not os.path.isfile(path):
+        return None
+    try:
+        img = Image.open(path).convert("RGB")
+    except OSError:
+        return None
+    if box:
+        w, h = img.size
+        img = img.crop((int(box[0] * w), int(box[1] * h),
+                        int(box[2] * w), int(box[3] * h)))
+    small = img.resize((size, size), Image.LANCZOS)
+    quant = small.quantize(colors=count, method=Image.MEDIANCUT).convert("RGB")
+    cols = quant.getcolors(size * size) or []
+    cols.sort(key=lambda c: -c[0])
+    return [c[1] for c in cols]
+
 
 BRICK = (92, 48, 38)
 BRICK_B = (120, 66, 50)
@@ -105,6 +135,153 @@ def brick_graffiti(size=512):
         c = palette[int(rng.integers(0, len(palette)))]
         d.line([(x, y), (x, y + h)], fill=c, width=2)
     return base.filter(ImageFilter.SMOOTH)
+
+
+def brick_red(size=512):
+    """The warm orange-red brick of the old distillery tower (photo sampled)."""
+    pal = photo_palette("distillery_building.jpg", 8, box=(0.30, 0.25, 0.95, 0.70))
+    if pal:
+        warm = [c for c in pal if c[0] > c[2] + 15 and c[0] > 90]
+        palette = tuple(warm[:4] or ((179, 79, 22), (166, 49, 10), (133, 90, 60),
+                                     (97, 70, 51)))
+    else:
+        palette = ((179, 79, 22), (166, 49, 10), (133, 90, 60), (97, 70, 51))
+    return _bricks(size, 18, 9, palette, mortar=(150, 132, 116), jitter=0.14, seed=8)
+
+
+def brick_graffiti_dense(size=512):
+    """The famous tagged facade: brick almost completely covered in paint.
+
+    Big bubble pieces with fat black outlines, white highlights and drips -
+    colours come from the photos of the house, boosted so they pop the way
+    they do in daylight.
+    """
+    base = brick_red(size).convert("RGB")
+    d = ImageDraw.Draw(base)
+    rng = np.random.default_rng(23)
+
+    pal = photo_palette("distillery_building.jpg", 10, box=(0.25, 0.55, 0.98, 0.95))
+    picked = []
+    for c in (pal or []):
+        r, g, b = c
+        if max(c) - min(c) < 28 or sum(c) < 120:
+            continue                      # skip grey/very dark samples
+        k = 190.0 / max(1, max(c))        # lift the sampled hue
+        picked.append(tuple(min(255, int(v * k)) for v in c))
+    if len(picked) < 4:
+        picked = [(236, 74, 92), (66, 190, 232), (248, 214, 56), (128, 226, 96),
+                  (250, 128, 40), (176, 108, 240), (240, 240, 240)]
+    pal = (picked * 3)[:12]
+
+    def piece(x, y, w, h, col, rot=0):
+        box = [x, y, x + w, y + h]
+        d.rounded_rectangle([box[0] - 7, box[1] - 7, box[2] + 7, box[3] + 7],
+                            radius=max(6, h // 3), fill=(16, 14, 16))
+        d.rounded_rectangle(box, radius=max(5, h // 4), fill=col)
+        # fat inner strokes that read as letter shapes
+        for k in range(3):
+            bx = x + w * (0.18 + k * 0.28)
+            d.line([(bx, y + h * 0.14), (bx, y + h * 0.86)],
+                   fill=(20, 18, 20), width=max(4, int(w * 0.055)))
+        d.line([(x + 6, y + h * 0.10), (x + w * 0.45, y + h * 0.10)],
+               fill=(252, 250, 250), width=max(3, int(w * 0.035)))
+        # drips from the lower edge
+        for _k in range(int(rng.integers(2, 5))):
+            dx = x + rng.uniform(6, w - 6)
+            d.line([(dx, y + h - 4), (dx, y + h + rng.uniform(10, 45))],
+                   fill=col, width=max(2, int(w * 0.018)))
+
+    for _ in range(7):
+        w = int(rng.uniform(size * 0.26, size * 0.50))
+        h = int(rng.uniform(size * 0.14, size * 0.30))
+        x = int(rng.uniform(-30, size - w * 0.55))
+        y = int(rng.uniform(-10, size - h * 0.65))
+        piece(x, y, w, h, pal[int(rng.integers(0, len(pal)))])
+
+    # thin tags sprayed between the pieces
+    for _ in range(20):
+        pts = [(rng.uniform(0, size), rng.uniform(0, size))]
+        for _k in range(3):
+            x, y = pts[-1]
+            pts.append((x + rng.uniform(-80, 80), y + rng.uniform(-50, 50)))
+        col = pal[int(rng.integers(0, len(pal)))]
+        d.line(pts, fill=(22, 20, 22), width=int(rng.uniform(9, 16)), joint="curve")
+        d.line(pts, fill=col, width=int(rng.uniform(4, 8)), joint="curve")
+    return base.filter(ImageFilter.SMOOTH)
+
+
+def light_flower(size=512):
+    """The yellow flower of light on the dance floor (from the photos).
+
+    The gobo is screened onto the very same concrete the floor uses, so the
+    decal has no visible edge - it looks like light lying on the floor rather
+    than a picture glued on it.
+    """
+    base_img = concrete(size)
+    # tile the concrete exactly like the floor material does (3 m per tile)
+    base = np.asarray(base_img, dtype=np.float32) / 255.0
+
+    glow = Image.new("RGB", (size, size), (0, 0, 0))
+    core = Image.new("RGB", (size, size), (0, 0, 0))
+    dg, dc = ImageDraw.Draw(glow), ImageDraw.Draw(core)
+    r = size / 6.6
+    centres = [(size * 0.5, size * 0.5)]
+    for i in range(6):
+        a = math.pi / 3.0 * i
+        centres.append((size * 0.5 + r * math.cos(a), size * 0.5 + r * math.sin(a)))
+    for i in range(6):
+        a = math.pi / 3.0 * i + math.pi / 6.0
+        centres.append((size * 0.5 + r * 1.732 * math.cos(a),
+                        size * 0.5 + r * 1.732 * math.sin(a)))
+    for (cx, cy) in centres:
+        dg.ellipse([cx - r, cy - r, cx + r, cy + r],
+                   outline=(255, 178, 46), width=max(6, int(r * 0.17)))
+        dc.ellipse([cx - r, cy - r, cx + r, cy + r],
+                   outline=(255, 242, 196), width=max(2, int(r * 0.055)))
+    glow = glow.filter(ImageFilter.GaussianBlur(max(2.0, r * 0.09)))
+    g = np.asarray(glow, dtype=np.float32) / 255.0
+    c = np.asarray(core, dtype=np.float32) / 255.0
+    arr = 1.0 - (1.0 - base) * (1.0 - g * 0.80)
+    arr = np.clip(arr + c * 0.50, 0, 1)
+    return Image.fromarray((arr * 255).astype("uint8"))
+
+
+def window_glass(size=256):
+    """Dark factory window: grimy glass, a faintly warm interior behind it."""
+    n = _noise(size, 24, seed=41)
+    fine = _noise(size, size // 2, seed=42)
+    arr = np.dstack([0.10 + 0.05 * n, 0.11 + 0.05 * n, 0.13 + 0.05 * n])
+    # a soft warm glow from inside, brighter towards the lower half
+    yy = np.linspace(0, 1, size)[:, None]
+    arr += np.dstack([0.30 * (1 - yy) * (0.5 + 0.5 * n),
+                      0.20 * (1 - yy) * (0.5 + 0.5 * n),
+                      0.07 * (1 - yy) * (0.5 + 0.5 * n)])
+    # dust streaks running down the panes
+    for i in range(9):
+        x = (i * 37) % size
+        arr[:, x:x + 2] *= 1.25
+    arr *= (0.90 + 0.20 * fine)[..., None]
+    return _to_img(np.clip(arr, 0, 1))
+
+
+def roof_tiles(size=512):
+    """Dark red-brown pantiles of the old roof."""
+    n = _noise(size, 64, seed=51)
+    arr = np.dstack([0.22 + 0.07 * n, 0.13 + 0.05 * n, 0.11 + 0.04 * n])
+    from PIL import Image as _I, ImageDraw as _D
+    img = _I.fromarray((np.clip(arr, 0, 1) * 255).astype("uint8"))
+    d = _D.Draw(img)
+    rows = 14
+    rh = size // rows
+    for r in range(rows):
+        y = r * rh
+        d.line([(0, y), (size, y)], fill=(52, 34, 30), width=3)
+        for c in range(10):
+            x = c * (size // 10) + (size // 20 if r % 2 else 0)
+            d.line([(x, y), (x, y + rh)], fill=(58, 38, 34), width=2)
+            d.line([(x + 2, y + 4), (x + 2, y + rh - 4)],
+                   fill=(96, 58, 46), width=1)
+    return img.filter(ImageFilter.SMOOTH)
 
 
 def graffiti_overlay(size=512):
@@ -257,6 +434,14 @@ TEXTURES = {
     "brick_specular": (lambda: specular("dark"), "bc1", True),
     "brickDark_diffuse": (brick_dark, "bc1", True),
     "brickDark_specular": (lambda: specular("dark"), "bc1", True),
+    "brickRed_diffuse": (brick_red, "bc1", True),
+    "brickRed_specular": (lambda: specular("dark"), "bc1", True),
+    "graffitiDense_diffuse": (brick_graffiti_dense, "bc1", True),
+    "windowDiffuse": (window_glass, "bc1", True),
+    "roofTile_diffuse": (roof_tiles, "bc1", True),
+    "roofTile_specular": (lambda: specular("dark"), "bc1", True),
+    "graffitiDense_specular": (lambda: specular("dark"), "bc1", True),
+    "lightFlower_diffuse": (light_flower, "bc3", True),
     "brickGraffiti_diffuse": (brick_graffiti, "bc1", True),
     "brickGraffiti_specular": (lambda: specular("dark"), "bc1", True),
     "graffiti_diffuse": (graffiti_overlay, "bc1", True),
