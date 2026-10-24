@@ -428,6 +428,11 @@ Das ist der Flieger aus dem Blueprint: eine kompakte Untertasse mit **einer
 großen Glaskuppel**, in der Captain Zorp ziemlich eng hinter den Hebeln sitzt.
 Kein Mähwerk, kein Anbaugerät – **alles macht der Strahl unter dem Bauch**.
 
+Vom Blatt übernommen: **„CROP HARVESTER"** auf beiden Schultern und **„UFO 01"**
+auf der Nase, zwei **dreieckige Heckflossen** am hinteren Rand, die
+**Ringantenne** auf der Kuppel, LED-Reihen im Stoßfänger und die beiden
+grünen Düsen am Heck.
+
 ![UFO 01 Crop Harvester](docs/renders/cropharvester_hero.png)
 
 | Was | Wert |
