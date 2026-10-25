@@ -163,13 +163,9 @@ def hull_mesh():
         m.add("lensGreen", *place(disc(0.17, 0.0, 16, up=False),
                                   rot=(90, 0, 0),
                                   translation=(side * 0.85, 0.30, -2.46)))
-    # "CROP HARVESTER" on both shoulders, "UFO 01" on the nose
-    for yaw in (62, -62):
-        a = math.radians(yaw)
-        decal(m, "decal", (2.505 * math.sin(a), 0.64, 2.505 * math.cos(a)),
-              1.00, 0.32, yaw, uv=(0.0, 0.0, 0.72, 1.0))
-    decal(m, "decal", (0.0, 0.64, 2.505), 0.72, 0.28, 0.0,
-          uv=(0.72, 0.0, 1.0, 1.0))
+    # No name plates any more: the grey decal quads on the shoulders read as
+    # mounting brackets in game.  The hull stays clean - the ship is
+    # recognisable by its shape, the beam and the cockpit.
     # the two tail fins from the sheet: a triangular fin on each rear quarter
     for yaw in (146.0, -146.0):
         fin(m, "hullPaint", yaw, 2.16, 0.95, 0.78, 0.08)
@@ -362,6 +358,7 @@ def build_scene():
         beam.add(Node("Shape", "beamMesh" + mode_id, base.beam_mesh(),
                       materials=[material], castsShadows="false",
                       receiveShadows="false", nonRenderable="false"))
+        base.beam_fx_nodes(beam, mode_id)
 
     ring = visual.add(Node("TransformGroup", "groundRing", translation="0 0.05 0",
                            visibility="false", scale="1 1 1"))

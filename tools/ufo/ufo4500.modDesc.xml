@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+    <author>Arena.ai Agent Mode</author>
+    <version>2.0.0.0</version>
+
+    <title>
+        <en>UFO 4500 Mother Ship</en>
+        <de>UFO 4500 Mutterschiff</de>
+    </title>
+
+    <description>
+        <en>$l10n_ufo4500_description</en>
+        <de>$l10n_ufo4500_description</de>
+    </description>
+
+    <iconFilename>icon_ufo4500.dds</iconFilename>
+    <multiplayer supported="true"/>
+
+    <brands>
+        <brand name="UFO4500" title="$l10n_brand_ufo4500" image="brand_ufo4500.dds"/>
+    </brands>
+
+    <specializations>
+        <specialization name="ufo4500" className="UFO4500" filename="scripts/UFO4500.lua"/>
+    </specializations>
+
+    <vehicleTypes>
+        <!-- everything a drivable vehicle needs plus the hover / beam logic -->
+        <type name="UFO4500" parent="baseDrivable" filename="$dataS/scripts/vehicles/Vehicle.lua">
+            <specialization name="ufo4500"/>
+        </type>
+    </vehicleTypes>
+
+    <actions>
+        <action name="ufo4500_menu" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo4500_altitudeUp" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo4500_altitudeDown" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo4500_beamMode" category="VEHICLE"/>
+        <action name="ufo4500_penUp" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo4500_penDown" category="VEHICLE" axisType="HALF"/>
+        <action name="ufo4500_unload" category="VEHICLE"/>
+        <action name="ufo4500_infinite" category="VEHICLE"/>
+    </actions>
+
+    <inputBinding>
+        <actionBinding action="ufo4500_menu">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_m" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_altitudeUp">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_pageUp" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_altitudeDown">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_pageDown" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_beamMode">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_k" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_penUp">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_l" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_penDown">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_j" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_unload">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_u" index="1"/>
+        </actionBinding>
+        <actionBinding action="ufo4500_infinite">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_i" index="1"/>
+        </actionBinding>
+    </inputBinding>
+
+    <storeItems>
+        <storeItem xmlFilename="ufo4500.xml"/>
+    </storeItems>
+</modDesc>

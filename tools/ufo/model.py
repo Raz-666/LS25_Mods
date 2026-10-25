@@ -13,6 +13,7 @@ import math
 
 from meshlib import (Mesh, box, cylinder, disc, lathe, open_cone, place,
                      sphere, torus, TAU)
+from sculpt import tube
 
 MATERIALS = [
     # name, textures (diffuse, gloss/specular), flags
@@ -479,6 +480,62 @@ def beam_mesh():
     return m
 
 
+def beam_ring_mesh():
+    """Flat annulus with radius 1 in the XZ plane - one "pulse" of the beam.
+
+    Flat geometry on purpose: the beam node is scaled non-uniformly every
+    frame (radius, height, radius), and a flat ring keeps its shape while a
+    torus would be stretched into an ellipse.
+    """
+    m = Mesh()
+    verts, normals, uvs, tris = [], [], [], []
+    segments = 48
+    for i in range(segments + 1):
+        a = TAU * i / segments
+        for r in (0.86, 1.0):
+            verts.append((r * math.cos(a), 0.0, r * math.sin(a)))
+            normals.append((0.0, 1.0, 0.0))
+            uvs.append((i / segments, 0.0 if r < 1.0 else 1.0))
+    for i in range(segments):
+        a0 = i * 2
+        tris += [(a0, a0 + 1, a0 + 2), (a0 + 1, a0 + 3, a0 + 2)]
+    m.add("beam", verts, normals, uvs, tris)
+    return m
+
+
+def beam_swirl_mesh():
+    """A helix inside the cone; the Lua turns it, which reads as a streaming
+    energy vortex instead of a frozen cone."""
+    m = Mesh()
+    points, radii = [], []
+    steps = 26
+    for i in range(steps + 1):
+        t = i / steps
+        a = TAU * 2.4 * t
+        r = 0.10 + 0.72 * t
+        points.append((r * math.cos(a), -t, r * math.sin(a)))
+        radii.append(0.030 + 0.045 * t)
+    m.add("beam", *tube(points, radii, segments=7))
+    return m
+
+
+def beam_fx_nodes(parent, suffix):
+    """Hanging a bright core, the swirl and four travelling rings under one
+    beam node.  Names are unique per mode so the Lua can find them."""
+    core = Mesh()
+    core.add("lensWhite", *open_cone(0.0, 0.012, -0.97, 0.16, 28))
+    parent.add(Node("Shape", "beamCore" + suffix, core, materials=["lensWhite"],
+                    castsShadows="false", receiveShadows="false"))
+
+    fx = parent.add(Node("TransformGroup", "beamFx" + suffix))
+    fx.add(Node("Shape", "beamSwirl" + suffix, beam_swirl_mesh(),
+                castsShadows="false", receiveShadows="false"))
+    for i in range(4):
+        fx.add(Node("Shape", "beamRing%s%d" % (suffix, i), beam_ring_mesh(),
+                    castsShadows="false", receiveShadows="false"))
+    return fx
+
+
 def circle_ring_mesh():
     """Unit radius marker ring, sits flat on the ground below the craft."""
     m = Mesh()
@@ -571,9 +628,11 @@ def build_scene():
         node_name = "beamNode" + mode_id[0].upper() + mode_id[1:]
         beam = visual.add(Node("TransformGroup", node_name, translation="0 0.19 0",
                                visibility="false"))
-        beam.add(Node("Shape", "beamMesh" + mode_id[0].upper() + mode_id[1:], beam_mesh(),
+        suffix = mode_id[0].upper() + mode_id[1:]
+        beam.add(Node("Shape", "beamMesh" + suffix, beam_mesh(),
                       materials=[material], castsShadows="false", receiveShadows="false",
                       nonRenderable="false"))
+        beam_fx_nodes(beam, suffix)
 
     ring = visual.add(Node("TransformGroup", "groundRing", translation="0 0.05 0",
                            visibility="false", scale="1 1 1"))
