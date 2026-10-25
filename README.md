@@ -197,6 +197,27 @@ also die Untertasse stehen, wo sie stand. 🙂
 
 ![Strahl und Markierungsring](docs/renders/ufo_beam.png)
 
+### Der Strahl bewegt sich (neu)
+
+Der Kegel ist keine starre Folie mehr. In jedem Strahlknoten stecken jetzt vier
+Teile, die das Skript jede Sekunde animiert (`UFO2000.updateBeamFx`):
+
+* **Kern** – ein schmaler weißer Innenkegel („High-Intensity-Kern“ aus dem Blatt).
+* **Helix** – ein spiralförmiges Band, das sich mit 90°/s dreht; dadurch wandert
+  Struktur durch den ganzen Kegel, auch wenn man still steht.
+* **vier Ringe** – flache Ringe, die mit 3,2 Ringen/s von der Bordwand zum Boden
+  wandern und dabei auf den Kegelradius an ihrer Höhe skaliert werden
+  (`setScale(ring, y, 1, y)`); sie beschleunigen nach unten wie etwas, das fällt.
+* **Licht** – die Strahl-Lampe bekommt die Modusfarbe und pulsiert mit 2,6 Hz.
+
+Das läuft auf Server und Clients (die Zeit kommt aus `onUpdateTick`), ist pro
+Modus eigenständig und kostet nur ein paar `setTranslation`/`setScale`-Aufrufe
+pro Frame. Echte Partikelsysteme (`ParticleSystem`) setzt der Mod bewusst nicht
+ein: die lassen sich ohne laufendes Spiel nicht prüfen, und ein falsch
+verdrahtetes Partikelsystem sieht schlimmer aus als gar keins. Der Nebel-Effekt
+kommt über die transparenten Strahlflächen und die wandernden Ringe.
+
+
 ## 5. Was drin ist
 
 **UFO 2000**
@@ -241,7 +262,8 @@ also die Untertasse stehen, wo sie stand. 🙂
 - 3 Filme × 16 Bilder (DDS), 3 Soundtracks, 14 Texturen, Shop-Icon
 
 **Alien-Maskottchen (drei Figuren)**
-- Maskottchen 11.500 Dreiecke, der Große 9.500, Captain Zorp 7.200
+- Maskottchen ca. 25.000 Dreiecke, der Große ca. 26.000, Captain Zorp ca. 34.000
+  (2026 neu modelliert, siehe `tools/alien/character.py` + `tools/ufo/sculpt.py`)
 - je 2 Shapes (Mesh + unsichtbare Kollision), 17 Texturen
 - Platzierbar, frei drehbar, wieder aufnehmbar, 750 / 1.200 / 1.500 €
 - Maskottchen und der Große nach der Vorlage: großer Kopf, riesige glänzende
@@ -379,48 +401,49 @@ keine `<actions>`, Marke `LIZARD` (Basisspiel). Damit sollte es den Konsolentest
 überstehen; einreichen musst du es selbst (Konto auf farming-simulator.com,
 TestRunner drüberlaufen lassen, ZIP hochladen).
 
-## 8. Mähdrescher: das UFO 4500 (+ 6-m-Schneidwerk)
+## 8. Das große Strahlschiff: `FS25_UFO4500`
 
-Das UFO 2500 macht Kornkreise – das **UFO 4500** erntet wirklich. Es sind zwei
-Shop-Artikel in einem Mod, weil das Grundspiel das bei jedem Mähdrescher so
-macht: der Drescher und sein Schneidwerk.
+Das UFO 4500 erntet wie die UFO 01 **ausschließlich mit dem Traktorstrahl** –
+kein Schneidwerk, kein Anbaugerät, kein Anhänger, keine Attacher-Joints. Ein
+Shop-Artikel, ein Mod, ein Schiff.
 
-| Teil | Preis | Was es ist |
-| --- | --- | --- |
-| **UFO 4500** | 185.000 | Untertasse als selbstfahrender Mähdrescher, 300 PS, 25 km/h, Korntank 15.000 l, Abtankrohr rechts, schwebt 1,70 m über dem Feld |
-| **UFO 4500 Schneidwerk** | 24.000 | 6 m breites Schneidwerk mit Haspel, passt nur an das UFO 4500 |
+| Was | Wert |
+| --- | --- |
+| Preis | 185.000 |
+| Motor | 300 PS, 25 km/h, vier Hover-Turbinen am Rumpf |
+| Strahl | 2 m bis 30 m breit (J/L), Arbeitshöhe 3 m bis 30 m |
+| Korntank | 2.000.000 l, mit `I` auf unendlich |
+| Größe | 1,3-fache UFO 01 (Rumpfdurchmesser ≈ 6,5 m) |
 
-![UFO 4500 mit Schneidwerk](docs/renders/ufo4500_header.png)
+![UFO 4500](docs/renders/ufo4500_hero.png)
 
 **So erntest du**
 
-1. UFO 4500 kaufen, dann das Schneidwerk (kaufen oder mieten).
-2. Zum Schneidwerk fahren, Anbau **absenken**, rückwärts ran, bis es einrastet.
-3. Drescher **einschalten** – die Haspel dreht sich, das Schneidwerk senkt sich.
-4. Ins Getreide fahren. Das Korn landet im Tank (Füllstandsanzeige wie beim
-   Lexion), das Stroh bleibt als Schwad liegen.
-5. **Abtanken**: Anhänger neben das Rohr stellen, Rohr ausfahren (`X` bzw.
-   Gamepad-Schultertaste) – der Trigger sitzt am Rohrende.
+1. UFO 4500 kaufen (Kategorie Autos, Marke UFO-Werke).
+2. Einsteigen, `V` = abheben. Die Landekufen klappen ein, das Schiff schwebt.
+3. Mit `Bild auf` / `Bild ab` (oder der Joystick-Achse) auf 3–6 m Höhe gehen.
+4. `K` bis **GRÜN – Ernten** im HUD steht, dann `Z` für den Strahl.
+5. Über das Feld fliegen – das Korn geht ohne Verlust in den Tank, das Feld
+   ist dahinter abgeerntet.
+6. Abgeben mit `U` über Anhänger, Silo oder Abkippstelle.
 
-Geerntet werden Weizen, Gerste, Hafer, Raps, Mais, Sonnenblume, Sojabohne und
-Sorghum. Die beiden unsichtbaren breiten Räder tragen das UFO wie beim UFO 2500,
-das Schneidwerk hängt an einem normalen `cutter`-Anbau – deshalb funktionieren
-Gamepad-Steuerung, Kamera, Shop, Helfer und Abtanken ohne eine Zeile Lua.
-
-![UFO 4500 allein](docs/renders/ufo4500_hero.png)
+Die anderen Modi machen den Rest der Feldarbeit: **BLAU** säen und düngen,
+**VIOLETT** grubbern und pflügen, **GELB** Kornkreise plattdrücken, **ROT**
+aufnehmen (Sog) und abgeben (Strahl). Das ist alles im Detail in
+`docs/pdf/UFO4500.pdf` beschrieben.
 
 **Bauen und prüfen**
 
 ```bash
 python tools/build_harvester_mod.py                 # Modell -> XML -> Bilder -> ZIP
-python tools/ufo/validate4500.py --xsd <schema-dir> # Prüfungen ohne Spiel
 ```
 
-`validate4500.py` prüft unter anderem: kein Lua, keine `<actions>`, nur
-Grundspiel-Specializations, beide XML gegen die offiziellen XSD, alle
-i3d-Mappings, dass der Drescher wirklich ein `combine` mit 15.000-l-Tank ist,
-dass das Schneidwerk exakt 6 m Arbeitsbreite hat und dass die Untertasse 1,70 m
-über den unsichtbaren Rädern schwebt.
+Der Build bricht ab, wenn im Fahrzeug-XML noch ein `<attacherJoints>`,
+`jointType="cutter"`, `<combine>`, `<pipe>` oder eine `workArea` steht, wenn
+ein vom Lua benutzter Knoten kein `i3dMapping` hat oder wenn eine l10n-ID in
+`translation_de/en.xml` fehlt. Das Kiel-File des alten 6-m-Schneidwerks
+(`model_harvester_header.py`, `ufo4500header.template.xml`) ist gelöscht – das
+UFO 4500 hat kein Anbaugerät mehr.
 
 ## 8b. Der Ernte-Ufo: `FS25_CropHarvester` (UFO 01)
 
@@ -736,10 +759,14 @@ python tools/venue/validate.py --mod autokino      # Prüfung ohne Spiel
 Die neun ZIPs aus `dist/` in den Mods-Ordner legen, Spiel starten, dann in dieser
 Reihenfolge:
 
-1. **Shop → Platzierbare Objekte → Deko**: Alien 1.2.0.0 (750/1.200/1.500 €) –
-   Captain Zorp hat jetzt den weißen Fliegerhelm mit Brille auf der Stirn.
-2. **Shop → Fahrzeuge**: UFO 01 Crop Harvester 1.1.0.0 einmal kaufen – Strahl
-   testen (8 Modi mit `X`/`Y`), dazu die beiden Heckflossen ansehen.
+1. **Shop → Platzierbare Objekte → Deko**: Alien 1.3.0.0 (750/1.200/1.500 €) –
+   die drei Figuren sind neu modelliert (kein Kugelbaukasten mehr): Eiform-Schädel
+   mit Lidern, Hände mit Fingern, Socken mit Bund, Helm mit Ohrmuscheln und
+   Brillengläsern. Am besten einmal dicht rangehen.
+2. **Shop → Fahrzeuge**: UFO 4500 2.0.0.0 (185.000 €) kaufen – **ohne**
+   Schneidwerk. Abheben, `K` bis GRÜN, `Z`: der Strahl erntet. Dabei auf die
+   wandernden Ringe im Strahl achten. Danach UFO 01 Crop Harvester 1.2.0.0:
+   gleiche Übung, nur kleiner – der Rumpf ist jetzt glatt, ohne Anbauplatten.
 3. **Shop → Platzierbare Objekte → Distillery 1.1.0.0** (185.000 €) aufstellen,
    um das Haus laufen (Turm, Graffiti, Feuerleiter) und dann **durch den Garten**
    gehen: Barhütte, Sitzgruppen, zwei Pergolen, zwei Chill-out-Ecken.
@@ -748,6 +775,35 @@ Reihenfolge:
 
 Wenn etwas nicht lädt oder komisch aussieht: `log.txt` schicken, Zeilen mit dem
 Mod-Namen. Die Mods-Ordner im Spiel heißen wie die Zips (`FS25_Distillery` usw.).
+
+## 12c. Handbücher als PDF (`docs/pdf/`)
+
+Zu jedem Mod gehört ein eigenes deutsches Handbuch. Alle neun haben denselben
+Aufbau: Deckblatt mit Render, „Was ist das?“ mit Bildern **aus dem Spiel** und
+den **Vorlagen**, nach denen gebaut wurde, Bedienung als Tastentabelle, „Worauf
+du achten solltest“, Kompatibilität (PC / Konsole / Multiplayer) und
+technische Daten.
+
+| PDF | Inhalt |
+| --- | --- |
+| `docs/pdf/FS25_UFO2000.pdf` | Untertasse, 8 Strahl-Modi, Cockpit |
+| `docs/pdf/FS25_Alien.pdf` | die drei Figuren, neues Gesicht, Zorp |
+| `docs/pdf/FS25_UFO2500.pdf` | Konsolen-Edition ohne Lua, Pinselbreiten |
+| `docs/pdf/FS25_UFO4500.pdf` | Mutterschiff, Strahl-only, 2 Mio. l Tank |
+| `docs/pdf/FS25_CropHarvester.pdf` | UFO 01, Kuppel, Kornkreise |
+| `docs/pdf/FS25_BabaJaga.pdf` | Hühnerhütte auf dem Vogelbein |
+| `docs/pdf/FS25_Disco.pdf` | Hofdisco, synchronisierte Musik |
+| `docs/pdf/FS25_Autokino.pdf` | Leinwand, Filme, MP-Sync |
+| `docs/pdf/FS25_Distillery.pdf` | Club nach Grundriss, Titelliste, Radio |
+
+```bash
+python tools/build_manuals.py                  # alle neun
+python tools/build_manuals.py --only UFO4500   # nur eines
+```
+
+Die Inhalte stehen als Datenblöcke oben in `tools/build_manuals.py` (Titel,
+Preis, Bilder, Tastentabelle, Tipps, Kompatibilität, technische Daten) – ein
+Textwunsch ist eine Zeile dort und ein neuer Lauf.
 
 ## 13. Ehrlicher Hinweis
 

@@ -310,21 +310,21 @@ def build_images():
     os.makedirs(docs, exist_ok=True)
 
     icon = render.render(size=512, eye=(6.0, 3.6, 8.8), target=(0, 1.6, 0), fov=36,
-                         ss=2, root=scene())
+                         ss=2, beam=True, root=scene())
     icon = render.add_shadow(icon, strength=0.30)
     p = os.path.join(BUILD, "icon_crop.png")
     icon.save(p)
     ufo_images._dds(p, os.path.join(MOD, "icon_cropharvester.dds"), "bc1", sys.executable)
 
     store = render.render(size=512, eye=(6.8, 4.0, 9.4), target=(0, 1.5, 0), fov=34,
-                          ss=2, return_alpha=True, root=scene())
+                          ss=2, return_alpha=True, beam=True, root=scene())
     store = ufo_images._with_shadow(store, cy=0.90, rx=0.34, ry=0.05, strength=0.30)
     store.save(os.path.join(MOD, "store_crop.png"))
 
     from PIL import Image, ImageDraw
     brand = Image.new("RGBA", (512, 256), (0, 0, 0, 0))
     little = render.render(size=256, eye=(0, 2.2, 9.0), target=(0, 1.6, 0), fov=34,
-                           ss=2, background=(1, 1, 1), return_alpha=True, root=scene())
+                           ss=2, background=(1, 1, 1), return_alpha=True, beam=True, root=scene())
     brand.alpha_composite(little, (128, 0))
     d = ImageDraw.Draw(brand)
     d.text((256, 224), "UFO 01", anchor="mm", fill=(38, 58, 54, 255))
@@ -333,9 +333,9 @@ def build_images():
     ufo_images._dds(p, os.path.join(MOD, "brand_cropharvester.dds"), "bc1", sys.executable)
 
     render.render(size=1000, eye=(6.4, 3.8, 9.0), target=(0, 1.5, 0), fov=36, ss=2,
-                  root=scene()).save(os.path.join(docs, "cropharvester_hero.png"))
+                  beam=True, root=scene()).save(os.path.join(docs, "cropharvester_hero.png"))
     render.render(size=900, eye=(2.0, 2.6, 3.4), target=(0, 2.0, 0), fov=44, ss=2,
-                  root=scene()).save(os.path.join(docs, "cropharvester_pilot.png"))
+                  beam=True, root=scene()).save(os.path.join(docs, "cropharvester_pilot.png"))
     # the money shot: the green harvest beam on a field, seen from the ground
     render.render(size=1000, eye=(11.5, 8.2, 13.5), target=(0, 1.0, 0), fov=42, ss=2,
                   beam=True, root=beam_scene("Harvest", 6.0)).save(

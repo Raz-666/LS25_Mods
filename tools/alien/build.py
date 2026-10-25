@@ -28,178 +28,23 @@ MOD = os.path.join(REPO, "FS25_Alien")
 SCALE = 1.35        # a garden gnome sized mascot, ~1.1 m tall
 
 
-def limb(m, mat, p0, p1, r0, r1=None, segments=12):
-    """A tapered tube between two points - the bendy arms and legs."""
-    r1 = r0 if r1 is None else r1
-    dx, dy, dz = (p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2])
-    length = math.sqrt(dx * dx + dy * dy + dz * dz)
-    if length < 1e-6:
-        return
-    geom = cylinder(r1, 0.0, length, segments, caps=True, top_radius=r0)
-    tilt = math.degrees(math.atan2(dx, dy))
-    yaw = math.degrees(math.atan2(dz, math.sqrt(dx * dx + dy * dy)))
-    m.add(mat, *place(geom, translation=p0, rot=(0, yaw, -tilt)))
+# --------------------------------------------------------------------------
+# the sculpted figures live in character.py; these are the entry points the
+# rest of this script (and the render harness) uses
+# --------------------------------------------------------------------------
+import character as _character                              # noqa: E402
 
 
 def alien_mesh():
-    """The little green buddy exactly as the reference sheet draws him.
-
-    A huge pear-shaped head with big glossy almond eyes, a small body with a
-    little belly, thin bendy arms folded in front, thin legs that end in striped
-    socks - one blue, one red - plus two antennae with ball tips, a shy smile
-    and rosy cheeks.
-    """
-    m = Mesh()
-
-    # --- legs + socks ------------------------------------------------------
-    for sx, sock in ((-1, "sockRed"), (1, "sockBlue")):
-        # thigh and shin, very thin
-        limb(m, "alienSkin", (0.060 * sx, 0.445, 0.0), (0.066 * sx, 0.265, -0.010),
-             0.034, 0.028)
-        limb(m, "alienSkin", (0.066 * sx, 0.270, -0.010), (0.062 * sx, 0.170, 0.006),
-             0.028, 0.024)
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.030, 12, 9),
-                                  translation=(0.066 * sx, 0.268, -0.008)))
-        # the sock: a short striped tube plus the foot
-        m.add(sock, *place(cylinder(0.037, 0.040, 0.168, 16, caps=True,
-                                    top_radius=0.033),
-                           translation=(0.062 * sx, 0.0, 0.006)))
-        m.add(sock, *place(sphere((0, 0, 0), 0.046, 16, 10, scale=(1.0, 0.60, 1.85)),
-                           translation=(0.062 * sx, 0.040, 0.048)))
-        # a rolled cuff at the top of the sock
-        m.add(sock, *place(torus(0.038, 0.009, 0, 16, 6),
-                           translation=(0.062 * sx, 0.166, 0.006)))
-
-    # --- hips / body -------------------------------------------------------
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.072, 18, 12, scale=(1.05, 0.78, 0.88)),
-                              translation=(0, 0.450, 0)))
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.070, 18, 12, scale=(1.0, 0.85, 0.95)),
-                              translation=(0, 0.500, 0.014)))
-    # a slim, slightly pot-bellied torso - one smooth lathe
-    m.add("alienSkin", *place(lathe([
-        (0.024, 0.395), (0.060, 0.420), (0.076, 0.460), (0.080, 0.500),
-        (0.074, 0.545), (0.062, 0.600), (0.052, 0.650), (0.046, 0.690),
-    ], 26, close_ends=True)))
-    # chest and collar bones
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.060, 16, 11, scale=(1.30, 0.80, 0.90)),
-                              translation=(0, 0.700, 0.004)))
-    # --- neck --------------------------------------------------------------
-    m.add("alienSkin", *place(cylinder(0.032, 0.70, 0.80, 14, caps=True,
-                                      top_radius=0.042)))
-
-    # --- the big head ------------------------------------------------------
-    m.add("alienSkin", *place(lathe([
-        (0.022, 0.760), (0.060, 0.775), (0.110, 0.800), (0.158, 0.840),
-        (0.190, 0.890), (0.205, 0.945), (0.207, 1.000), (0.196, 1.050),
-        (0.170, 1.095), (0.122, 1.135), (0.065, 1.160), (0.0, 1.168),
-    ], 34, close_ends=True)))
-
-    # --- eyes: huge, glossy, almond shaped ---------------------------------
-    for sx in (-1, 1):
-        # huge almond eyes, tilted a little towards the nose
-        m.add("eyeBlack", *place(sphere((0, 0, 0), 0.076, 24, 18, scale=(1.02, 1.18, 0.58)),
-                                 rot=(0, 0, 4 * sx),
-                                 translation=(0.080 * sx, 0.928, 0.150)))
-        # two catch lights - the whole toy look comes from these
-        m.add("lensWhite", *place(sphere((0, 0, 0), 0.020, 12, 9, scale=(1.0, 1.1, 0.8)),
-                                  translation=(0.100 * sx, 0.966, 0.196)))
-        m.add("lensWhite", *place(sphere((0, 0, 0), 0.010, 8, 6),
-                                  translation=(0.060 * sx, 0.902, 0.200)))
-        # rosy cheeks, flat against the face
-        m.add("blush", *place(sphere((0, 0, 0), 0.028, 12, 8, scale=(1.15, 0.85, 0.16)),
-                              rot=(0, 0, -12 * sx),
-                              translation=(0.136 * sx, 0.862, 0.146)))
-
-    # --- shy smile ---------------------------------------------------------
-    for i in range(7):
-        t = (i - 3) / 3.0                       # -1 .. 1 across the mouth
-        m.add("eyeBlack", *place(sphere((0, 0, 0),
-                                        0.021 - 0.006 * abs(t), 12, 9,
-                                        scale=(1.0, 0.75, 0.5)),
-                                 translation=(0.052 * t, 0.836 - 0.019 * (1 - t * t),
-                                              0.196 - 0.012 * t * t)))
-
-    # --- antennae with little balls ---------------------------------------
-    for sx in (-1, 1):
-        m.add("alienSkin", *place(cylinder(0.008, 0.0, 0.155, 10, caps=True,
-                                          top_radius=0.006),
-                                  rot=(0, 0, -26 * sx),
-                                  translation=(0.052 * sx, 1.128, -0.012)))
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.026, 14, 10),
-                                  translation=(0.092 * sx, 1.272, -0.012)))
-
-    # --- thin arms, hands folded in front ---------------------------------
-    for sx in (-1, 1):
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.038, 14, 10),
-                                  translation=(0.076 * sx, 0.678, 0.004)))
-        limb(m, "alienSkin", (0.076 * sx, 0.670, 0.006), (0.108 * sx, 0.560, 0.026),
-             0.026, 0.021)
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.024, 12, 9),
-                                  translation=(0.108 * sx, 0.556, 0.026)))
-        limb(m, "alienSkin", (0.108 * sx, 0.550, 0.028), (0.046 * sx, 0.492, 0.100),
-             0.020, 0.018)
-        # the hand
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.032, 14, 10, scale=(1.0, 0.8, 1.15)),
-                                  translation=(0.045 * sx, 0.498, 0.118)))
-        for f in range(3):
-            m.add("alienSkin", *place(sphere((0, 0, 0), 0.0115, 8, 6, scale=(1.0, 0.85, 1.6)),
-                                      translation=((0.033 + f * 0.012) * sx, 0.492,
-                                                   0.140)))
-    return m
+    return _character.alien_mesh("shy")
 
 
 def alien_leader_mesh():
-    """The tall one from the couch gag: big domed head, huge bulging eyes,
-    a ribbed body and four tentacles - clearly Simpsons flavoured, still our
-    own geometry."""
-    m = Mesh()
-    # --- domed head -------------------------------------------------------
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.30, 30, 18, scale=(1.0, 1.12, 0.92)),
-                              translation=(0, 0.92, 0)))
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.26, 28, 16, scale=(1.02, 0.85, 1.0)),
-                              translation=(0, 0.72, 0.02)))
-    # brow ridge, the grumpy look
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.16, 16, 10, scale=(1.5, 0.32, 0.7)),
-                              translation=(0, 0.99, 0.20)))
-    # --- the eyes: big, bulging, with a heavy lid -------------------------
-    for sx in (-1, 1):
-        m.add("lensWhite", *place(sphere((0, 0, 0), 0.105, 20, 14, scale=(1.0, 1.15, 0.85)),
-                                  translation=(0.135 * sx, 0.90, 0.235)))
-        m.add("eyeBlack", *place(sphere((0, 0, 0), 0.055, 16, 12, scale=(1.0, 1.1, 0.7)),
-                                 translation=(0.145 * sx, 0.90, 0.312)))
-        m.add("lensWhite", *place(sphere((0, 0, 0), 0.014, 8, 6),
-                                  translation=(0.163 * sx, 0.928, 0.345)))
-        # eyelid
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.108, 16, 10, scale=(1.05, 0.45, 0.9)),
-                                  translation=(0.135 * sx, 0.955, 0.232)))
-    # --- mouth: a wide slit with a couple of teeth ------------------------
-    m.add("eyeBlack", *place(sphere((0, 0, 0), 0.072, 16, 10, scale=(1.9, 0.30, 0.35)),
-                             translation=(0, 0.755, 0.255)))
-    for i in range(3):
-        m.add("lensWhite", *place(box((0, 0, 0), (0.026, 0.030, 0.014)),
-                                  translation=(-0.045 + i * 0.045, 0.762, 0.278)))
-    # --- neck and collar of the space suit --------------------------------
-    m.add("alienSkin", *place(cylinder(0.075, 0.58, 0.68, 14, caps=True)))
-    m.add("hullMetal", *place(torus(0.115, 0.022, 0.60, 26, 8)))
-    # --- ribbed torso -----------------------------------------------------
-    m.add("alienSkin", *place(lathe([(0.10, 0.10), (0.16, 0.22), (0.19, 0.36),
-                                     (0.17, 0.48), (0.11, 0.58)], 22, close_ends=True)))
-    for i in range(4):
-        m.add("alienSkin", *place(torus(0.175 - 0.012 * i, 0.022, 0.24 + i * 0.09, 24, 6)))
-    # --- four tentacle arms -----------------------------------------------
-    for sx in (-1, 1):
-        for k, (tilt, reach, y) in enumerate(((26, 0.20, 0.42), (44, 0.29, 0.28),
-                                              (58, 0.35, 0.16))):
-            m.add("alienSkin", *place(sphere((0, 0, 0), 0.055 - 0.008 * k, 14, 10,
-                                             scale=(1.0, 2.2, 1.0)),
-                                      rot=(0, 0, sx * tilt),
-                                      translation=(sx * reach, y, 0.03 + 0.02 * k)))
-    # --- three stubby legs and a small metal base ring --------------------
-    for i in range(3):
-        a = TAU * i / 3 + math.pi / 2
-        m.add("alienSkin", *place(sphere((0, 0, 0), 0.055, 12, 8, scale=(1.0, 2.2, 1.0)),
-                                  translation=(0.08 * math.cos(a), 0.10, 0.08 * math.sin(a))))
-    return m
+    return _character.leader_mesh()
+
+
+def zorp_mesh():
+    return _character.zorp_mesh()
 
 
 def build_scene():
@@ -229,95 +74,6 @@ def build_scene_leader():
     return sub
 
 
-def zorp_mesh():
-    """Captain Zorp, standing - the pilot from the cockpit blueprint.
-
-    Green skin, black goggles pushed up on the forehead, olive flight suit with
-    a belt, boots, a chest patch and his two communication antennae.  Same
-    character that sits in the UFO 01 crop harvester, just out of the seat.
-    """
-    from model_crop import decal                    # shared flat-quad helper
-
-    m = Mesh()
-    # --- boots ------------------------------------------------------------
-    for sx in (-1, 1):
-        m.add("goggle", *place(box((0, 0, 0), (0.17, 0.11, 0.28)),
-                               translation=(0.11 * sx, 0.055, 0.02)))
-    # --- legs in the flight suit -----------------------------------------
-    for sx in (-1, 1):
-        m.add("suit", *place(cylinder(0.078, 0.10, 0.54, 14, caps=True),
-                             translation=(0.11 * sx, 0, 0)))
-    # --- torso ------------------------------------------------------------
-    m.add("suit", *place(lathe([(0.16, 0.50), (0.20, 0.60), (0.235, 0.78),
-                                (0.22, 0.90), (0.16, 0.99)], 22, close_ends=True)))
-    # belt, buckle and the chest name plate
-    m.add("hullMetal", *place(torus(0.203, 0.014, 0, 24, 6), translation=(0, 0.61, 0)))
-    m.add("lensWhite", *place(box((0, 0, 0), (0.070, 0.050, 0.018)),
-                              translation=(0, 0.61, 0.204)))
-    # the plate sits a few millimetres proud of the suit so the chest does not
-    # grow through it
-    decal(m, "badge", (0.0, 0.82, 0.244), 0.17, 0.085, 0.0)
-    # shoulder seams
-    for sx in (-1, 1):
-        m.add("goggle", *place(torus(0.070, 0.014, 0, 18, 5),
-                               rot=(0, 0, 90 * sx),
-                               translation=(0.20 * sx, 0.90, 0)))
-    # --- arms, hands in the black gloves ---------------------------------
-    for sx in (-1, 1):
-        m.add("suit", *place(cylinder(0.056, 0.62, 0.90, 14, caps=True),
-                             rot=(0, 0, -5 * sx), translation=(0.228 * sx, 0, 0.01)))
-        m.add("suit", *place(sphere((0, 0, 0), 0.080, 16, 12),
-                             translation=(0.200 * sx, 0.895, 0.01)))
-        m.add("goggle", *place(sphere((0, 0, 0), 0.052, 14, 10, scale=(1.0, 1.2, 1.0)),
-                               translation=(0.236 * sx, 0.598, 0.02)))
-    # --- collar and neck --------------------------------------------------
-    m.add("hullMetal", *place(torus(0.120, 0.022, 0, 22, 6), translation=(0, 1.00, 0)))
-    m.add("alienSkin", *place(cylinder(0.062, 0.96, 1.07, 14, caps=True)))
-    # --- head -------------------------------------------------------------
-    m.add("alienSkin", *place(sphere((0, 0, 0), 0.205, 26, 18, scale=(1.0, 1.06, 0.98)),
-                              translation=(0, 1.25, 0.012)))
-    for sx in (-1, 1):
-        m.add("eyeBlack", *place(sphere((0, 0, 0), 0.073, 18, 12, scale=(1.0, 1.25, 0.62)),
-                                 translation=(0.080 * sx, 1.265, 0.165)))
-        m.add("lensWhite", *place(sphere((0, 0, 0), 0.020, 10, 8),
-                                  translation=(0.096 * sx, 1.300, 0.208)))
-    m.add("eyeBlack", *place(sphere((0, 0, 0), 0.040, 14, 10, scale=(1.5, 0.34, 0.45)),
-                             translation=(0, 1.172, 0.190)))
-    # --- flight helmet, goggles pushed up on its brow ---------------------
-    # the shell follows the skull (+18 mm) so it reads as a helmet instead of
-    # a cap perched on top; the front edge stops above the big eyes
-    m.add("helmet", *place(lathe([
-        (0.214, 1.315), (0.205, 1.340), (0.192, 1.365), (0.175, 1.390),
-        (0.151, 1.415), (0.118, 1.440), (0.086, 1.455), (0.040, 1.466),
-        (0.0, 1.472),
-    ], 30, close_ends=True), translation=(0, 0.010, 0.006)))
-    m.add("helmetTrim", *place(torus(0.210, 0.018, 0, 28, 6),
-                               translation=(0, 1.328, 0.006)))
-    for sx in (-1, 1):
-        m.add("helmetTrim", *place(cylinder(0.058, 0.0, 0.05, 16, caps=True),
-                                   rot=(0, 0, 90 * sx),
-                                   translation=(0.202 * sx, 1.372, 0.010)))
-    m.add("goggle", *place(torus(0.158, 0.016, 0, 28, 6),
-                           rot=(-30, 0, 0), translation=(0, 1.402, 0.078)))
-    for sx in (-1, 1):
-        m.add("goggle", *place(cylinder(0.050, 0.0, 0.032, 16, caps=True),
-                               rot=(58, 0, 0),
-                               translation=(0.068 * sx, 1.398, 0.148)))
-        m.add("lensWhite", *place(disc(0.037, 0.0, 16, up=False),
-                                  rot=(58, 0, 0),
-                                  translation=(0.068 * sx, 1.406, 0.162)))
-    m.add("hullMetal", *place(box((0, 0, 0), (0.057, 0.013, 0.013)),
-                              rot=(30, 0, 0), translation=(0, 1.408, 0.146)))
-    # --- antennae with glowing tips --------------------------------------
-    for sx in (-1, 1):
-        m.add("alienSkin", *place(cylinder(0.011, 0.0, 0.16, 8, caps=True),
-                                  rot=(0, 0, -20 * sx),
-                                  translation=(0.090 * sx, 1.492, -0.010)))
-        m.add("lensGreen", *place(sphere((0, 0, 0), 0.030, 12, 8),
-                                  translation=(0.118 * sx, 1.612, -0.010)))
-    return m
-
-
 ZORP_SCALE = 1.15
 
 
@@ -335,6 +91,37 @@ def build_scene_zorp():
     return sub
 
 
+HERO_LOOK = {
+    "alienSkin": ((0.56, 0.86, 0.50), 0.38, 0.0, 1.0),
+    "eyeWhite": ((0.96, 0.95, 0.92), 0.55, 0.0, 1.0),
+    "iris": ((0.13, 0.17, 0.28), 0.80, 0.0, 1.0),
+    "eyeBlack": ((0.03, 0.04, 0.06), 0.9, 0.0, 1.0),
+    "lensWhite": ((1.0, 0.99, 0.97), 0.6, 0.35, 1.0),
+    "blush": ((0.93, 0.55, 0.56), 0.12, 0.08, 1.0),
+    "suit": ((0.28, 0.40, 0.22), 0.35, 0.0, 1.0),
+    "goggle": ((0.16, 0.17, 0.19), 0.55, 0.0, 1.0),
+    "badge": ((0.86, 0.88, 0.90), 0.4, 0.15, 1.0),
+    "sockRed": ((0.78, 0.22, 0.24), 0.15, 0.0, 1.0),
+    "sockBlue": ((0.22, 0.38, 0.72), 0.15, 0.0, 1.0),
+    "sockCuff": ((0.92, 0.88, 0.76), 0.12, 0.0, 1.0),
+    "helmet": ((0.88, 0.89, 0.86), 0.45, 0.0, 1.0),
+    "helmetTrim": ((0.84, 0.42, 0.12), 0.35, 0.0, 1.0),
+    "hullMetal": ((0.45, 0.47, 0.50), 0.6, 0.0, 1.0),
+    "iron": ((0.13, 0.13, 0.14), 0.5, 0.0, 1.0),
+    "lensRed": ((1.0, 0.25, 0.2), 0.4, 0.7, 1.0),
+}
+
+
+PILOT_SCALE = 1.0
+
+
+def build_scene_pilot():
+    sub = Node("TransformGroup", "pilot", scale="%s %s %s"
+               % (PILOT_SCALE, PILOT_SCALE, PILOT_SCALE))
+    sub.add(Node("Shape", "pilotMesh", _character.pilot_mesh()))
+    return sub
+
+
 MATERIALS = [
     {"name": "alienSkin", "diffuse": "alienSkin_diffuse.dds", "gloss": "alienSkin_specular.dds"},
     {"name": "suit", "diffuse": "suit_diffuse.dds", "gloss": "suit_specular.dds"},
@@ -346,6 +133,16 @@ MATERIALS = [
     {"name": "helmet", "diffuse": "helmet_diffuse.dds", "gloss": "helmet_specular.dds"},
     {"name": "helmetTrim", "diffuse": "helmetTrim_diffuse.dds", "gloss": None},
     {"name": "eyeBlack", "diffuse": "eyeBlack_diffuse.dds", "gloss": None},
+    {"name": "eyeWhite", "diffuse": None, "color": "0.95 0.94 0.91 1",
+     "specular": "0.35 0.35 0.35"},
+    {"name": "iris", "diffuse": None, "color": "0.16 0.20 0.30 1",
+     "specular": "0.6 0.6 0.62"},
+    {"name": "sockCuff", "diffuse": None, "color": "0.90 0.86 0.74 1",
+     "specular": "0.1 0.1 0.1"},
+    {"name": "iron", "diffuse": None, "color": "0.13 0.13 0.14 1",
+     "specular": "0.3 0.3 0.3"},
+    {"name": "lensRed", "diffuse": None, "color": "1 0.25 0.2 1",
+     "specular": "0.5 0.2 0.2"},
     {"name": "lensGreen", "diffuse": "lensGreen_diffuse.dds", "gloss": None},
     {"name": "lensWhite", "diffuse": "lensWhite_diffuse.dds", "gloss": None},
     {"name": "hullMetal", "diffuse": "hullMetal_diffuse.dds", "gloss": "hullMetal_specular.dds"},
@@ -454,7 +251,7 @@ ZORP_XML = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 MODDESC = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
     <author>Arena.ai Agent Mode</author>
-    <version>1.2.0.0</version>
+    <version>1.3.0.0</version>
 
     <title>
         <en>Alien Mascot</en>
@@ -662,30 +459,8 @@ def main():
 
     step("icon + store picture")
     import render as ufo_render
-    from PIL import Image
-    icon = ufo_render.render(size=512, eye=(1.35, 1.25, 1.9), target=(0, 0.62, 0), fov=40, ss=2,
-                             background="sky", root=game_root())
-    icon.save(os.path.join(REPO, "build", "icon_alien.png"))
-    subprocess_run([sys.executable, os.path.join(REPO, "tools", "png2dds.py"),
-                    os.path.join(REPO, "build", "icon_alien.png"),
-                    os.path.join(MOD, "icon_alien.dds"), "--format", "bc1"])
-    store = ufo_render.render(size=512, eye=(1.5, 1.3, 2.05), target=(0, 0.55, 0), fov=40, ss=2,
-                              background=(0.95, 0.97, 0.94), return_alpha=True, root=game_root())
-    store.save(os.path.join(MOD, "store_alien.png"))
-    ufo_render.render(size=512, eye=(1.55, 1.75, 2.1), target=(0, 0.85, 0), fov=40, ss=2,
-                      background=(0.95, 0.97, 0.94), return_alpha=True,
-                      root=build_scene_leader()).save(os.path.join(MOD, "store_alienLeader.png"))
-    # Zorp is a full figure, so he needs his own materials and a taller frame
-    ufo_render.MAT_LOOK.update({
-        "suit": ((0.28, 0.40, 0.22), 0.35, 0.0, 1.0),
-        "goggle": ((0.16, 0.17, 0.19), 0.55, 0.0, 1.0),
-        "badge": ((0.86, 0.88, 0.90), 0.4, 0.15, 1.0),
-        "sockRed": ((0.78, 0.22, 0.24), 0.15, 0.0, 1.0),
-        "sockBlue": ((0.22, 0.38, 0.72), 0.15, 0.0, 1.0),
-        "blush": ((0.86, 0.52, 0.54), 0.15, 0.0, 1.0),
-        "helmet": ((0.88, 0.89, 0.86), 0.45, 0.0, 1.0),
-        "helmetTrim": ((0.84, 0.42, 0.12), 0.35, 0.0, 1.0),
-    })
+    # one material table for every figure, so the shop pictures match in game
+    ufo_render.MAT_LOOK.update(HERO_LOOK)
     ufo_render.load_textures({
         "suit": os.path.join(REPO, "build", "crop_textures", "suit_diffuse.png"),
         "badge": os.path.join(REPO, "build", "zorpBadge_diffuse.png"),
@@ -693,12 +468,40 @@ def main():
         "sockBlue": os.path.join(REPO, "build", "sockBlue_diffuse.png"),
         "blush": os.path.join(REPO, "build", "blush_diffuse.png"),
     })
-    ufo_render.render(size=512, eye=(1.60, 1.80, 2.50), target=(0, 0.92, 0), fov=36, ss=2,
-                      background=(0.95, 0.97, 0.94), return_alpha=True,
-                      root=build_scene_zorp()).save(os.path.join(MOD, "store_zorp.png"))
-    ufo_render.render(size=700, eye=(2.2, 2.1, 3.0), target=(0, 0.92, 0), fov=36, ss=2,
-                      root=build_scene_zorp()).save(
-                          os.path.join(REPO, "docs", "renders", "alien_zorp.png"))
+
+    renders_dir = os.path.join(REPO, "docs", "renders")
+
+    def shot(path, scene, eye, target, fov=36, size=700, bg="sky", alpha=False):
+        ufo_render.render(size=size, eye=eye, target=target, fov=fov, ss=2,
+                          background=bg, return_alpha=alpha,
+                          root=scene).save(path)
+
+    icon = ufo_render.render(size=512, eye=(1.35, 1.55, 1.95), target=(0, 0.95, 0),
+                             fov=40, ss=2, background="sky", root=build_scene())
+    icon.save(os.path.join(REPO, "build", "icon_alien.png"))
+    subprocess_run([sys.executable, os.path.join(REPO, "tools", "png2dds.py"),
+                    os.path.join(REPO, "build", "icon_alien.png"),
+                    os.path.join(MOD, "icon_alien.dds"), "--format", "bc1"])
+
+    shot(os.path.join(MOD, "store_alien.png"), build_scene(),
+         (1.5, 1.55, 2.05), (0, 0.92, 0), fov=40, size=512,
+         bg=(0.95, 0.97, 0.94), alpha=True)
+    shot(os.path.join(MOD, "store_alienLeader.png"), build_scene_leader(),
+         (1.55, 1.95, 2.15), (0, 1.02, 0), fov=40, size=512,
+         bg=(0.95, 0.97, 0.94), alpha=True)
+    shot(os.path.join(MOD, "store_zorp.png"), build_scene_zorp(),
+         (1.60, 1.95, 2.55), (0, 0.95, 0), fov=36, size=512,
+         bg=(0.95, 0.97, 0.94), alpha=True)
+
+    # documentation renders for the German manual
+    shot(os.path.join(renders_dir, "alien_mascot.png"), build_scene(),
+         (0.30, 1.05, 2.30), (0, 0.72, 0), fov=38)
+    shot(os.path.join(renders_dir, "alien_mascot_face.png"), build_scene(),
+         (0.18, 1.35, 1.05), (0, 1.22, 0.06), fov=32)
+    shot(os.path.join(renders_dir, "alien_leader.png"), build_scene_leader(),
+         (0.45, 1.55, 2.60), (0, 0.95, 0), fov=38)
+    shot(os.path.join(renders_dir, "alien_zorp.png"), build_scene_zorp(),
+         (1.10, 1.35, 2.30), (0, 0.85, 0), fov=38)
     print("   icon_alien.dds, store_alien.png, store_alienLeader.png, store_zorp.png")
 
     step("binarize")
