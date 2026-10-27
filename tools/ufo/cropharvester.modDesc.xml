@@ -15,6 +15,7 @@
 
     <iconFilename>icon_cropharvester.dds</iconFilename>
     <multiplayer supported="true"/>
+    <l10n filenamePrefix="translations/translation"/>
 
     <brands>
         <brand name="CropHarvester" title="$l10n_brand_crop" image="brand_cropharvester.dds"/>

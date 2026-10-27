@@ -47,21 +47,25 @@ Die Anlage ist ein einzelnes großes Placeable; etwa 180 × 370 m freie Fläche 
     <multiplayer supported="true"/>
 
     <l10n>
-        <text name="l10n_rollercoaster_name">
+        <text name="rollercoaster_name">
             <en>Höhensturm — Inversion Coaster</en>
             <de>Höhensturm — Inversions-Achterbahn</de>
         </text>
-        <text name="l10n_rollercoaster_function">
+        <text name="rollercoaster_function">
             <en>High-speed, manually dispatched full-lap coaster</en>
             <de>Manuell gestartete Hochgeschwindigkeits-Rundfahrt</de>
         </text>
-        <text name="l10n_rollercoaster_car_name">
+        <text name="rollercoaster_car_name">
             <en>Höhensturm four-seat coaster car</en>
             <de>Höhensturm-Achterbahnwagen für vier Personen</de>
         </text>
-        <text name="l10n_rollercoaster_type_desc">
+        <text name="rollercoaster_type_desc">
             <en>Full-lap coaster locomotive</en>
             <de>Achterbahn-Lokomotive mit Vollrunde</de>
+        </text>
+        <text name="hotspot_rentTrain">
+            <en>Rent train</en>
+            <de>Zug mieten</de>
         </text>
     </l10n>
 

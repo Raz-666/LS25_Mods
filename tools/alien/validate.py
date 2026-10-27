@@ -81,6 +81,9 @@ def main():
     icon = desc.findtext("iconFilename")
     if icon and not os.path.isfile(os.path.join(MOD, icon)):
         err("iconFilename %s does not exist" % icon)
+    l10n = desc.find("l10n")
+    if l10n is None or l10n.get("filenamePrefix") != "translations/translation":
+        err("modDesc.xml: external translations are not registered")
     for item in desc.findall("storeItems/storeItem"):
         f = os.path.join(MOD, item.get("xmlFilename"))
         if not os.path.isfile(f):

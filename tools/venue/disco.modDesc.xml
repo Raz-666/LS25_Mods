@@ -84,11 +84,11 @@ in diesem Repository erzeugt.]]></de>
     </inputBinding>
 
     <l10n>
-        <text name="l10n_disco_name">
+        <text name="disco_name">
             <en>Farm Disco</en>
             <de>Hofdisco</de>
         </text>
-        <text name="l10n_disco_function">
+        <text name="disco_function">
             <en>Disco with music, mirror ball and dance floor</en>
             <de>Disco mit Musik, Spiegelkugel und Tanzfläche</de>
         </text>

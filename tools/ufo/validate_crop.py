@@ -98,6 +98,9 @@ def check_moddesc(mod):
         err("modDesc iconFilename %s does not exist" % icon)
     if desc.find("multiplayer") is None:
         warn("modDesc.xml has no <multiplayer> entry")
+    l10n = desc.find("l10n")
+    if l10n is None or l10n.get("filenamePrefix") != "translations/translation":
+        err("modDesc.xml: external translations must use filenamePrefix=translations/translation")
     for item in desc.findall("storeItems/storeItem"):
         f = item.get("xmlFilename")
         if not os.path.isfile(os.path.join(MOD, f)):

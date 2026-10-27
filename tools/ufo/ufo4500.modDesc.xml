@@ -15,6 +15,7 @@
 
     <iconFilename>icon_ufo4500.dds</iconFilename>
     <multiplayer supported="true"/>
+    <l10n filenamePrefix="translations/translation"/>
 
     <brands>
         <brand name="UFO4500" title="$l10n_brand_ufo4500" image="brand_ufo4500.dds"/>

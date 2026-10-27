@@ -103,7 +103,7 @@ def check_l10n(desc, placeable):
     keys = set()
     for text in (desc.findall("l10n/text") if desc is not None else []):
         name = text.get("name", "")
-        keys.add(name[5:] if name.startswith("l10n_") else name)
+        keys.add(name)
     used = set()
     for path in (os.path.join(MOD, "modDesc.xml"), os.path.join(MOD, "babaJagaHouse.xml")):
         try:

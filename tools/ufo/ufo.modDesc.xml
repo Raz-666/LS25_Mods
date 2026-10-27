@@ -85,6 +85,7 @@ Repository erzeugt (tools/ufo/). Es wurden keine Spieldateien kopiert.]]></de>
 
     <iconFilename>icon_ufo2000.dds</iconFilename>
     <multiplayer supported="true"/>
+    <l10n filenamePrefix="translations/translation"/>
 
     <brands>
         <brand name="UFO2000" title="$l10n_brand_ufo2000" image="brand_ufo2000.dds"/>

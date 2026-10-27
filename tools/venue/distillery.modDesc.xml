@@ -78,11 +78,11 @@ Marke: Lizard (Grundspiel). Modell, Texturen und Musik werden von den Skripten i
     </inputBinding>
 
     <l10n>
-        <text name="l10n_distillery_name">
+        <text name="distillery_name">
             <en>Distillery Leipzig</en>
             <de>Distillery Leipzig</de>
         </text>
-        <text name="l10n_distillery_function">
+        <text name="distillery_function">
             <en>Techno club with PA, bar, garden and a synced set list</en>
             <de>Technoclub mit PA, Bar, Garten und synchroner Titelliste</de>
         </text>

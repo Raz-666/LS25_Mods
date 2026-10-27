@@ -127,7 +127,7 @@ def check_l10n(names):
         keys.update(t.get("name") for t in root.iter("text"))
     for t in (load(os.path.join(MOD, "modDesc.xml")) or ET.Element("modDesc")).iter("text"):
         name = t.get("name") or ""
-        keys.add(name[5:] if name.startswith("l10n_") else name)
+        keys.add(name)
     used = set()
     for name in ["modDesc.xml"] + names:
         with open(os.path.join(MOD, name), encoding="utf-8") as fh:

@@ -192,6 +192,10 @@ def validate_mod(track_mappings: str, car_mappings: str, points, labels, frames,
     vehicle = ET.parse(MOD_DIR / "coasterCar.xml").getroot()
     assert mod.find("./multiplayer").get("supported") == "true"
     assert mod.find("./specializations/specialization[@name='coasterRoll']") is not None
+    l10n = {text.get("name") for text in mod.findall("./l10n/text")}
+    assert {"rollercoaster_name", "rollercoaster_function",
+            "rollercoaster_car_name", "rollercoaster_type_desc",
+            "hotspot_rentTrain"} <= l10n
     assert placeable.get("type") == "trainSystem"
     assert placeable.find("./trainSystem/spline").get("node") == "coasterSpline"
     assert len(placeable.findall("./trainSystem/train/vehicle")) == 1

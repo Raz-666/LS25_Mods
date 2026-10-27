@@ -416,6 +416,9 @@ def validate_zip():
 
     desc = ET.parse(os.path.join(MOD, "modDesc.xml")).getroot()
     check(desc.find("multiplayer") is not None, "modDesc: multiplayer missing")
+    l10n = desc.find("l10n")
+    check(l10n is not None and l10n.get("filenamePrefix") == "translations/translation",
+          "modDesc: external translations are not registered")
     spec = desc.find("specializations/specialization")
     check(spec is not None and spec.get("filename") == LUA,
           "modDesc: specialization path")

@@ -31,11 +31,11 @@ Die Wohnhütte wird unabhängig von Baba Jagas Hühnerstall aufgestellt.]]></de>
     <multiplayer supported="true"/>
 
     <l10n>
-        <text name="l10n_babajagaHouse_name">
+        <text name="babajagaHouse_name">
             <en>Baba Jaga's Home</en>
             <de>Baba Jagas Wohnhütte</de>
         </text>
-        <text name="l10n_babajagaHouse_function">
+        <text name="babajagaHouse_function">
             <en>Residential hut with sleep and wardrobe triggers</en>
             <de>Wohnhütte mit Schlaf- und Garderoben-Trigger</de>
         </text>

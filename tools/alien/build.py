@@ -291,6 +291,7 @@ Kategorie: Deko]]></de>
 
     <iconFilename>icon_alien.dds</iconFilename>
     <multiplayer supported="true"/>
+    <l10n filenamePrefix="translations/translation"/>
 
     <storeItems>
         <storeItem xmlFilename="alien.xml"/>
