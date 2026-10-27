@@ -276,7 +276,14 @@ def _window(m, x, y, z, axis, w=0.85, h=1.00):
                                                   z + side * (w * 0.5 + 0.30))))
 
 
-def hut_mesh():
+def hut_mesh(include_door=True, include_porch=True, include_ladder=True,
+             walkable_door=False):
+    """Build the shared hut shell.
+
+    Defaults preserve the original chicken coop byte-for-byte at the mesh
+    level. The separate residence can omit its decorative door/porch/ladder and
+    cut a real opening through the front log wall for an animated door.
+    """
     m = Mesh()
     y0 = HUT_FLOOR
     hw, hd = HUT_W * 0.5, HUT_D * 0.5
@@ -298,9 +305,21 @@ def hut_mesh():
     for r in range(rows):
         y = y0 + 0.22 + r * 0.345
         for side in (-1, 1):
-            m.add("woodLog", *place(cylinder(0.185, -hw - 0.30, hw + 0.30, 12, caps=True),
-                                    rot=(0, 0, 90),
-                                    translation=(0, y, side * hd)))
+            if walkable_door and side == 1 and y < y0 + 2.18:
+                # The residential variant needs a genuine passage. Horizontal
+                # cylinders are rotated 90 degrees around Z, so the local Y
+                # endpoints are reversed to leave a centered doorway gap.
+                door_left = DOOR_X - 0.70
+                door_right = DOOR_X + 0.70
+                spans = ((-hw - 0.30, door_left), (door_right, hw + 0.30))
+                for x_min, x_max in spans:
+                    m.add("woodLog", *place(
+                        cylinder(0.185, -x_max, -x_min, 12, caps=True),
+                        rot=(0, 0, 90), translation=(0, y, side * hd)))
+            else:
+                m.add("woodLog", *place(cylinder(0.185, -hw - 0.30, hw + 0.30, 12, caps=True),
+                                        rot=(0, 0, 90),
+                                        translation=(0, y, side * hd)))
         yy = y + 0.17
         for side in (-1, 1):
             m.add("woodLog", *place(cylinder(0.185, -hd - 0.30, hd + 0.30, 12, caps=True),
@@ -315,31 +334,32 @@ def hut_mesh():
                                           y0 + 0.20 + (i % 7) * 0.345 + 0.17,
                                           (hd + 0.05) * math.sin(a) * 1.36)))
 
-    # --- door --------------------------------------------------------------
-    dz = FRONT + 0.10
-    m.add("woodDark", *place(box((0, 0, 0), (1.20, 2.15, 0.10)),
-                             translation=(DOOR_X, y0 + 1.07, dz - 0.04)))
-    for k in range(5):
-        x = DOOR_X - 0.44 + k * 0.22
-        m.add("woodLog", *place(box((0, 0, 0), (0.20, 1.95, 0.10)),
-                                translation=(x, y0 + 1.00, dz + 0.02)))
-    for k, y in enumerate((y0 + 0.42, y0 + 1.62)):
-        m.add("iron", *place(box((0, 0, 0), (1.00, 0.10, 0.05)),
-                             translation=(DOOR_X, y, dz + 0.08)))
+    if include_door:
+        # --- door --------------------------------------------------------------
+        dz = FRONT + 0.10
+        m.add("woodDark", *place(box((0, 0, 0), (1.20, 2.15, 0.10)),
+                                 translation=(DOOR_X, y0 + 1.07, dz - 0.04)))
+        for k in range(5):
+            x = DOOR_X - 0.44 + k * 0.22
+            m.add("woodLog", *place(box((0, 0, 0), (0.20, 1.95, 0.10)),
+                                    translation=(x, y0 + 1.00, dz + 0.02)))
+        for k, y in enumerate((y0 + 0.42, y0 + 1.62)):
+            m.add("iron", *place(box((0, 0, 0), (1.00, 0.10, 0.05)),
+                                 translation=(DOOR_X, y, dz + 0.08)))
+            for side in (-1, 1):
+                m.add("iron", *place(box((0, 0, 0), (0.16, 0.07, 0.04)),
+                                     rot=(0, 0, side * 18),
+                                     translation=(DOOR_X + side * 0.44, y + side * 0.07,
+                                                  dz + 0.08)))
+        m.add("iron", *place(torus(0.075, 0.022, 0, 16, 6),
+                             rot=(90, 0, 0), translation=(DOOR_X + 0.40, y0 + 1.02, dz + 0.14)))
+        m.add("woodDark", *place(box((0, 0, 0), (1.44, 0.14, 0.26)),
+                                 translation=(DOOR_X, y0 + 2.16, dz + 0.06)))
         for side in (-1, 1):
-            m.add("iron", *place(box((0, 0, 0), (0.16, 0.07, 0.04)),
-                                 rot=(0, 0, side * 18),
-                                 translation=(DOOR_X + side * 0.44, y + side * 0.07,
-                                              dz + 0.08)))
-    m.add("iron", *place(torus(0.075, 0.022, 0, 16, 6),
-                         rot=(90, 0, 0), translation=(DOOR_X + 0.40, y0 + 1.02, dz + 0.14)))
-    m.add("woodDark", *place(box((0, 0, 0), (1.44, 0.14, 0.26)),
-                             translation=(DOOR_X, y0 + 2.16, dz + 0.06)))
-    for side in (-1, 1):
-        m.add("woodDark", *place(box((0, 0, 0), (0.14, 2.20, 0.14)),
-                                 translation=(DOOR_X + side * 0.64, y0 + 1.10, dz + 0.04)))
-    m.add("woodDark", *place(box((0, 0, 0), (1.60, 0.12, 0.50)),
-                             translation=(DOOR_X, y0 - 0.06, FRONT + 0.22)))
+            m.add("woodDark", *place(box((0, 0, 0), (0.14, 2.20, 0.14)),
+                                     translation=(DOOR_X + side * 0.64, y0 + 1.10, dz + 0.04)))
+        m.add("woodDark", *place(box((0, 0, 0), (1.60, 0.12, 0.50)),
+                                 translation=(DOOR_X, y0 - 0.06, FRONT + 0.22)))
 
     # --- windows -----------------------------------------------------------
     _window(m, -1.62, y0 + 1.35, FRONT, "z")
@@ -482,35 +502,37 @@ def hut_mesh():
     m.add("iron", *place(box((0, 0, 0), (0.70, 0.08, 0.66)), rot=(0, 18, 0),
                          translation=(cx - 0.17, y0 + HUT_H + 2.28, cz - 0.13)))
 
-    # --- porch over the door ----------------------------------------------
-    m.add("woodDark", *place(box((0, 0, 0), (2.30, 0.13, 1.20)),
-                             translation=(DOOR_X, y0 + 2.34, FRONT + 0.55)))
-    for side in (-1, 1):
-        m.add("woodDark", *place(box((0, 0, 0), (0.13, 1.05, 0.13)),
-                                 rot=(-38, 0, 0),
-                                 translation=(DOOR_X + side * 1.02, y0 + 1.90,
-                                              FRONT + 0.52)))
-    # hanging lantern under the porch
-    m.add("iron", *place(cylinder(0.018, y0 + 1.72, y0 + 2.30, 6, caps=True),
-                         translation=(DOOR_X - 0.92, 0, FRONT + 0.80)))
-    m.add("iron", *place(box((0, 0, 0), (0.30, 0.06, 0.30)),
-                         translation=(DOOR_X - 0.92, y0 + 1.74, FRONT + 0.80)))
-    m.add("glow", *place(box((0, 0, 0), (0.24, 0.30, 0.24)),
-                         translation=(DOOR_X - 0.92, y0 + 1.57, FRONT + 0.80)))
-    m.add("iron", *place(box((0, 0, 0), (0.30, 0.05, 0.30)),
-                         translation=(DOOR_X - 0.92, y0 + 1.40, FRONT + 0.80)))
+    if include_porch:
+        # --- porch over the door ----------------------------------------------
+        m.add("woodDark", *place(box((0, 0, 0), (2.30, 0.13, 1.20)),
+                                 translation=(DOOR_X, y0 + 2.34, FRONT + 0.55)))
+        for side in (-1, 1):
+            m.add("woodDark", *place(box((0, 0, 0), (0.13, 1.05, 0.13)),
+                                     rot=(-38, 0, 0),
+                                     translation=(DOOR_X + side * 1.02, y0 + 1.90,
+                                                  FRONT + 0.52)))
+        # hanging lantern under the porch
+        m.add("iron", *place(cylinder(0.018, y0 + 1.72, y0 + 2.30, 6, caps=True),
+                             translation=(DOOR_X - 0.92, 0, FRONT + 0.80)))
+        m.add("iron", *place(box((0, 0, 0), (0.30, 0.06, 0.30)),
+                             translation=(DOOR_X - 0.92, y0 + 1.74, FRONT + 0.80)))
+        m.add("glow", *place(box((0, 0, 0), (0.24, 0.30, 0.24)),
+                             translation=(DOOR_X - 0.92, y0 + 1.57, FRONT + 0.80)))
+        m.add("iron", *place(box((0, 0, 0), (0.30, 0.05, 0.30)),
+                             translation=(DOOR_X - 0.92, y0 + 1.40, FRONT + 0.80)))
 
-    # --- rope ladder from the porch down to the ground --------------------
-    lx = DOOR_X + 1.55
-    lz = FRONT + 1.02
-    for side in (-1, 1):
-        m.add("rope", *place(cylinder(0.028, 0.12, y0 + 2.28, 6, caps=True),
-                             translation=(lx + side * 0.24, 0, lz)))
-    rungs = int((y0 + 2.05) / 0.34)
-    for i in range(rungs):
-        y = 0.30 + i * 0.34
-        m.add("woodDark", *place(cylinder(0.035, -0.24, 0.24, 8, caps=True),
-                                 rot=(0, 0, 90), translation=(lx, y, lz)))
+    if include_ladder:
+        # --- rope ladder from the porch down to the ground --------------------
+        lx = DOOR_X + 1.55
+        lz = FRONT + 1.02
+        for side in (-1, 1):
+            m.add("rope", *place(cylinder(0.028, 0.12, y0 + 2.28, 6, caps=True),
+                                 translation=(lx + side * 0.24, 0, lz)))
+        rungs = int((y0 + 2.05) / 0.34)
+        for i in range(rungs):
+            y = 0.30 + i * 0.34
+            m.add("woodDark", *place(cylinder(0.035, -0.24, 0.24, 8, caps=True),
+                                     rot=(0, 0, 90), translation=(lx, y, lz)))
     return m
 
 

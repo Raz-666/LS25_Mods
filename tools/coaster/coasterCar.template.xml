@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<vehicle type="CoasterCar" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/vehicle.xsd">
+    <annotation>Höhensturm four-seat car with original synthesized motor and rail-air sounds. The driver dispatches it manually; CoasterRoll.lua then runs a locked full lap to the station, blocks rider exits and brake/reverse inputs en route, and adds roll-aware orientation through the vertical inversions while leaving native disconnect cleanup intact.</annotation>
+
+    <storeData>
+        <name>$l10n_rollercoaster_car_name</name>
+        <image>store_rollercoaster.png</image>
+        <price>1</price>
+        <canBeSold>false</canBeSold>
+        <showInStore>false</showInStore>
+        <lifetime>600</lifetime>
+        <rotation>0</rotation>
+        <brand>NONE</brand>
+        <category>misc</category>
+    </storeData>
+
+    <base>
+        <typeDesc>$l10n_rollercoaster_type_desc</typeDesc>
+        <filename>coasterCar.i3d</filename>
+        <size width="2.4" length="4.6" height="2.5"/>
+        <components>
+            <component centerOfMass="0 0.75 0" solverIterationCount="20" mass="1450"/>
+        </components>
+        <schemaOverlay name="VEHICLE" attacherJointPosition="0 0"/>
+        <mapHotspot type="TRAIN"/>
+    </base>
+
+    <wheels>
+        <wheelConfigurations>
+            <wheelConfiguration name="$l10n_configuration_valueDefault" price="0" saveId="DEFAULT">
+                <wheels surfaceSoundLinkNode="surfaceSoundNode"/>
+            </wheelConfiguration>
+        </wheelConfigurations>
+    </wheels>
+
+    <splineVehicle>
+        <dollies frontNode="frontNode" backNode="backNode"
+                 dolly1Node="dollyFrontNode" dolly2Node="dollyBackNode" alignDollys="false"/>
+    </splineVehicle>
+
+    <speedRotatingParts>
+        <speedRotatingPart node="wheel01" radius="0.28"/>
+        <speedRotatingPart node="wheel02" radius="0.28"/>
+        <speedRotatingPart node="wheel03" radius="0.28"/>
+        <speedRotatingPart node="wheel04" radius="0.28"/>
+    </speedRotatingParts>
+
+    <enterable isTabbable="false" canBeEnteredFromMenu="true">
+        <exitPoint node="exitPoint"/>
+        <enterReferenceNode node="enterNode" interactionRadius="6"/>
+        <cameras>
+            <camera node="outdoorCamera" rotatable="true" rotateNode="outdoorCameraTarget"
+                    limit="true" useWorldXZRotation="true" rotMinX="-1.45" rotMaxX="1.1"
+                    transMin="4" transMax="36" translation="0 0 9" rotation="-10 180 0"/>
+            <camera node="indoorCamera" rotatable="true" limit="true" rotMinX="-1.1"
+                    rotMaxX="0.4" transMin="0" transMax="0" isInside="true"/>
+        </cameras>
+        <characterNode node="driverSeatNode" cameraMinDistance="0.5">
+            <target ikChain="rightArm" targetNode="driverRightHand" poseId="flatFingers"/>
+            <target ikChain="leftArm" targetNode="driverLeftHand" poseId="flatFingers"/>
+            <target ikChain="rightFoot" targetNode="driverRightFoot"/>
+            <target ikChain="leftFoot" targetNode="driverLeftFoot"/>
+        </characterNode>
+        <passengerSeats>
+            <passengerSeat node="passengerSeat01" exitPoint="passengerSeat01ExitPoint" outdoorCameraIndex="1">
+                <camera node="passengerSeat01Camera" rotatable="true" limit="true"
+                        rotMinX="-1.1" rotMaxX="0.4" transMin="0" transMax="0"
+                        isInside="true" positionSmoothingParameter="0"/>
+                <characterNode node="passengerSeat01PlayerSkin" cameraMinDistance="0.5">
+                    <target ikChain="leftArm" targetNode="passengerSeat01PlayerLeftHand" poseId="flatFingers"/>
+                    <target ikChain="rightArm" targetNode="passengerSeat01PlayerRightHand" poseId="flatFingers"/>
+                    <target ikChain="leftFoot" targetNode="passengerSeat01PlayerLeftFoot"/>
+                    <target ikChain="rightFoot" targetNode="passengerSeat01PlayerRightFoot"/>
+                </characterNode>
+            </passengerSeat>
+            <passengerSeat node="passengerSeat02" exitPoint="passengerSeat02ExitPoint" outdoorCameraIndex="1">
+                <camera node="passengerSeat02Camera" rotatable="true" limit="true"
+                        rotMinX="-1.1" rotMaxX="0.4" transMin="0" transMax="0"
+                        isInside="true" positionSmoothingParameter="0"/>
+                <characterNode node="passengerSeat02PlayerSkin" cameraMinDistance="0.5">
+                    <target ikChain="leftArm" targetNode="passengerSeat02PlayerLeftHand" poseId="flatFingers"/>
+                    <target ikChain="rightArm" targetNode="passengerSeat02PlayerRightHand" poseId="flatFingers"/>
+                    <target ikChain="leftFoot" targetNode="passengerSeat02PlayerLeftFoot"/>
+                    <target ikChain="rightFoot" targetNode="passengerSeat02PlayerRightFoot"/>
+                </characterNode>
+            </passengerSeat>
+            <passengerSeat node="passengerSeat03" exitPoint="passengerSeat03ExitPoint" outdoorCameraIndex="1">
+                <camera node="passengerSeat03Camera" rotatable="true" limit="true"
+                        rotMinX="-1.1" rotMaxX="0.4" transMin="0" transMax="0"
+                        isInside="true" positionSmoothingParameter="0"/>
+                <characterNode node="passengerSeat03PlayerSkin" cameraMinDistance="0.5">
+                    <target ikChain="leftArm" targetNode="passengerSeat03PlayerLeftHand" poseId="flatFingers"/>
+                    <target ikChain="rightArm" targetNode="passengerSeat03PlayerRightHand" poseId="flatFingers"/>
+                    <target ikChain="leftFoot" targetNode="passengerSeat03PlayerLeftFoot"/>
+                    <target ikChain="rightFoot" targetNode="passengerSeat03PlayerRightFoot"/>
+                </characterNode>
+            </passengerSeat>
+        </passengerSeats>
+    </enterable>
+
+    <motorized forceSpeedHudDisplay="true">
+        <motorConfigurations>
+            <motorConfiguration name="$l10n_rollercoaster_name" hp="950" price="0">
+                <motor torqueScale="1.45" minRpm="450" maxRpm="3600"
+                       maxForwardSpeed="120" maxBackwardSpeed="55" brakeForce="11"
+                       lowBrakeForceScale="0.45" rotInertia="0.002" accelerationLimit="16">
+                    <torque normRpm="0.35" torque="0.84"/>
+                    <torque normRpm="0.50" torque="1.00"/>
+                    <torque normRpm="0.72" torque="1.00"/>
+                    <torque normRpm="0.90" torque="0.88"/>
+                    <torque normRpm="1.00" torque="0.72"/>
+                </motor>
+                <transmission minForwardGearRatio="1" maxForwardGearRatio="1"
+                              minBackwardGearRatio="1" maxBackwardGearRatio="1"/>
+            </motorConfiguration>
+        </motorConfigurations>
+        <sounds>
+            <motorStart file="sounds/coasterStart.ogg" linkNode="soundMotor"
+                        innerRadius="6" outerRadius="95">
+                <volume indoor="0.38" outdoor="0.48"/>
+            </motorStart>
+            <motorStop file="sounds/coasterStop.ogg" linkNode="soundMotor"
+                       innerRadius="6" outerRadius="95">
+                <volume indoor="0.32" outdoor="0.42"/>
+            </motorStop>
+            <motor file="sounds/coasterIdle.ogg" linkNode="soundMotor"
+                   innerRadius="6" outerRadius="95" fadeIn="0.4" fadeOut="0.5">
+                <volume indoor="0.36" outdoor="0.42">
+                    <modifier type="MOTOR_RPM_REAL" value="450" modifiedValue="0.8"/>
+                    <modifier type="MOTOR_RPM_REAL" value="1100" modifiedValue="1.0"/>
+                    <modifier type="MOTOR_RPM_REAL" value="1700" modifiedValue="0.45"/>
+                    <modifier type="MOTOR_RPM_REAL" value="2100" modifiedValue="0.0"/>
+                    <modifier type="MOTOR_LOAD" value="0.0" modifiedValue="0.75"/>
+                    <modifier type="MOTOR_LOAD" value="1.0" modifiedValue="1.0"/>
+                </volume>
+                <pitch indoor="0.88" outdoor="0.88">
+                    <modifier type="MOTOR_RPM_REAL" value="450" modifiedValue="0.72"/>
+                    <modifier type="MOTOR_RPM_REAL" value="3600" modifiedValue="1.24"/>
+                </pitch>
+            </motor>
+            <motor file="sounds/coasterWhine.ogg" linkNode="soundMotor"
+                   innerRadius="6" outerRadius="95" fadeIn="0.5" fadeOut="0.5">
+                <volume indoor="0.24" outdoor="0.31">
+                    <modifier type="MOTOR_RPM_REAL" value="1150" modifiedValue="0.0"/>
+                    <modifier type="MOTOR_RPM_REAL" value="1750" modifiedValue="0.35"/>
+                    <modifier type="MOTOR_RPM_REAL" value="2450" modifiedValue="0.85"/>
+                    <modifier type="MOTOR_RPM_REAL" value="3600" modifiedValue="1.0"/>
+                </volume>
+                <pitch indoor="0.84" outdoor="0.84">
+                    <modifier type="MOTOR_RPM_REAL" value="450" modifiedValue="0.72"/>
+                    <modifier type="MOTOR_RPM_REAL" value="3600" modifiedValue="1.48"/>
+                </pitch>
+            </motor>
+            <motor file="sounds/coasterAirRush.ogg" linkNode="soundMotor"
+                   innerRadius="7" outerRadius="110" fadeIn="0.7" fadeOut="0.6">
+                <volume indoor="0.18" outdoor="0.25">
+                    <modifier type="MOTOR_RPM_REAL" value="900" modifiedValue="0.0"/>
+                    <modifier type="MOTOR_RPM_REAL" value="1650" modifiedValue="0.25"/>
+                    <modifier type="MOTOR_RPM_REAL" value="2700" modifiedValue="0.70"/>
+                    <modifier type="MOTOR_RPM_REAL" value="3600" modifiedValue="0.95"/>
+                </volume>
+                <pitch indoor="0.82" outdoor="0.82">
+                    <modifier type="MOTOR_RPM_REAL" value="450" modifiedValue="0.75"/>
+                    <modifier type="MOTOR_RPM_REAL" value="3600" modifiedValue="1.35"/>
+                </pitch>
+            </motor>
+        </sounds>
+        <motorStartDuration>1200</motorStartDuration>
+    </motorized>
+
+    <drivable/>
+
+    <i3dMappings>
+        __I3D_MAPPINGS__
+    </i3dMappings>
+</vehicle>

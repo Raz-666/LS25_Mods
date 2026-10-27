@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+    <author>Arena.ai Agent Mode</author>
+    <version>1.2.0.0</version>
+
+    <title>
+        <en>Höhensturm — Inversion Coaster</en>
+        <de>Höhensturm — Inversions-Achterbahn</de>
+    </title>
+
+    <description>
+        <en><![CDATA[A high-speed FS25 coaster with a manually dispatched, full-lap ride.
+
+* One 1.5-turn rising spiral and two full, true vertical inversions
+* 55.5 m of track elevation difference; the crest reaches about 58 m
+* A native FS25 train-system spline keeps movement and multiplayer sync stable
+* A PC-only Lua specialization adds the roll-aware frame needed to ride upside down
+* One shared 2×2 car: the front-left seat drives, three friends ride alongside and behind
+* Multiplayer co-riding uses FS25's native passenger-seat system; everyone needs the mod
+* Tap accelerate to dispatch; once moving, the car automatically completes the lap to the station
+* Braking, reversing and all rider exits are locked until the car stops at the station
+* Native disconnect cleanup releases abandoned seats; a disconnected driver cannot strand the run
+* A glazed station hall, cyan/violet LED tunnels through the inversions, and an original coaster sound set
+* High-speed 120 km/h motor setting, steel supports and cyan track accents
+
+PC only — the custom Lua script is required, so consoles are not supported.
+The ride is placed as one large placeable; allow roughly 180 × 370 m of clear ground.]]></en>
+        <de><![CDATA[Eine Hochgeschwindigkeits-Achterbahn mit manuellem Start und vollständiger Rundfahrt in FS25.
+
+* Eine aufsteigende Spirale mit 1,5 Umdrehungen und zwei vollständige, echte vertikale Überschläge
+* 55,5 m Höhenunterschied auf der Strecke; der höchste Punkt liegt bei etwa 58 m
+* Eine native FS25-Zugspline sorgt für stabile Bewegung und Multiplayer-Synchronisierung
+* Eine PC-exklusive Lua-Spezialisierung ergänzt die rollende Ausrichtung für Fahrten kopfüber
+* Ein gemeinsamer Wagen mit 2×2 Sitzen: vorne links sitzt der Fahrer, drei Freunde fahren mit
+* Gemeinsame Multiplayer-Fahrten nutzen das native FS25-Beifahrersitz-System; alle benötigen den Mod
+* Zum Start kurz beschleunigen; danach fährt der Wagen die komplette Runde automatisch bis zum Bahnhof
+* Bremsen, Rückwärtsfahren und Aussteigen sind bis zum Stillstand am Bahnhof gesperrt
+* FS25 räumt getrennte Mitfahrer nativ auf; ein Fahrer-Abbruch lässt die Runde automatisch weiterlaufen
+* Verglaste Bahnhofshalle, cyan/violette LED-Lichttunnel in den Überschlägen und ein eigener Achterbahn-Sound
+* Motoreinstellung bis 120 km/h, Stahlstützen und cyanfarbene Schienenakzente
+
+Nur PC — das Lua-Skript ist erforderlich, Konsolen werden nicht unterstützt.
+Die Anlage ist ein einzelnes großes Placeable; etwa 180 × 370 m freie Fläche einplanen.]]></de>
+    </description>
+
+    <iconFilename>icon_rollercoaster.dds</iconFilename>
+    <multiplayer supported="true"/>
+
+    <l10n>
+        <text name="l10n_rollercoaster_name">
+            <en>Höhensturm — Inversion Coaster</en>
+            <de>Höhensturm — Inversions-Achterbahn</de>
+        </text>
+        <text name="l10n_rollercoaster_function">
+            <en>High-speed, manually dispatched full-lap coaster</en>
+            <de>Manuell gestartete Hochgeschwindigkeits-Rundfahrt</de>
+        </text>
+        <text name="l10n_rollercoaster_car_name">
+            <en>Höhensturm four-seat coaster car</en>
+            <de>Höhensturm-Achterbahnwagen für vier Personen</de>
+        </text>
+        <text name="l10n_rollercoaster_type_desc">
+            <en>Full-lap coaster locomotive</en>
+            <de>Achterbahn-Lokomotive mit Vollrunde</de>
+        </text>
+    </l10n>
+
+    <specializations>
+        <specialization name="coasterRoll" className="CoasterRoll" filename="CoasterRoll.lua"/>
+    </specializations>
+
+    <vehicleTypes>
+        <type name="CoasterCar" parent="locomotive" filename="$dataS/scripts/vehicles/Vehicle.lua">
+            <specialization name="coasterRoll"/>
+        </type>
+    </vehicleTypes>
+
+    <storeItems>
+        <storeItem xmlFilename="coasterSystem.xml"/>
+    </storeItems>
+</modDesc>

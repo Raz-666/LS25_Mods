@@ -360,6 +360,15 @@ def build_scene():
                       receiveShadows="false", nonRenderable="false"))
         base.beam_fx_nodes(beam, mode_id)
 
+    # A separate, narrow red beam feeds the harvested grain into a vehicle
+    # while the wide green field-harvest beam remains active.
+    transfer = visual.add(Node("TransformGroup", "transferBeamNode",
+                               translation="3.0 0.19 0", visibility="false"))
+    transfer.add(Node("Shape", "transferBeamMesh", base.beam_mesh(),
+                      materials=["beamRed"], castsShadows="false",
+                      receiveShadows="false", nonRenderable="false"))
+    base.beam_fx_nodes(transfer, "Transfer")
+
     ring = visual.add(Node("TransformGroup", "groundRing", translation="0 0.05 0",
                            visibility="false", scale="1 1 1"))
     ring.add(Node("Shape", "groundRingMesh", base.circle_ring_mesh(),

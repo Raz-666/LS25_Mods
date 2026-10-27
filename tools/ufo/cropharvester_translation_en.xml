@@ -6,7 +6,7 @@
     <text name="typeDesc_crop"><de>UFO 01 – Erntemaschine mit Glaskuppel und Traktorstrahl</de><en>UFO 01 - harvester with a glass dome and a tractor beam</en></text>
     <text name="configuration_crop_motor"><de>Antigravitations-Antrieb</de><en>Anti-gravity drive</en></text>
 
-    <text name="crop_action_menu"><de>Kornkreis-Menü</de><en>Crop circle menu</en></text>
+    <text name="crop_action_menu"><de>Bordmenü: Muster, Modi, Einstellungen</de><en>Cockpit menu: patterns, modes, settings</en></text>
     <text name="crop_action_toggleHover"><de>Abheben / Landen</de><en>Take off / land</en></text>
     <text name="crop_action_ascend"><de>Steigen / Muster</de><en>Climb / pattern</en></text>
     <text name="crop_action_descend"><de>Sinken / Muster</de><en>Descend / pattern</en></text>
@@ -21,13 +21,14 @@
     <text name="crop_mode_load"><de>Aufnehmen (Sog)</de><en>Load (suction)</en></text>
     <text name="crop_mode_unload"><de>Abladen (Strahl)</de><en>Unload (beam)</en></text>
     <text name="crop_notify_mode"><de>Strahl-Modus: %s</de><en>Beam mode: %s</en></text>
-    <text name="crop_menu_modeHint"><de>K: nächster Modus · J/L: Strahl / Saatgut · Z: Strahl an</de><en>K: next mode · J/L: beam / seed · Z: beam on</en></text>
+    <text name="crop_menu_modeHint"><de>K: Modus · J/L: Breite oder Saatgut · Z: Strahl · B: Ernte in Anhänger</de><en>K: mode · J/L: width or seed · Z: beam · B: harvest to trailer</en></text>
     <text name="crop_hud_cargo"><de>Laderaum</de><en>Cargo hold</en></text>
     <text name="crop_hud_sow"><de>Saatgut</de><en>Seed</en></text>
     <text name="crop_action_mode"><de>Strahl-Modus (8 Funktionen)</de><en>Beam mode (8 functions)</en></text>
     <text name="crop_action_penWide"><de>Strahl weiter</de><en>Beam wider</en></text>
     <text name="crop_action_penNarrow"><de>Strahl enger</de><en>Beam narrower</en></text>
     <text name="crop_action_unload"><de>Abladen (über Anhänger/Abkippstelle)</de><en>Unload (over trailer / tip station)</en></text>
+    <text name="crop_action_harvestToTrailer"><de>Ernte-Zweitstrahl: LKW / Anhänger füllen</de><en>Harvest transfer beam: fill truck / trailer</en></text>
     <text name="crop_action_infinite"><de>Korntank unendlich</de><en>Endless grain tank</en></text>
 
     <text name="crop_hud_mode"><de>Strahl</de><en>Beam</en></text>
@@ -41,14 +42,14 @@
     <text name="crop_notify_modeHarvest"><de>Strahl-Modus: ERNTEN – das Korn geht in den Tank</de><en>Beam mode: HARVEST – the crop goes into the tank</en></text>
     <text name="crop_notify_modeDamage"><de>Strahl-Modus: PLATTDRÜCKEN – Kornkreise ohne Ernte</de><en>Beam mode: FLATTEN – crop circles without harvesting</en></text>
     <text name="crop_notify_tankEndless"><de>Korntank: unendlich</de><en>Grain tank: endless</en></text>
-    <text name="crop_notify_tankNormal"><de>Korntank: normal (25.000 l)</de><en>Grain tank: normal (25,000 l)</en></text>
-    <text name="crop_menu_title"><de>Bodenmuster (drückt die Ernte platt)</de><en>Ground patterns (presses the crop down)</en></text>
-    <text name="crop_menu_hint"><de>Bild auf / Bild ab: Auswahl · Z: anwenden · M: schließen</de><en>Page Up / Page Down: select · Z: apply · M: close</en></text>
+    <text name="crop_notify_tankNormal"><de>Korntank: normal (1.000.000 l)</de><en>Grain tank: normal (1,000,000 l)</en></text>
+    <text name="crop_menu_title"><de>Bordcomputer · Muster und Strahl-Modi</de><en>Cockpit computer · patterns and beam modes</en></text>
+    <text name="crop_menu_hint"><de>K Modus · Bild ↑/↓ Muster · J/L Breite/Saatgut · B Zweitstrahl · I Tank · U Abladen · Klick wählt · M schließen</de><en>K mode · PgUp/Down pattern · J/L width/seed · B transfer · I tank · U unload · click selects · M close</en></text>
     <text name="crop_hud_height"><de>Höhe</de><en>Height</en></text>
     <text name="crop_hud_pattern"><de>Muster</de><en>Pattern</en></text>
     <text name="crop_hud_radius"><de>Radius</de><en>Radius</en></text>
     <text name="crop_hud_pen"><de>Stift: einfach fliegen und malen</de><en>Pen: just fly and draw</en></text>
-    <text name="crop_hint_controls"><de>UFO 2000: V = abheben/landen, Joystick-Achse oder Bild auf/ab = Höhe, Z = Strahl an/aus, M = Bodenmuster-Menü</de><en>UFO 2000: V = take off/land, joystick axis or Page Up/Down = altitude, Z = beam on/off, M = pattern menu</en></text>
+    <text name="crop_hint_controls"><de>V abheben/landen · Bild auf/ab Höhe · Z Strahl · K Modus · J/L Breite/Saatgut · O Objekt aufnehmen · U abladen · B Ernte in Anhänger · I Tank endlos · M Bordmenü. HUD zeigt Modus, Tank und Ziel.</de><en>V take off/land · Page Up/Down height · Z beam · K mode · J/L width/seed · O lift physical object · U release/unload · B harvest to trailer · I endless tank · M cockpit menu. HUD shows mode, tank and target.</en></text>
 
     <text name="crop_circle_circle"><de>Kreis</de><en>Circle</en></text>
     <text name="crop_circle_ring"><de>Ring</de><en>Ring</en></text>
@@ -63,21 +64,77 @@
 
     <text name="crop_description"><de><![CDATA[Die Erntemaschine aus dem Blaupausen-Set: eine kompakte Untertasse mit riesiger Glaskuppel, in der Captain Zorp hinter den Hebeln klemmt. Alle Feldarbeit macht der Strahl unter dem Schiff - kein Schneidwerk, kein Anbaugerät.
 
-* Fünf Strahlfarben wie auf dem Blatt: GRÜN ernten, BLAU säen und düngen, VIOLETT grubbern und pflügen, GELB Kornkreise, ROT aufnehmen/abgeben
-* Virtueller Tank: 1.000.000 L im Korntank, dazu der große Laderaum für alles andere
+* Acht Betriebsarten: GRÜN ernten, BLAU säen/düngen, VIOLETT grubbern/pflügen, GELB Kornkreise, ROT aufnehmen/abgeben
+* 1.000.000 l Korntank plus universeller Laderaum für registrierte Spiel- und Mod-Fülltypen (Füllgut und separat transportierbare physische Objekte)
+* Mit O ein dynamisches Fahrzeug, Gerät, Palette, Ballen oder Holzstück aufnehmen (bis 12 t und 4,5 × 4 × 8 m); mit U auf sicherer Höhe absetzen
+* Im Erntemodus kann ein schmaler Zweitstrahl mit B gleichzeitig einen Anhänger oder LKW befüllen
 * Strahlbreite 6 m bis 30 m, stufenlos mit zwei Tasten
+* HUD und anklickbares Bordmenü zeigen Modus, Tank, Saatgut, Strahlstatus und Abgabeziel; Einstellungsänderungen geben direkt Rückmeldung
 * Captain Zorp wackelt bei der Fahrt in der Kuppel mit und verschwindet, sobald du selbst einsteigst
 * Glatter Rumpf ohne Anbauplatten, dazu Ringantenne und Triebwerksdüsen
 * Eigene Tastenbelegung (crop_*), damit der Mod parallel zum UFO 2000 läuft
 
-Steuerung wie beim UFO 2000: V abheben/landen, Bild auf/ab Höhe, Z Strahl, K Modus, J/L Strahlbreite, U abgeben, I Tank endlos, M Muster-Menü.]]></de><en><![CDATA[The harvester from the blueprint sheet: a compact saucer with a huge glass dome and Captain Zorp squeezed in behind the levers. All field work is done by the beam under the hull - no cutter, no implement.
+Steuerung: V abheben/landen, Bild auf/ab Höhe, Z Strahl, K Modus, J/L Strahlbreite oder Saatgut, O Objekt aufnehmen, U abgeben, B Ernte-Zweitstrahl, I Tank endlos, M Bordmenü.]]></de><en><![CDATA[The harvester from the blueprint sheet: a compact saucer with a huge glass dome and Captain Zorp squeezed in behind the levers. All field work is done by the beam under the hull - no cutter, no implement.
 
-* Five beam colours like the sheet: GREEN harvest, BLUE sow and fertilise, PURPLE cultivate and plow, YELLOW crop circles, RED load / unload
-* Virtual tank: 1,000,000 L in the grain tank, plus the big cargo hold for everything else
+* Eight work modes: GREEN harvest, BLUE sow/fertilise, PURPLE cultivate/plow, YELLOW crop circles, RED load/unload
+* 1,000,000 L grain tank plus a universal cargo hold for registered base-game and mod fill types, plus separately carried physical objects
+* Lift one dynamic vehicle, implement, pallet, bale or log with O (up to 12 t and 4.5 × 4 × 8 m); release with U at a safe height
+* In harvest mode, a narrow second beam can fill a trailer or truck at the same time
 * Beam width from 6 m to 30 m, stepless with two keys
+* The HUD and clickable cockpit menu show mode, tank, seed, beam state and transfer target; setting changes give immediate feedback
 * Captain Zorp bobs along in the dome while you fly and hides as soon as you enter
-* Smooth hull without mounting plates, ring antenna and engine nozzles
+* "CROP HARVESTER" and "UFO 01" lettering, ring antenna and engine nozzles
 * Own key names (crop_*) so the mod runs next to UFO 2000
 
-Controls as in UFO 2000: V take off/land, Page Up/Down altitude, Z beam, K mode, J/L beam width, U unload, I endless tank, M pattern menu.]]></en></text>
+Controls: V take off/land, Page Up/Down altitude, Z beam, K mode, J/L beam width or seed, O lift physical object, U release/unload, B harvest transfer beam, I endless tank, M cockpit menu.]]></en></text>
+    <!-- Always-visible flight status and direct feedback for every setting. -->
+    <text name="crop_hud_empty"><de>leer</de><en>empty</en></text>
+    <text name="crop_hud_hovering"><de>Schwebt</de><en>Hovering</en></text>
+    <text name="crop_hud_landed"><de>Am Boden</de><en>On ground</en></text>
+    <text name="crop_hud_on"><de>EIN</de><en>ON</en></text>
+    <text name="crop_hud_off"><de>AUS</de><en>OFF</en></text>
+    <text name="crop_hud_width"><de>Breite</de><en>Width</en></text>
+    <text name="crop_hud_trailerBeam"><de>Ernte → Anhänger</de><en>Harvest → trailer</en></text>
+    <text name="crop_hud_waiting"><de>warte auf LKW / Anhänger unter dem Zweitstrahl</de><en>waiting for a truck / trailer under the second beam</en></text>
+    <text name="crop_hud_transferPaused"><de>warte auf Erntemodus und aktiven Hauptstrahl</de><en>waiting for harvest mode and active main beam</en></text>
+    <text name="crop_hud_unloadState"><de>U Abladen</de><en>U unload</en></text>
+    <text name="crop_hud_infiniteNoOutput"><de>Endlos-Tank: keine Abgabe</de><en>Endless tank: no output</en></text>
+    <text name="crop_hud_searching"><de>suche Ziel</de><en>searching for target</en></text>
+    <text name="crop_hud_loading"><de>Nimmt auf:</de><en>Loading:</en></text>
+
+    <text name="crop_menu_patterns"><de>MUSTER – anklicken oder Bild auf/ab</de><en>PATTERNS – click or Page Up/Down</en></text>
+    <text name="crop_menu_modes"><de>ARBEITSMODUS – anklicken oder K</de><en>WORK MODE – click or K</en></text>
+    <text name="crop_menu_tankInfinite"><de>Korntank: ENDLOS (I)</de><en>Grain tank: ENDLESS (I)</en></text>
+    <text name="crop_menu_tankNormal"><de>Korntank: NORMAL (I)</de><en>Grain tank: NORMAL (I)</en></text>
+    <text name="crop_menu_trailerOn"><de>Zweitstrahl: EIN (B)</de><en>Second beam: ON (B)</en></text>
+    <text name="crop_menu_trailerOff"><de>Zweitstrahl: AUS (B)</de><en>Second beam: OFF (B)</en></text>
+    <text name="crop_menu_unloadState"><de>U: Laderaum abladen</de><en>U: unload cargo hold</en></text>
+
+    <text name="crop_notify_engineRequired"><de>Motor starten, bevor das UFO abhebt.</de><en>Start the engine before taking off.</en></text>
+    <text name="crop_notify_hoverOn"><de>Schwebemodus EIN – Höhe mit Bild auf/ab oder Joystick steuern.</de><en>Hover mode ON – use Page Up/Down or the joystick to set height.</en></text>
+    <text name="crop_notify_hoverOff"><de>Das UFO ist gelandet. Strahl aus.</de><en>Landed. Tractor beam off.</en></text>
+    <text name="crop_notify_beamOn"><de>Traktorstrahl EIN · Modus: %s</de><en>Tractor beam ON · mode: %s</en></text>
+    <text name="crop_notify_beamOff"><de>Traktorstrahl AUS · Modus bleibt: %s</de><en>Tractor beam OFF · selected mode: %s</en></text>
+    <text name="crop_notify_pattern"><de>Muster gewählt: %s</de><en>Pattern selected: %s</en></text>
+    <text name="crop_notify_focus"><de>Strahlbreite: %s m</de><en>Beam width: %s m</en></text>
+    <text name="crop_notify_seed"><de>Saatgut gewählt: %s</de><en>Seed selected: %s</en></text>
+    <text name="crop_notify_unloadOn"><de>Abladen EIN – UFO über Anhänger oder Abkippstelle halten.</de><en>Unloading ON – hover over a trailer or tip station.</en></text>
+    <text name="crop_notify_unloadOff"><de>Abladen AUS.</de><en>Unloading OFF.</en></text>
+    <text name="crop_notify_trailerBeamOn"><de>Ernte-Zweitstrahl EIN – im Erntemodus füllt er den nächsten Anhänger unter dem schmalen roten Strahl.</de><en>Harvest transfer beam ON – in harvest mode it fills the nearest trailer under the narrow red beam.</en></text>
+    <text name="crop_notify_trailerBeamOff"><de>Ernte-Zweitstrahl AUS.</de><en>Harvest transfer beam OFF.</en></text>
+
+    <text name="crop_action_physicalCargo"><de>Physisches Objekt aufnehmen (O)</de><en>Lift physical object (O)</en></text>
+    <text name="crop_hud_physicalCargo"><de>Physische Ladung</de><en>Physical cargo</en></text>
+    <text name="crop_notify_cargoHeld"><de>Ladung gesichert: %s</de><en>Physical cargo secured: %s</en></text>
+    <text name="crop_notify_cargoReleased"><de>Physische Ladung freigegeben.</de><en>Physical cargo released.</en></text>
+    <text name="crop_notify_cargoNeedHover"><de>Zum Aufnehmen erst schweben.</de><en>Hover before trying to lift physical cargo.</en></text>
+    <text name="crop_notify_cargoBeamOff"><de>Vor dem Aufnehmen den Traktorstrahl einschalten.</de><en>Activate the tractor beam before lifting physical cargo.</en></text>
+    <text name="crop_notify_cargoNoTarget"><de>Kein geeignetes Objekt unter dem Strahl gefunden.</de><en>No eligible physical object under the beam.</en></text>
+    <text name="crop_notify_cargoTooHeavy"><de>Zu schwer: maximal 12.000 kg.</de><en>Too heavy: physical cargo limit is 12,000 kg.</en></text>
+    <text name="crop_notify_cargoTooLarge"><de>Zu groß: maximal 4,5 × 4 × 8 m.</de><en>Too large: maximum dimensions are 4.5 × 4 × 8 m.</en></text>
+    <text name="crop_notify_cargoLowerToRelease"><de>Zum sicheren Abladen auf Mindesthöhe sinken und U drücken.</de><en>Descend to the safe cargo height before pressing U to release.</en></text>
+    <text name="crop_notify_cargoDetachFirst"><de>Zuerst das Gerät vom Fahrzeug abkuppeln.</de><en>Detach the implement before lifting that vehicle.</en></text>
+    <text name="crop_notify_cargoSafeDrop"><de>Ladung sicher abgelegt, weil das UFO entfernt wurde.</de><en>Cargo placed safely because the UFO was removed.</en></text>
+    <text name="crop_notify_cargoTooHigh"><de>Zum Aufnehmen höchstens 18 m über dem Boden schweben.</de><en>Hover no more than 18 m above the ground to lift cargo.</en></text>
+    <text name="crop_notify_cargoAlreadyHeld"><de>Bereits Ladung am Strahl: %s</de><en>Already carrying physical cargo: %s</en></text>
 </l10n>

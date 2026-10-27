@@ -17,7 +17,7 @@ import sys
 from lupa import LuaRuntime
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-LUA = os.path.join(REPO, "FS25_UFO2000", "scripts", "UFO2000.lua")
+LUA = os.path.join(REPO, "tools", "ufo", "UFO2000.lua")
 
 MOCK = r"""
 -- ---------------------------------------------------------------- engine mock
@@ -61,7 +61,7 @@ nodeIds = { leg0 = 11, leg1 = 12, leg2 = 13, beamLight = 21,
             patternPointer = 30, modeLever = 31, focusSlider = 32, modeNeedle = 33,
             beamNodeDamage = 50, beamNodeHarvest = 51, beamNodeCultivate = 52,
             beamNodePlow = 53, beamNodeSow = 54, beamNodeFertilize = 55,
-            beamNodeLoad = 56, beamNodeUnload = 57 }
+            beamNodeLoad = 56, beamNodeUnload = 57, transferBeamNode = 58 }
 
 function getWorldTranslation(node)
     local t = world.nodes and world.nodes[node]
@@ -120,7 +120,8 @@ g_gui = { getIsGuiVisible = function() return false end }
 RenderText = { ALIGN_LEFT = 1, ALIGN_CENTER = 2 }
 setTextColor = function() end
 setTextAlignment = function() end
-renderText = function() end
+renderedText = {}
+renderText = function(x, y, size, text) table.insert(renderedText, text) end
 drawFilledRect = function() end
 drawOutlineRect = function() end
 
@@ -138,7 +139,10 @@ FSDensityMapUtil = {
 FillType = { UNKNOWN = 0, WHEAT = 1, FERTILIZER = 2 }
 ToolType = { UNDEFINED = 1, UNLOADING = 2, LOADING = 3 }
 g_fillTypeManager = {
-    getFillTypeByIndex = function(i) return { index = i, name = "wheat" } end,
+    getFillTypeByIndex = function(self, i)
+        if i == nil or i == FillType.UNKNOWN or i == 999 then return nil end
+        return { index = i, name = "wheat" }
+    end,
 }
 g_fruitTypeManager = {
     getFruitTypeByIndex = function(i)
@@ -211,7 +215,7 @@ g_currentMission.storageSystem = {
 }
 stationFill = 0
 
-g_i18n = { getText = function(k) return k end }
+g_i18n = { getText = function(self, k) return k end }
 g_inputBinding = { setActionEventTextPriority = function() end, setActionEventText = function() end }
 GS_PRIO_HIGH, GS_PRIO_NORMAL = 3, 2
 g_client = { getServerConnection = function() return { sendEvent = function(_, e) e:run() end } end }
@@ -223,15 +227,23 @@ function newStream() return setmetatable({ data = {}, pos = 0, obj = nil }, stre
 function stream:writeBool(v) local b = v and 1 or 0; table.insert(self.data, b); return b end
 function stream:writeUIntN(v, n) table.insert(self.data, v); return v end
 function stream:writeIntN(v, n) table.insert(self.data, v); return v end
+function stream:writeString(v) table.insert(self.data, v); return v end
+function stream:writeFloat32(v) table.insert(self.data, v); return v end
 function stream:readBool() self.pos = self.pos + 1; return self.data[self.pos] == 1 end
 function stream:readUIntN(n) self.pos = self.pos + 1; return self.data[self.pos] end
 function stream:readIntN(n) self.pos = self.pos + 1; return self.data[self.pos] end
+function stream:readString() self.pos = self.pos + 1; return self.data[self.pos] end
+function stream:readFloat32() self.pos = self.pos + 1; return self.data[self.pos] end
 streamWriteBool = function(s, v) return s:writeBool(v) end
 streamWriteUIntN = function(s, v, n) return s:writeUIntN(v, n) end
 streamWriteIntN = function(s, v, n) return s:writeIntN(v, n) end
+streamWriteString = function(s, v) return s:writeString(v) end
+streamWriteFloat32 = function(s, v) return s:writeFloat32(v) end
 streamReadBool = function(s) return s:readBool() end
 streamReadUIntN = function(s, n) return s:readUIntN(n) end
 streamReadIntN = function(s, n) return s:readIntN(n) end
+streamReadString = function(s) return s:readString() end
+streamReadFloat32 = function(s) return s:readFloat32() end
 
 -- vehicle factory ---------------------------------------------------------
 vehicle_mt = {}
@@ -303,7 +315,15 @@ end
 function callOverwritten(vehicle, name, ...)
     local fn = _G.overwritten[name]
     if fn == nil then return nil end
-    return fn(vehicle, function() return true end, ...)
+    local superFunc = function(self, fillUnitIndex, fillTypeIndex)
+        if name == "getFillUnitSupportsFillType" then
+            local unit = self.fillUnits[fillUnitIndex]
+            return unit ~= nil and fillTypeIndex ~= FillType.UNKNOWN
+                and unit.fillType == fillTypeIndex
+        end
+        return true
+    end
+    return fn(vehicle, superFunc, ...)
 end
 """
 
@@ -342,6 +362,15 @@ def main():
                 lua.eval("#vehicle.spec_ufo2000.beamNodes") == 8)
     ok &= check("beam cones hidden at load",
                 all(lua.eval("world.visibility[%d]" % n) is False for n in range(50, 58)))
+    ok &= check("second harvest beam hidden at load", lua.eval("world.visibility[58]") is False)
+    ok &= check("cargo hold accepts a registered mod fill type",
+                lua.eval("callOverwritten(vehicle, 'getFillUnitSupportsFillType', 3, 42)") is True)
+    ok &= check("cargo hold rejects the unknown fill type",
+                lua.eval("callOverwritten(vehicle, 'getFillUnitSupportsFillType', 3, FillType.UNKNOWN)") is False)
+    ok &= check("cargo hold rejects an unregistered fill type",
+                lua.eval("callOverwritten(vehicle, 'getFillUnitSupportsFillType', 3, 999)") is False)
+    ok &= check("other fill units keep their fill-type restrictions",
+                lua.eval("callOverwritten(vehicle, 'getFillUnitSupportsFillType', 2, 42)") is False)
     ok &= check("minRotTime patched", lua.eval("vehicle.minRotTime") != 0)
 
     # ---- take off ----------------------------------------------------------
@@ -847,6 +876,273 @@ def main():
                 lua.eval("stationFill") > 5000, "%.0f l" % lua.eval("stationFill"))
     ok &= check("leaving unload mode stops unloading",
                 lua.eval("vehicle.spec_ufo2000.unloading") is False)
+
+    # ---- harvest transfer beam + universal cargo types -------------------
+    lua.execute("""
+    world.nodes[1] = { 0, 20, 0 }
+    world.nodes[2] = { 0, 0, 0 }
+    trailer.fillUnits[1].fillLevel = 0
+    trailer.fillUnits[1].fillType = FillType.UNKNOWN
+    vehicle.fillUnits[2].fillType = FillType.WHEAT
+    vehicle.fillUnits[2].fillLevel = 1000
+    vehicle.spec_ufo2000.infiniteTank = false
+    vehicle.spec_ufo2000.unloading = false
+    vehicle.spec_ufo2000.harvestToTrailer = true
+    vehicle:setUFOIsHovering(true)
+    vehicle:setUFOBeamMode(UFO2000.BEAM_MODE_HARVEST)
+    vehicle:setUFOBeamActive(true)
+    world.nodes[2] = { 10, 0, 0 }
+    callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    distantTargetName = vehicle.spec_ufo2000.directTargetName
+    distantMoved = trailer.fillUnits[1].fillLevel
+    world.nodes[2] = { 3, 0, 0 }
+    callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    directTargetName = vehicle.spec_ufo2000.directTargetName
+    directMoved = trailer.fillUnits[1].fillLevel
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("second beam ignores a trailer outside its range",
+                lua.eval("distantTargetName") == "" and lua.eval("distantMoved") == 0)
+    ok &= check("harvest beam fills the target trailer directly",
+                lua.eval("directMoved") > 0 and lua.eval("directMoved") < 100,
+                "%.0f l delivered" % lua.eval("directMoved"))
+    ok &= check("second-beam target is reported in the HUD state",
+                lua.eval("directTargetName") == "Kipper")
+    ok &= check("second beam is visible during harvesting",
+                lua.eval("world.visibility[58]") is True)
+
+    lua.execute("""
+    vehicle.spec_ufo2000.harvestToTrailer = false
+    vehicle.fillUnits[3].fillType = 42
+    vehicle.fillUnits[3].fillLevel = 1000
+    trailer.fillUnits[1].fillLevel = 0
+    movedModFill = UFO2000.transferFillToTarget(vehicle, 3, 42,
+        trailer, false, 500)
+    """)
+    ok &= check("universal cargo transfer moves a modded fill type",
+                lua.eval("movedModFill") == 500 and
+                lua.eval("trailer.fillUnits[1].fillType") == 42 and
+                lua.eval("trailer.fillUnits[1].fillLevel") == 500,
+                "%.0f l of fill type %s" % (lua.eval("trailer.fillUnits[1].fillLevel"),
+                                            lua.eval("trailer.fillUnits[1].fillType")))
+    ok &= check("source hold keeps untransferred universal cargo",
+                lua.eval("vehicle.fillUnits[3].fillLevel") == 500)
+
+    lua.execute("""
+    vehicle:setUFOBeamMode(UFO2000.BEAM_MODE_DAMAGE)
+    vehicle:setUFOBeamActive(false)
+    vehicle.spec_ufo2000.harvestToTrailer = true
+    vehicle.spec_ufo2000.loading = false
+    vehicle.spec_ufo2000.unloading = false
+    renderedText = {}
+    UFO2000.drawHud(vehicle)
+    hudText = table.concat(renderedText, " | ")
+    """)
+    ok &= check("HUD explains when the enabled transfer beam is paused",
+                lua.eval("string.find(hudText, 'ufo_hud_transferPaused', 1, true) ~= nil"))
+    ok &= check("HUD always shows unloading off when idle",
+                lua.eval("string.find(hudText, 'ufo_hud_unloadState: ufo_hud_off', 1, true) ~= nil"))
+
+    # ---- physical cargo: pickup, size/mass guards, logs and safe release --
+    lua.execute("""
+    CollisionFlag = { VEHICLE = 1, DYNAMIC_OBJECT = 2, TREE = 4, TRIGGER = 8 }
+    RigidBodyType = { STATIC = 0, DYNAMIC = 1 }
+    ClassIds = { SHAPE = 1 }
+    bitAND = function(a, b) return bit32.band(a, b) end
+    entities, children, boundingRadii, cargoObjects, physicsState = {}, {}, {}, {}, {}
+    physicalHitNodes, rigidBodyTypes, collisionGroups = {}, {}, {}
+    entityExists = function(node) return node ~= nil and entities[node] ~= false end
+    getHasClassId = function(node, classId) return true end
+    getRigidBodyType = function(node) return rigidBodyTypes[node] or RigidBodyType.DYNAMIC end
+    getCollisionFilterGroup = function(node)
+        return collisionGroups[node] or CollisionFlag.DYNAMIC_OBJECT
+    end
+    getNumOfChildren = function(node) return #(children[node] or {}) end
+    getChildAt = function(node, index) return (children[node] or {})[index + 1] end
+    getShapeBoundingSphere = function(node)
+        return 0, 0, 0, boundingRadii[node] or 0
+    end
+    local function worldPos(node)
+        local p = world.nodes and world.nodes[node] or { 0, 0, 0 }
+        return p[1] or 0, p[2] or 0, p[3] or 0
+    end
+    localToLocal = function(fromNode, toNode, x, y, z)
+        local fx, fy, fz = worldPos(fromNode)
+        local tx, ty, tz = worldPos(toNode)
+        return fx + x - tx, fy + y - ty, fz + z - tz
+    end
+    localToWorld = function(node, x, y, z)
+        local nx, ny, nz = worldPos(node)
+        return nx + x, ny + y, nz + z
+    end
+    localRotationToLocal = function(fromNode, toNode, x, y, z) return x, y, z end
+    localRotationToWorld = function(node, x, y, z) return x, y, z end
+    setWorldTranslation = function(node, x, y, z)
+        world.nodes = world.nodes or {}
+        world.nodes[node] = { x, y, z }
+        if node == world.node then world.x, world.y, world.z = x, y, z end
+    end
+    setWorldRotation = function(node, x, y, z)
+        world.rotation = world.rotation or {}
+        world.rotation[node] = { x, y, z }
+    end
+    addToPhysics = function(node) physicsState[node] = "active" end
+    removeFromPhysics = function(node)
+        if failRemoveNode == node then error("mock physics removal failure") end
+        physicsState[node] = "removed"
+    end
+    failRemoveNode = nil
+    g_currentMission.getNodeObject = function(self, node) return cargoObjects[node] end
+    overlapBox = function(...)
+        local args = { ... }
+        local callbackName, target = args[10], args[11]
+        local callback = target[callbackName]
+        for _, node in ipairs(physicalHitNodes) do callback(target, node) end
+    end
+    function makePhysicalCargo(node, mass, radius, name)
+        entities[node] = true
+        world.nodes[node] = { 0, 0.85, 0 }
+        boundingRadii[node] = radius
+        local object = { components = { { node = node } }, mass = mass, name = name }
+        object.getTotalMass = function(self) return self.mass end
+        object.getName = function(self) return self.name end
+        cargoObjects[node] = object
+        physicalHitNodes = { node }
+        return object
+    end
+    vehicle.spec_ufo2000.isHovering = true
+    vehicle.spec_ufo2000.beamActive = true
+    vehicle.spec_ufo2000.altitude = 5
+    vehicle.spec_ufo2000.altitudeTarget = 5
+    vehicle.spec_ufo2000.minAltitude = UFO2000.MIN_ALTITUDE
+    vehicle.spec_ufo2000.physicalCargo = nil
+    vehicle.spec_ufo2000.physicalCargoName = ""
+    vehicle.spec_ufo2000.unloading = false
+    world.nodes[1] = { 0, 5, 0 }
+    """)
+    lua.execute("cargoObjects = {}; cargo = makePhysicalCargo(100, 1500, 0.65, 'Pallet')")
+    lua.execute("UFO2000.actionEventPhysicalCargo(vehicle, 'ufo_physicalCargo', 1)")
+    ok &= check("O action lifts one dynamic pallet and disables its physics",
+                lua.eval("vehicle.spec_ufo2000.physicalCargo") is not None
+                and lua.eval("vehicle.spec_ufo2000.physicalCargoName") == "Pallet"
+                and lua.eval("physicsState[100]") == "removed")
+    ok &= check("held object follows beneath the UFO",
+                lua.eval("world.nodes[100][2]") < lua.eval("world.nodes[1][2]"))
+    lua.execute("""
+    UFO2000.actionEventToggleHover(vehicle, "ufo_hover", 1)
+    landingBlocked = vehicle.spec_ufo2000.isHovering
+    UFO2000.actionEventUnload(vehicle, "ufo_unload", 1)
+    highReleaseBlocked = vehicle.spec_ufo2000.physicalCargo ~= nil
+    """)
+    ok &= check("cargo prevents landing and U cannot drop it above safe height",
+                lua.eval("landingBlocked") is True and lua.eval("highReleaseBlocked") is True
+                and lua.eval("vehicle.spec_ufo2000.physicalCargoStatus")
+                    == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.LOWER_TO_RELEASE"))
+    lua.execute("""
+    vehicle.spec_ufo2000.altitude = vehicle.spec_ufo2000.minAltitude
+    vehicle.spec_ufo2000.altitudeTarget = vehicle.spec_ufo2000.minAltitude
+    world.nodes[1] = { 0, vehicle.spec_ufo2000.altitude, 0 }
+    safeReleaseWorked = UFO2000.releasePhysicalCargo(vehicle, false)
+    """)
+    ok &= check("low release restores physics and clears the cargo state",
+                lua.eval("safeReleaseWorked") is True
+                and lua.eval("physicsState[100]") == "active"
+                and lua.eval("vehicle.spec_ufo2000.physicalCargo") is None
+                and lua.eval("vehicle.spec_ufo2000.physicalCargoName") == "")
+
+    lua.execute("""
+    vehicle.spec_ufo2000.altitude = 5
+    vehicle.spec_ufo2000.altitudeTarget = 5
+    world.nodes[1] = { 0, 5, 0 }
+    cargoObjects = {}; physicalHitNodes = {}
+    heavy = makePhysicalCargo(101, 12001, 0.65, "Overweight vehicle")
+    heavyAccepted = UFO2000.acquirePhysicalCargo(vehicle)
+    heavyStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    cargoObjects = {}; physicalHitNodes = {}
+    oversized = makePhysicalCargo(102, 1000, 2.1, "Oversized implement")
+    largeAccepted = UFO2000.acquirePhysicalCargo(vehicle)
+    largeStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    cargoObjects = {}; physicalHitNodes = {}
+    attached = makePhysicalCargo(103, 1000, 0.5, "Attached implement")
+    attached.spec_attachable = { attacherVehicle = vehicle }
+    attachedAccepted = UFO2000.acquirePhysicalCargo(vehicle)
+    attachedStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    """)
+    ok &= check("12,000 kg mass limit rejects an overweight vehicle",
+                lua.eval("heavyAccepted") is False
+                and lua.eval("heavyStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.TOO_HEAVY"))
+    ok &= check("4.5 m width limit rejects oversized equipment",
+                lua.eval("largeAccepted") is False
+                and lua.eval("largeStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.TOO_LARGE"))
+    ok &= check("attached implements must be detached first",
+                lua.eval("attachedAccepted") is False
+                and lua.eval("attachedStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.DETACH_FIRST"))
+
+    lua.execute("""
+    cargoObjects = {}; physicalHitNodes = {}
+    logObject = { isSplitShape = true, nodeId = 104,
+        sizeX = 3.0, sizeY = 0.35, sizeZ = 0.35, i3dFilename = "Log" }
+    entities[104] = true
+    world.nodes[104] = { 0, 0.5, 0 }
+    physicalHitNodes = { 104 }
+    getSplitType = function(node) return 1 end
+    getSplitShapeStats = function(node) return 3.0, 0.35, 0.35 end
+    getMass = function(node) return 500 end
+    g_splitShapeManager = { getSplitTypeByIndex = function(self, index) return { index = index } end }
+    logAccepted = UFO2000.acquirePhysicalCargo(vehicle)
+    logName = vehicle.spec_ufo2000.physicalCargoName
+    logForceDropped = UFO2000.releasePhysicalCargo(vehicle, true)
+    logStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    """)
+    ok &= check("eligible split-shape logs can be carried and safely force-dropped",
+                lua.eval("logAccepted") is True and lua.eval("logName") == "Log"
+                and lua.eval("logForceDropped") is True
+                and lua.eval("logStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.SAFE_DROP"))
+
+    lua.execute("""
+    vehicle.spec_ufo2000.altitude = 5
+    vehicle.spec_ufo2000.altitudeTarget = 5
+    world.nodes[1] = { 0, 5, 0 }
+    cargoObjects = {}; physicalHitNodes = {}
+    rollbackCargo = { components = { { node = 105 }, { node = 106 } },
+        mass = 1000, name = "two-part implement" }
+    rollbackCargo.getTotalMass = function(self) return self.mass end
+    cargoObjects[105] = rollbackCargo
+    entities[105], entities[106] = true, true
+    world.nodes[105], world.nodes[106] = { 0, 0.8, 0 }, { 0.4, 0.8, 0 }
+    boundingRadii[105], boundingRadii[106] = 0.3, 0.3
+    children[105], children[106] = {}, {}
+    physicalHitNodes = { 105 }
+    failRemoveNode = 106
+    rollbackAccepted = UFO2000.acquirePhysicalCargo(vehicle)
+    rollbackState = vehicle.spec_ufo2000.physicalCargo
+    rollbackFirstNodePhysics = physicsState[105]
+    failRemoveNode = nil
+    """)
+    ok &= check("partial physics-removal failure rolls back without attaching cargo",
+                lua.eval("rollbackAccepted") is False
+                and lua.eval("rollbackState") is None
+                and lua.eval("rollbackFirstNodePhysics") == "active")
+    lua.execute("""
+    vehicle.spec_ufo2000.isHovering = false
+    noHover = UFO2000.acquirePhysicalCargo(vehicle)
+    noHoverStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    vehicle.spec_ufo2000.isHovering = true
+    vehicle.spec_ufo2000.beamActive = false
+    beamOff = UFO2000.acquirePhysicalCargo(vehicle)
+    beamOffStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    vehicle.spec_ufo2000.beamActive = true
+    vehicle.spec_ufo2000.altitude = 19
+    tooHigh = UFO2000.acquirePhysicalCargo(vehicle)
+    tooHighStatus = vehicle.spec_ufo2000.physicalCargoStatus
+    """)
+    ok &= check("pickup requires hover, active beam, and altitude at most 18 m",
+                lua.eval("noHover") is False
+                and lua.eval("noHoverStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.NEED_HOVER")
+                and lua.eval("beamOff") is False
+                and lua.eval("beamOffStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.BEAM_OFF")
+                and lua.eval("tooHigh") is False
+                and lua.eval("tooHighStatus") == lua.eval("UFO2000.PHYSICAL_CARGO_STATUS.TOO_HIGH"))
 
     # ---- mode sounds -----------------------------------------------------
     lua.execute("""
