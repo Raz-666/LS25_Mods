@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<placeable type="simplePlaceable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/placeable.xsd">
+    <annotation>
+        Separate Baba Jaga residential hut. The original chicken coop remains a
+        separate husbandry placeable. This home uses native farmhouse, wardrobe
+        and animated-object features and contains no Lua.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_babajagaHouse_name</name>
+        <image>store_babaJagaHouse.png</image>
+        <price>28500</price>
+        <functions>
+            <function>$l10n_babajagaHouse_function</function>
+        </functions>
+        <lifetime>1000</lifetime>
+        <dailyUpkeep>18</dailyUpkeep>
+        <rotation>0</rotation>
+        <brand>LIZARD</brand>
+        <species>PLACEABLE</species>
+        <category>farmhouses</category>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <storeIconRendering>
+            <settings cameraXRot="-18" cameraYRot="42" advancedBoundingBox="true"/>
+        </storeIconRendering>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>babaJagaHouse.i3d</filename>
+        <boughtWithFarmland>true</boughtWithFarmland>
+        <canBeDeleted>true</canBeDeleted>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testArea1" endNode="testArea1End"/>
+        </testAreas>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearArea1" widthNode="clearArea1Width" heightNode="clearArea1Height"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="10" maxSlope="75" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelArea1" widthNode="levelArea1Width" heightNode="levelArea1Height" groundType="dirt"/>
+        </levelAreas>
+        <paintAreas>
+            <paintArea startNode="paintArea1" widthNode="paintArea1Width" heightNode="paintArea1Height" groundType="grass"/>
+        </paintAreas>
+    </leveling>
+
+    <indoorAreas>
+        <indoorArea startNode="indoorArea1" widthNode="indoorArea1Width" heightNode="indoorArea1Height"/>
+    </indoorAreas>
+
+    <animatedObjects>
+        <animatedObject saveId="frontDoor">
+            <animation duration="1.5" initialTime="0">
+                <part node="doorPivot">
+                    <keyFrame time="0" rotation="0 0 0"/>
+                    <keyFrame time="1" rotation="0 -100 0"/>
+                </part>
+            </animation>
+            <controls triggerNode="doorTrigger" posAction="ACTIVATE_HANDTOOL" posText="action_openDoor" negText="action_closeDoor"/>
+        </animatedObject>
+    </animatedObjects>
+
+    <farmhouse spawnNode="spawnNode">
+        <sleeping triggerNode="sleepTrigger" cameraNode="sleepingCamera"/>
+    </farmhouse>
+    <wardrobe triggerNode="wardrobeTrigger"/>
+
+    <!-- I3D_MAPPINGS -->
+    <i3dMappings>
+    </i3dMappings>
+    <!-- /I3D_MAPPINGS -->
+</placeable>

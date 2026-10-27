@@ -168,8 +168,6 @@ def check_l10n(m, moddir, desc):
     for t in desc.iter("text"):
         name = t.get("name") or ""
         keys.add(name)
-        if name.startswith("l10n_"):
-            keys.add(name[5:])
     used = set()
     for name in [m["xml"], "modDesc.xml", m["sounds"], m["lua"]]:
         path = os.path.join(moddir, name)

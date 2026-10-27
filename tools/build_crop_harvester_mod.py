@@ -8,8 +8,9 @@ colours of the sheet (green harvest, blue sow/fertilise, purple cultivate,
 yellow crop circles, red transport).
 
 The flight, beam and field logic is the proven UFO 2000 specialization; this
-mod ships its **own renamed copy** (`CropHarvester.lua`), so both mods can be
-installed at the same time without clashing action names or classes.
+mod ships its **own renamed copy** (`CropHarvester.lua`), including the separate
+one-object physical tractor beam, so both mods can be installed at the same
+time without clashing action names or classes.
 
   1. procedural scene  -> build/crop_inline.i3d  ->  FS25_CropHarvester/crop.i3d
   2. textures          -> textures/ (UFO set + decal/suit/goggle)
@@ -70,6 +71,18 @@ def step(msg):
     print("\n== " + msg)
 
 
+def ensure_source_mod():
+    """Seed generated assets from the archive and vehicle XML from tracked source."""
+    if not os.path.isfile(os.path.join(SRC_MOD, "ufo.xml")):
+        archive = os.path.join(DIST, "FS25_UFO2000.zip")
+        if not os.path.isfile(archive):
+            sys.exit("missing source vehicle XML and %s" % archive)
+        os.makedirs(SRC_MOD, exist_ok=True)
+        with zipfile.ZipFile(archive) as zf:
+            zf.extractall(SRC_MOD)
+    shutil.copy2(os.path.join(UFO, "ufo.xml"), os.path.join(SRC_MOD, "ufo.xml"))
+
+
 # --------------------------------------------------------------------------
 # model + textures
 # --------------------------------------------------------------------------
@@ -103,13 +116,22 @@ def build_textures():
 # --------------------------------------------------------------------------
 def build_script():
     step("script")
-    with open(os.path.join(SRC_MOD, "scripts", "UFO2000.lua"), encoding="utf-8") as fh:
+    with open(os.path.join(UFO, "UFO2000.lua"), encoding="utf-8") as fh:
         lua = fh.read()
 
     # 1) rename the class, the specialization and every action / l10n key, so
     #    that UFO 2000 and the harvester can be installed side by side
     lua = lua.replace("UFO2000", "CropHarvester").replace("ufo2000", "cropHarvester")
     lua = lua.replace("ufo_", "crop_")
+    # Keep the shared physical-cargo action and limits in the renamed variant;
+    # the static validator checks the action declaration and localization below.
+    required = ("CropHarvester.PHYSICAL_CARGO_ENABLED = true",
+                '"crop_physicalCargo"',
+                "function CropHarvester.acquirePhysicalCargo(vehicle)")
+    missing = [token for token in required if token not in lua]
+    if missing:
+        raise RuntimeError("physical-cargo source did not rename correctly: %s"
+                           % ", ".join(missing))
 
     # 2) blueprint: the beam can open up to 30 m (the sheet's 6 m - 30 m)
     lua = lua.replace("CropHarvester.PEN_MAX_RADIUS = 8.00",
@@ -377,6 +399,7 @@ def main():
     ap.add_argument("--skip-renders", action="store_true")
     args = ap.parse_args()
 
+    ensure_source_mod()
     os.makedirs(MOD, exist_ok=True)
     mappings = build_model()
     if not args.skip_media:

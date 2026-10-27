@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+    <author>Arena.ai Agent Mode</author>
+    <version>1.0.0.0</version>
+
+    <title>
+        <en>Baba Jaga's Home</en>
+        <de>Baba Jagas Wohnhütte</de>
+    </title>
+
+    <description>
+        <en><![CDATA[A separate, residential Baba Jaga hut — the existing chicken coop is unchanged.
+
+* Walk up real, steep timber steps to the elevated hut; no teleport interaction.
+* Walkable upper balcony, with a native animated front door.
+* Sleep in the hut and change clothes at the wardrobe trigger.
+* Built from base-game placeable features with no Lua, for console compatibility.
+
+Place the home separately from Baba Jaga's chicken coop.]]></en>
+        <de><![CDATA[Eine separate Wohnhütte von Baba Jaga — der bestehende Hühnerstall bleibt unverändert.
+
+* Echte, steile Holzstufen führen zur erhöhten Hütte; kein Teleport.
+* Begehbarer oberer Balkon mit nativer, animierter Eingangstür.
+* In der Hütte schlafen und am Garderoben-Trigger Kleidung wechseln.
+* Nur Grundspiel-Placeable-Funktionen, kein Lua — daher konsolenfreundlich.
+
+Die Wohnhütte wird unabhängig von Baba Jagas Hühnerstall aufgestellt.]]></de>
+    </description>
+
+    <iconFilename>icon_babaJagaHouse.dds</iconFilename>
+    <multiplayer supported="true"/>
+
+    <l10n>
+        <text name="babajagaHouse_name">
+            <en>Baba Jaga's Home</en>
+            <de>Baba Jagas Wohnhütte</de>
+        </text>
+        <text name="babajagaHouse_function">
+            <en>Residential hut with sleep and wardrobe triggers</en>
+            <de>Wohnhütte mit Schlaf- und Garderoben-Trigger</de>
+        </text>
+    </l10n>
+
+    <!-- Native FS25 placeable behavior only: no Lua or custom input actions. -->
+    <storeItems>
+        <storeItem xmlFilename="babaJagaHouse.xml"/>
+    </storeItems>
+</modDesc>

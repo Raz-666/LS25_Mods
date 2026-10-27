@@ -5,10 +5,11 @@ Steps
   1. procedural scene -> build/ufo2500_inline.i3d + i3dMappings
   2. binarize         -> FS25_UFO2500/ufo2500.i3d + ufo2500.i3d.shapes
   3. inject the i3d mappings and the wheel configurations into ufo2500.xml
-  4. textures/sounds  -> copied from FS25_UFO2000 (same materials, same audio)
-  5. images           -> icon_ufo2500.dds, store_ufo2500.png, docs renders
-  6. validate         -> tools/ufo/validate2500.py
-  7. zip              -> dist/FS25_UFO2500.zip
+  4. metadata         -> tracked modDesc + German/English translation files
+  5. textures/sounds  -> copied from FS25_UFO2000 (same materials, same audio)
+  6. images           -> icon_ufo2500.dds, store_ufo2500.png, docs renders
+  7. validate         -> tools/ufo/validate2500.py
+  8. zip              -> dist/FS25_UFO2500.zip
 
 Usage:  python tools/build_console_mod.py [--skip-media]
 """
@@ -166,6 +167,20 @@ def copy_assets():
     print("  %d files" % copied)
 
 
+def copy_mod_metadata():
+    """Copy the tracked modDesc and external localization files into the build."""
+    step("modDesc + translations")
+    source = os.path.join(TOOLS, "ufo")
+    os.makedirs(MOD, exist_ok=True)
+    shutil.copy2(os.path.join(source, "ufo2500.modDesc.xml"),
+                 os.path.join(MOD, "modDesc.xml"))
+    translations = os.path.join(MOD, "translations")
+    os.makedirs(translations, exist_ok=True)
+    for lang in ("de", "en"):
+        shutil.copy2(os.path.join(source, "ufo2500_translation_%s.xml" % lang),
+                     os.path.join(translations, "translation_%s.xml" % lang))
+
+
 def landed_scene(scene=None):
     """The scene as it looks after the landing animation (craft at street level)."""
     import model_console
@@ -295,6 +310,7 @@ def main():
     os.makedirs(BUILD, exist_ok=True)
     mappings = build_model()
     inject_xml(mappings)
+    copy_mod_metadata()
     if not args.skip_media:
         copy_assets()
         build_images()

@@ -81,11 +81,11 @@ Skripten in diesem Repository erzeugt.]]></de>
     </inputBinding>
 
     <l10n>
-        <text name="l10n_autokino_name">
+        <text name="autokino_name">
             <en>Drive-In Cinema</en>
             <de>Autokino</de>
         </text>
-        <text name="l10n_autokino_function">
+        <text name="autokino_function">
             <en>Drive-in cinema with three cartoons and sound</en>
             <de>Autokino mit drei Filmen und Ton</de>
         </text>

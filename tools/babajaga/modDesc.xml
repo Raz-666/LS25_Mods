@@ -53,11 +53,11 @@ diesem Repository erzeugt.]]></de>
     <multiplayer supported="true"/>
 
     <l10n>
-        <text name="l10n_babajaga_name">
+        <text name="babajaga_name">
             <en>Baba Jaga's Chicken Hut</en>
             <de>Baba Jagas Hühnerhütte</de>
         </text>
-        <text name="l10n_function_babajaga">
+        <text name="function_babajaga">
             <en>Chicken coop with 20 places</en>
             <de>Hühnerstall mit 20 Plätzen</de>
         </text>

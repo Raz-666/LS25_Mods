@@ -42,7 +42,34 @@ def step(msg):
     print("\n== %s" % msg)
 
 
+def ensure_source_mod():
+    """Seed the ignored working mod folder from the last built archive.
+
+    The human-maintained specialization, description and translations now live
+    under tools/ufo; dist/ remains the seed for generated XML/media assets.
+    """
+    if not os.path.isfile(os.path.join(MOD, "ufo.xml")):
+        archive = os.path.join(DIST, "FS25_UFO2000.zip")
+        if not os.path.isfile(archive):
+            sys.exit("missing source vehicle XML and %s" % archive)
+        os.makedirs(MOD, exist_ok=True)
+        with zipfile.ZipFile(archive) as zf:
+            zf.extractall(MOD)
+    os.makedirs(os.path.join(MOD, "scripts"), exist_ok=True)
+    os.makedirs(os.path.join(MOD, "translations"), exist_ok=True)
+    shutil.copy2(os.path.join(TOOLS, "ufo", "UFO2000.lua"),
+                 os.path.join(MOD, "scripts", "UFO2000.lua"))
+    shutil.copy2(os.path.join(TOOLS, "ufo", "ufo.xml"),
+                 os.path.join(MOD, "ufo.xml"))
+    shutil.copy2(os.path.join(TOOLS, "ufo", "ufo.modDesc.xml"),
+                 os.path.join(MOD, "modDesc.xml"))
+    for lang in ("de", "en"):
+        shutil.copy2(os.path.join(TOOLS, "ufo", "ufo_translation_%s.xml" % lang),
+                     os.path.join(MOD, "translations", "translation_%s.xml" % lang))
+
+
 def build_model():
+
     step("model + i3d")
     import model as ufo_model
     root = ufo_model.build_scene()
@@ -96,9 +123,12 @@ def build_images():
 
 def validate():
     step("validation")
-    rc = subprocess.run([sys.executable, os.path.join(TOOLS, "ufo", "validate.py")]).returncode
-    if rc != 0:
-        sys.exit("validation failed")
+    commands = (
+        [sys.executable, os.path.join(TOOLS, "ufo", "validate.py")],
+        [sys.executable, os.path.join(TOOLS, "ufo", "luatest.py")],
+    )
+    for command in commands:
+        subprocess.run(command, check=True)
 
 
 def make_zip():
@@ -128,14 +158,15 @@ def main():
     ap.add_argument("--skip-media", action="store_true", help="only rebuild model and xml")
     args = ap.parse_args()
     os.makedirs(BUILD, exist_ok=True)
+    ensure_source_mod()
     build_model()
     inject_mappings()
     if not args.skip_media:
         build_textures()
         build_sounds()
         build_images()
-    validate()
     make_zip()
+    validate()
 
 
 if __name__ == "__main__":

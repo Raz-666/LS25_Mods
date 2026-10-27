@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<placeable type="trainSystem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/placeable.xsd">
+    <annotation>
+        Höhensturm high-speed coaster. The base-game trainSystem owns spline
+        movement, rental and multiplayer updates; CoasterRoll.lua adds roll-aware
+        orientation and locks each dispatched train to a full lap back to station.
+        The station has a glass vault and the inversion sections have LED tunnels.
+    </annotation>
+
+    <storeData>
+        <name>$l10n_rollercoaster_name</name>
+        <image>store_rollercoaster.png</image>
+        <price>1650000</price>
+        <dailyUpkeep>1250</dailyUpkeep>
+        <functions>
+            <function>$l10n_rollercoaster_function</function>
+        </functions>
+        <lifetime>1000</lifetime>
+        <rotation>0</rotation>
+        <brand>LIZARD</brand>
+        <species>PLACEABLE</species>
+        <category>placeableMisc</category>
+        <brush>
+            <type>placeable</type>
+            <category>object</category>
+        </brush>
+        <vertexBufferMemoryUsage>0</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>0</indexBufferMemoryUsage>
+        <textureMemoryUsage>0</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>coaster.i3d</filename>
+        <boughtWithFarmland>true</boughtWithFarmland>
+        <canBeDeleted>true</canBeDeleted>
+        <canBeRenamed>true</canBeRenamed>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="placementStart" endNode="placementEnd"/>
+        </testAreas>
+        <sounds>
+            <place template="smallImp"/>
+            <placeLayered template="buildingPlacement"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearStart" widthNode="clearWidth" heightNode="clearHeight"/>
+    </clearAreas>
+
+    <leveling requireLeveling="false"/>
+    <indoorAreas/>
+
+    <hotspots>
+        <hotspot type="TRAIN" linkNode="rentMarker" teleportNode="teleportNode" text="$l10n_hotspot_rentTrain"/>
+    </hotspots>
+    <triggerMarkers>
+        <triggerMarker node="rentMarker" filename="$data/shared/assets/marker/markerIconTrain.i3d" adjustToGround="false"/>
+    </triggerMarkers>
+
+    <ai>
+        <updateAreas/>
+    </ai>
+
+    <trainSystem>
+        <rent pricePerHour="0"/>
+        <spline node="coasterSpline" splineYOffset="0"/>
+        <train>
+            <vehicle xmlFilename="$moddir$/coasterCar.xml"/>
+        </train>
+    </trainSystem>
+
+    <i3dMappings>
+        __I3D_MAPPINGS__
+    </i3dMappings>
+</placeable>

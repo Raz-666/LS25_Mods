@@ -98,6 +98,9 @@ def check_moddesc(mod):
         err("modDesc iconFilename %s does not exist" % icon)
     if desc.find("multiplayer") is None:
         warn("modDesc.xml has no <multiplayer> entry")
+    l10n = desc.find("l10n")
+    if l10n is None or l10n.get("filenamePrefix") != "translations/translation":
+        err("modDesc.xml: external translations must use filenamePrefix=translations/translation")
     for item in desc.findall("storeItems/storeItem"):
         f = item.get("xmlFilename")
         if not os.path.isfile(os.path.join(MOD, f)):
@@ -117,8 +120,13 @@ def check_l10n(mod, desc):
         root = load(f)
         if root is None:
             continue
+        file_keys = set()
         for t in root.iter("text"):
-            keys.add(t.get("name"))
+            key = t.get("name")
+            if key in file_keys:
+                err("%s: duplicate translation key %r" % (os.path.basename(f), key))
+            file_keys.add(key)
+            keys.add(key)
     used = set()
     for f in ("modDesc.xml", VEHICLE_XML):
         with open(os.path.join(MOD, f), encoding="utf-8") as fh:
@@ -185,6 +193,8 @@ def check_vehicle(desc):
             err("duplicate i3dMapping id %r" % mid)
         mapping_ids.add(mid)
         mappings[mid] = node
+    if "transferBeamNode" not in mapping_ids:
+        err("crop.xml is missing i3dMapping for the secondary harvest beam")
 
     referenced = set()
     for el in veh.iter():
@@ -202,9 +212,12 @@ def check_vehicle(desc):
     actions = {a.get("name") for a in desc.findall("actions/action")} if desc is not None else set()
     with open(os.path.join(MOD, "scripts", LUA_FILE), encoding="utf-8") as fh:
         lua = fh.read()
-    used_actions = set(re.findall(r'addActionEvent\(spec\.actionEvents, "([a-z0-9_]+)"', lua))
+    used_actions = set(re.findall(r'addActionEvent\(spec\.actionEvents, "([A-Za-z0-9_]+)"', lua))
+    # Base-game vehicle actions such as LOWER_IMPLEMENT and AXIS_FRONTLOADER_ARM
+    # are supplied by FS25; only this mod's own crop_* actions belong in modDesc.
+    mod_actions = {name for name in used_actions if name.startswith("crop_")}
     if actions:
-        missing = sorted(used_actions - actions)
+        missing = sorted(mod_actions - actions)
         if missing:
             err("Lua registers actions that are not declared in modDesc.xml: %s" % ", ".join(missing))
     bindings = set()
@@ -213,6 +226,21 @@ def check_vehicle(desc):
         unbound = sorted(actions - bindings)
         if unbound:
             warn("actions without default key binding: %s" % ", ".join(unbound))
+    if "crop_physicalCargo" not in actions or "crop_physicalCargo" not in bindings:
+        err("Crop Harvester physical-cargo action must be declared and bound in modDesc.xml")
+    physical_tokens = (
+        "CropHarvester.PHYSICAL_CARGO_ENABLED = true",
+        "function CropHarvester.acquirePhysicalCargo(vehicle)",
+        "function CropHarvester.releasePhysicalCargo(vehicle, force)",
+        "CropHarvester.PHYSICAL_CARGO_MAX_MASS = 12000.0",
+        "CropHarvester.PHYSICAL_CARGO_MAX_WIDTH = 4.5",
+        "CropHarvester.PHYSICAL_CARGO_MAX_HEIGHT = 4.0",
+        "CropHarvester.PHYSICAL_CARGO_MAX_LENGTH = 8.0",
+    )
+    missing_physical = [token for token in physical_tokens if token not in lua]
+    if missing_physical:
+        err("Crop Harvester physical-cargo implementation is incomplete: %s"
+            % ", ".join(missing_physical))
     ok("vehicle XML: %d node references, %d mappings, %d actions"
        % (len(referenced), len(mappings), len(actions)))
     return mappings

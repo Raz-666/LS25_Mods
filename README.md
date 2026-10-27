@@ -1,16 +1,18 @@
 # FS25 UFO 2000 – fliegende Untertasse mit Kornkreis-Generator
 
-Acht Mods für **Farming Simulator 25**:
+Elf Mods für **Farming Simulator 25**:
 
 | Mod | Was es ist |
 | --- | --- |
-| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit vollem Cockpit, drei Landebeine und ein Traktorstrahl, der **acht Arbeiten** kann: plattdrücken, ernten, grubbern, pflügen, säen, düngen, aufnehmen, abladen – dazu ein **virtueller Laderaum mit 5 Mio. Litern** |
+| **`dist/FS25_UFO2000.zip`** | Die fliegende Untertasse im Simpsons-Look – **hohe, schmale Glaskuppel** mit Cockpit und HUD, acht Strahl-Modi, 5-Mio.-l-Füllgut-Laderaum, separater Ein-Objekt-Traktorstrahl (bis 12 t / 4,5 × 4 × 8 m) und Ernte-Zweitstrahl |
 | **`dist/FS25_Alien.zip`** | **Drei** Aliens als aufstellbare Deko – der kleine grüne Kumpel, der Große mit Riesenschädel und Glubschaugen und **Captain Zorp** aus dem Cockpit-Blueprint (Fliegerhelm mit Brille auf der Stirn, Fluganzug, Namensschild) |
 | **`dist/FS25_Disco.zip`** | **Hofdisco** mit Neon, Spiegelkugel, DJ-Pult und 6 eigenen Stücken – im Multiplayer hören alle in der Halle **denselben Song zur selben Zeit** |
 | **`dist/FS25_Autokino.zip`** | **Autokino** mit 13-m-Leinwand und drei kurzen Zeichentrickfilmen samt Soundtrack – Bildnummer aus der Netzwerkzeit, also im MP frame-genau synchron |
 | **`dist/FS25_UFO4500.zip`** | **Mähdrescher-UFO** mit 6-m-Schneidwerk, 15.000-l-Korntank und allem, was ein Drescher können muss |
+| **`dist/FS25_Hoehensturm.zip`** | **Höhensturm** – PC-only Inversions-Achterbahn mit 2×2-Multiplayerwagen, manueller Dispatch, Glasbahnhof, LED-Tunneln und eigener Soundkulisse |
 | **`dist/FS25_BabaJaga.zip`** | **Baba Jagas Hühnerhütte** – Blockhütte auf echtem Hühnerbein, als vollwertiger Hühnerstall, **ohne Lua** (konsolen-tauglich) |
-| **`dist/FS25_CropHarvester.zip`** | **UFO 01 Crop Harvester** – kompakte Untertasse mit großer Glaskuppel, Captain Zorp am Pult und einem **Traktorstrahl in acht Farben**: ernten, grubbern, pflügen, säen, düngen, Kornkreise malen, laden, abladen. 6–30 m Arbeitsbreite, 1.000.000 l Korntank, schwebt 2–15 m |
+| **`dist/FS25_BabaJagaHouse.zip`** | **Baba Jagas Wohnhütte** – separates Haus mit begehbaren Stufen und Balkon, Tür, Schlaf- und Garderoben-Trigger; ohne Lua |
+| **`dist/FS25_CropHarvester.zip`** | **UFO 01 Crop Harvester** – kompakte Untertasse mit Glaskuppel und Captain Zorp, acht Strahl-Modi, 1.000.000-l-Korntank, registrierte Fülltypen und separater Ein-Objekt-Traktorstrahl |
 | **`dist/FS25_Distillery.zip`** | **Club „Distillery Leipzig"** – Halle mit Bühne, großen PA-Türmen, Lichtanlage und DJ-Pult; die Titelliste hängt sichtbar an der Wand, **jeder Spieler** darf am Pult umschalten, und alle hören im MP denselben Song (auch das Spielradio ist als Quelle wählbar) |
 | **`dist/FS25_UFO2500.zip`** | **Konsolen-Edition ohne eine Zeile Lua** – dasselbe UFO, Cockpit 20 m über dem Feld, rollt auf zwei breiten unsichtbaren Rädern, drückt mit einem 0,5 – 7,5 m breiten Pinsel Kornkreise ins Getreide und **landet auf Tastendruck** |
 
@@ -18,13 +20,15 @@ Acht Mods für **Farming Simulator 25**:
 
 | Mod | PC / Mac | Xbox / PlayStation |
 | --- | --- | --- |
-| UFO 2000 | ✅ fliegen, 8 Arbeits-Modi, Laderaum, Cockpit | ❌ eigener Lua-Code |
+| UFO 2000 | ✅ fliegen, 8 Arbeits-Modi, Füllgut- und physischer Traktorstrahl, Cockpit | ❌ eigener Lua-Code |
 | Alien-Maskottchen (3 Figuren, inkl. Captain Zorp) | ✅ | ⚠️ möglich (nur noch über ModHub einreichen) |
 | UFO 2500 | ✅ | ✅ **kein Lua, nur Grundspiel-Technik** |
 | Hofdisco | ✅ Musik, Titelwahl, MP-Sync | ❌ eigener Lua-Code |
 | Autokino | ✅ drei Filme, MP-Sync | ❌ eigener Lua-Code |
-| Crop Harvester | ✅ acht Strahl-Modi, Kornkreise, Cockpit | ❌ eigener Lua-Code |
+| Crop Harvester | ✅ acht Strahl-Modi, Kornkreise, beide Ladungsarten, Cockpit | ❌ eigener Lua-Code |
+| Höhensturm | ✅ Inversionen, Multiplayerwagen, automatisch volle Runde | ❌ eigener Lua-Code |
 | Distillery-Club | ✅ MP-synchrone Playlist, Radioquelle | ❌ eigener Lua-Code |
+| Baba Jaga Wohnhütte | ✅ native Schlaf-/Garderoben-Trigger, animierte Tür, Stufen und Balkon | ✅ **kein Lua** |
 
 ---
 
@@ -40,22 +44,33 @@ Acht Mods für **Farming Simulator 25**:
    der Große 1.200 €, Captain Zorp 1.500 €.
    Crop Harvester: am Händler unter der Marke **CropHarvester** für 96.000 €.
    Hofdisco / Autokino: unter **Platzierbare Objekte** für 32.000 € / 48.000 €.
+   Baba Jagas Wohnhütte: separat unter **Farmhäuser** für 28.500 €; sie ersetzt
+   den Hühnerstall nicht. Höhensturm: unter **Platzierbare Objekte** für
+   1.650.000 €; dafür etwa 180 × 370 m freie Fläche einplanen.
    (UFO 2000 und UFO 2500 sind zwei eigenständige Mods – nimm das, was dir
    gefällt, oder beide.)
 
-Keine weiteren Mods nötig, alle drei sind unabhängig voneinander.
+Keine weiteren Mods nötig; jeder Mod ist eigenständig. Hühnerhütte und
+Wohnhütte sind zwei getrennte Placeables und können beide aufgestellt werden.
 
 ## 2. Steuerung – alles über die normalen Spiel-Optionen
 
-Es gibt **keine Sondertasten** außer dem Menü. Alles läuft über Aktionen, die
-das Spiel schon kennt, damit Tastatur, Gamepad und Joystick einfach mitgehen:
+Flug und Strahl-Grundfunktionen verwenden die normalen Fahrzeugaktionen.
+Zusätzliche Tasten steuern Modi und virtuelle Ladung; alle Zustände erscheinen
+im HUD und im anklickbaren Bordmenü.
 
 | Was | Taste (Standard) | Kommentar |
 | --- | --- | --- |
 | Abheben / Landen | `V` („Gerät absenken") | ist auch auf jedem Gamepad/Joystick belegt |
 | Steigen / Sinken | Frontladerarm-Achse (`Joystick`) oder `Bild ↑` / `Bild ↓` | analog, also stufenlos |
-| Traktorstrahl an/aus | `Z` („Gerät extra") | löst den Kornkreis aus |
-| Kornkreis-Menü | `M` | eigenes Menü, frei belegbar |
+| Traktorstrahl an/aus | `Z` („Gerät extra") | startet/stoppt den gewählten Arbeitsmodus |
+| Bordmenü | `M` | Muster und Modi anklicken; zeigt die aktuellen Einstellungen |
+| Strahl-Modus | `K` | schaltet durch alle acht Modi |
+| Strahlbreite / Saatgut | `J` / `L` | Breite ändern, im Sä-Modus Saatgut wechseln |
+| Virtuelle Ladung abladen | `U` | Anhänger oder Abkippstelle |
+| Physisches Objekt aufnehmen | `O` | ein geeignetes Fahrzeug / Objekt unter dem aktiven Strahl |
+| Zweitstrahl Ernte → Anhänger | `B` | füllt im Erntemodus einen Anhänger / LKW unter dem zweiten Strahl |
+| Korntank endlos | `I` | Tankgrenze an / aus |
 | Vorwärts / Rückwärts | `W` / `S` (Gas/Bremse) | wie beim Traktor |
 | Lenken | `A` / `D` | dreht das UFO um die Hochachse |
 | Hupe | Hupe | das UFO grüßt |
@@ -65,19 +80,21 @@ Alles davon lässt sich unter **Optionen → Steuerung** umbelegen (Suche nach
 „UFO"). Tastenbelegungen mit `Bild ↑/↓` sind nur die bequeme Tastatur-Variante
 der Achse.
 
-## 2b. Acht Arbeits-Modi, virtueller Laderaum, Cockpit
+## 2b. Acht Arbeits-Modi, zwei Ladungssysteme, Cockpit
 
-Das UFO 2000 arbeitet jetzt wie eine ganze Maschinenkette – **ohne dass
-irgendetwas sichtbar angekoppelt wird**. Kein Anbaugerät, kein Tank, kein
-Anhänger: alles läuft unsichtbar über den Traktorstrahl.
+Das UFO 2000 arbeitet wie eine ganze Maschinenkette – **ohne dass
+irgendetwas sichtbar angekoppelt wird**. Füllgut bleibt im virtuellen Laderaum;
+Fahrzeuge und lose Gegenstände werden separat einzeln am Traktorstrahl getragen.
 
 | Taste | Was passiert |
 | --- | --- |
 | **K** | nächster Strahl-Modus (die 8 Modi im Kreis) |
 | **J / L** | Strahl enger / weiter – **0,50 m** bis **16 m** (im Sä-Modus: Saatgut wechseln) |
 | **Z** | Strahl an / aus – der Strahl *macht* die Arbeit |
-| **M** | Cockpit-Menü: Muster, Modi, Tank – **mit der Maus klickbar** |
-| **U** | Abladen an/aus (geht auch automatisch im Modus „Abladen") |
+| **M** | Cockpit-Menü: Muster, Modi und Einstellungen – **mit der Maus klickbar** |
+| **O** | ein physisches Objekt unter dem aktiven Strahl aufnehmen (hovern) |
+| **U** | gehaltenes Objekt nahe der sicheren Mindesthöhe freigeben; sonst Füllgut abladen |
+| **B** | Ernte-Zweitstrahl an/aus: während des Erntens direkt in Anhänger/LKW fördern |
 | **I** | Korntank unendlich an/aus |
 | **V**, `Bild ↑/↓`, `W/A/S/D` | abheben/landen, Höhe, fliegen – wie vorher |
 
@@ -104,9 +121,10 @@ nur Farbe, Blinken und Ton – das UFO selbst bleibt nackt.
 
 ### Virtueller Laderaum
 
-Der Laderaum (Füllstand 3) fasst **5.000.000 l** und nimmt alles an, was
-normalerweise transportiert wird: Getreide, Häckselgut, Heu, Silage, Stroh,
-Dünger, Kalk, Mist, Gülle, Saatgut, Wasser, Milch …
+Der Laderaum (Füllstand 3) fasst **5.000.000 l** und akzeptiert alle beim Spiel
+registrierten Fülltypen – einschließlich solcher aus Mods: Getreide, Häckselgut,
+Heu, Silage, Dünger, Kalk, Wasser, Milch und mehr. Er transportiert Füllgut in
+Füllbehältern. Physische Objekte verwenden den separaten Traktorstrahl unten.
 
 * **Aufnehmen:** mit Modus 7 **über** einem vollen Anhänger schweben (mindestens
   1,8 m Abstand, damit nichts kollidiert) und **Z** drücken – der Strahl saugt
@@ -114,8 +132,30 @@ Dünger, Kalk, Mist, Gülle, Saatgut, Wasser, Milch …
 * **Abladen:** mit Modus 8 über Anhänger **oder** Abkippstelle schweben und
   **Z** drücken – 3.000 l/s gehen nach unten. Erst läuft der Korntank leer,
   dann der große Laderaum.
+* **Beim Ernten direkt abgeben:** **B** einschalten und einen Anhänger oder
+  LKW unter den schmalen Zweitstrahl stellen. Der grüne Hauptstrahl erntet
+  weiter, während der rote Zweitstrahl den Korntank in den Ziel-Füllbehälter
+  entleert. Das HUD zeigt, ob ein Ziel erkannt wurde.
 * Ein ganzes Feld am Stück ernten ist damit kein Problem: der Tank läuft nicht
   mehr über, und mit **I** ist sogar die Tankgrenze abgeschaltet.
+
+### Physische Ladung (separat vom virtuellen Füllgut)
+
+Mit **O** kann das schwebende UFO bei aktivem Hauptstrahl genau **ein dynamisches
+Objekt** aufnehmen: geeignete Fahrzeuge, abgekuppelte Geräte, Paletten, Ballen,
+lose Stämme und ähnliche Gegenstände. Abmessungen und Masse werden vor dem
+Anheben geprüft; die statischen Limits sind **12.000 kg** und **4,5 × 4 × 8 m**.
+Angehängte Geräte, bemannte oder nicht messbare Objekte werden abgewiesen.
+
+* Der Strahl muss aktiv sein; zum Aufnehmen erst schweben und höchstens 18 m
+  über dem Boden stehen. **O** wählt das nächste geeignete Objekt darunter.
+* **U** löst das Objekt kontrolliert auf niedriger Höhe. Mit gehaltener Ladung
+  lässt sich das UFO nicht landen; zuerst mit **U** absetzen.
+* Die Ladung folgt unter der Untertasse und ihre Physik wird beim Freigeben
+  wiederhergestellt. Beim Löschen des UFOs wird ein Not-Absetzen versucht.
+* Die Implementierung ist statisch geprüft, aber noch nicht in einer laufenden
+  FS25-Instanz validiert; besonders Masse-/Bounds-Schätzung, Multiplayer-Sync
+  und Kollisionen müssen im Spiel getestet werden.
 
 ### Cockpit
 
@@ -126,13 +166,16 @@ Schalterreihen, Steuerknüppel, ein Leuchtenkranz über dem Kopf, eine Kaffeetas
 und ein **Wackel-Alien** auf der Feder. Der Blick nach vorn bleibt frei – durch
 die Kuppel siehst du Feld und Horizont.
 
-Mit **M** öffnest du das Bordmenü: oben die Bodenmuster, unten die acht Modi.
-Alles ist **mit der Maus anklickbar** (der Zeiger erscheint, solange das Menü
-offen ist) und mit `Bild ↑/↓` + `Z` genauso per Tastatur oder Gamepad bedienbar.
+Mit **M** öffnest du das Bordmenü: links die Bodenmuster, rechts die acht
+Modi, darunter die Tank- und Zweitstrahl-Schalter. Muster und Modi werden beim
+Auswählen sofort aktiv. Alles ist **mit der Maus anklickbar**; `Bild ↑/↓`
+wählt das Muster, `K` wechselt den Modus, `J/L` stellt Breite/Saatgut ein,
+`B` schaltet den Ernte-Zweitstrahl, `I` den Endlos-Tank, `O` den Objektstrahl
+und `U` das Freigeben/Abladen.
 
-> Getestet mit `tools/ufo/luatest.py` (69 Prüfungen: Flug, alle 8 Modi,
-> Feldarbeit, Tank, Laderaum, Be- und Entladen, Cockpit-Anzeigen, Sounds) –
-> alles grün, ohne Spiel im Hintergrund.
+> Die Smoke-Tests `tools/ufo/luatest.py` und `tools/ufo/luatest_crop.py`
+> prüfen Flug, alle acht Modi, Feldarbeit, universelle Fülltypen, direkten
+> Erntetransfer, Tank, Laderaum, Cockpit-Anzeigen und Sounds – ohne Spiel.
 
 ## 3. Fliegen
 
@@ -303,6 +346,8 @@ python3 -m venv .venv
 .venv/bin/python tools/ufo/luatest.py          # Fluglogik ohne Spiel testen
 .venv/bin/python tools/ufo/circle_preview.py   # Muster-Vorschau erzeugen
 .venv/bin/python tools/build_console_mod.py    # UFO 2500 (Konsole): Modell, Media, ZIP
+.venv/bin/python tools/build_rollercoaster_mod.py # Höhensturm (PC/Lua): Modell, Spline, ZIP
+.venv/bin/python tools/coaster/luatest.py       # Inversions-Frame + Runden-/Ausstiegssperre testen
 .venv/bin/python tools/ufo/validate2500.py     # Konsolen-Regeln prüfen
 .venv/bin/python tools/ufo/brush_test.py       # Pinselbreiten nachrechnen
 .venv/bin/python tools/ufo/brush_patterns.py   # Beispiel-Kornkreise rendern
@@ -310,11 +355,11 @@ python3 -m venv .venv
 .venv/bin/python tools/ufo/console_preview.py  # Schnittzeichnung
 ```
 
-Die Prüfskripte kontrollieren beide XMLs gegen die echten FS25-Schemas
-(modDesc, vehicle, placeable, i3d 1.6), alle i3dMappings, die l10n-Keys, die
-Lua-Syntax und den ZIP-Inhalt. `luatest.py` simuliert die Engine-Schnittstelle
-und fliegt einmal komplett durch: abheben, steigen, kurven, Muster drücken,
-mit dem Stift malen, landen, Beine ein-/ausfahren, Spuren, Multiplayer-Sync.
+Die Prüfskripte kontrollieren die Mod-XMLs gegen die FS25-Schemas (modDesc,
+vehicle, placeable, i3d 1.6), i3dMappings, l10n-Keys, Lua-Syntax und ZIP-Inhalt.
+`tools/coaster/luatest.py` prüft zusätzlich beide invertierten Rahmen, die
+nahtlose Stationsausrichtung sowie Start-, Vollrunden-, Bremssperr- und
+Aussteigelogik der Achterbahn.
 
 ## 7. Konsole (Xbox / PlayStation) – so geht es doch: das UFO 2500
 
@@ -463,48 +508,59 @@ grünen Düsen am Heck.
 | Arbeitsbreite | 6 m bis 30 m, stufenlos (Radius 3–15 m) |
 | Strahl | 8 Modi, jeder mit eigener Farbe und eigenem Sound |
 | Korntank | 1.000.000 l (der Blueprint sagt „praktisch unendlich") |
-| Virtueller Tank | 5.000.000 l für alles, was der Strahl einsaugt |
+| Virtueller Laderaum | 5.000.000 l; nimmt registrierte Fülltypen an, getrennt vom physischen Objektstrahl |
 | Schweben | 2 m bis 15 m, stufenlos |
 | Preis | 96.000 € |
 
 ### Die acht Modi
 
-| Taste | Modus | Farbe | Was passiert |
+| Menü-Nr. | Modus | Farbe | Was passiert |
 | --- | --- | --- | --- |
-| 1 | Ernten | **grün** | Getreide wird gemäht, das Korn geht in den Tank, kein Verlust |
-| 2 | Grubbern | **violett** | Boden wird bearbeitet, Steine bleiben liegen |
-| 3 | Pflügen | **violett (dunkler)** | tiefe Bearbeitung wie ein Pflug |
-| 4 | Säen + Düngen | **blau** | Saat und Dünger in einem Überflug |
-| 5 | Düngen | **hellblau** | nur Dünger |
-| 6 | Kornkreise | **gelb** | drückt Muster ins Feld, ohne Ertrag zu vernichten |
-| 7 | Aufladen | **rot** | hebt Anhänger und Paletten an und saugt sie leer |
-| 8 | Abladen | **orange** | verteilt den Tankinhalt wieder |
+| 1 | Plattdrücken / Kornkreise | **gelb** | drückt Muster ins Feld, ohne die Frucht zu ernten |
+| 2 | Ernten | **grün** | schneidet die Frucht und füllt den Korntank |
+| 3 | Grubbern | **violett** | bearbeitet den Boden |
+| 4 | Pflügen | **violett** | pflügt die Fläche |
+| 5 | Säen | **blau** | sät das gewählte Saatgut |
+| 6 | Düngen | **blau** | bringt Dünger aus |
+| 7 | Aufnehmen | **rot** | saugt Füllgut aus einem Anhänger in den Laderaum |
+| 8 | Abladen | **rot** | entlädt Korntank oder Laderaum in Anhänger / Abkippstelle |
+
+Im Erntemodus schaltet **B** einen zweiten roten Strahl zu: Er überträgt den
+Korntankinhalt in den Füllbehälter eines LKWs oder Anhängers, während der grüne
+Hauptstrahl weiter erntet. Der Füllgut-Laderaum und der separate physische
+Ein-Objekt-Traktorstrahl sind zwei unterschiedliche Systeme.
 
 ![Strahl im Erntemodus](docs/renders/cropharvester_beam.png)
 
 ### Steuerung
 
-Alles über die normalen Spiel-Tasten, Gamepad inklusive – keine Extra-Belegung
-nötig. Im Fahrzeug:
+Alle Tasten kannst du unter **Optionen → Steuerung** ändern. Im Fahrzeug:
 
-* **Bild ↑ / Bild ↓** – höher / tiefer schweben
-* **1 … 8** – Modus direkt wählen (der Hebel im Cockpit springt mit)
-* **+ / −** – Strahl weiter / enger stellen
-* **Leertaste** – Strahl an / aus
-* **K** – virtueller Tank: unendlich / normal
-* **O** – Abladen am Trigger
+* **V** – abheben / landen; **Bild ↑ / Bild ↓** – Höhe steuern
+* **Z** – Hauptstrahl an / aus
+* **K** – durch die acht Strahl-Modi schalten
+* **J / L** – Strahlbreite ändern; im Sä-Modus das Saatgut wechseln
+* **O** – physisches Objekt am Hauptstrahl aufnehmen; **U** – freigeben oder
+  virtuelle Ladung abladen; **B** – Ernte-Zweitstrahl an / aus
+* **I** – Korntank endlos / normal; **M** – anklickbares Bordmenü öffnen
 
-Das Cockpit zeigt rechts das Muster-Rad mit Zeiger, links die Modus-Tafel, dazu
-ein Hologramm über dem Pult. Zorp wippt beim Schweben mit dem Kopf und
-verschwindet, sobald du einsteigst – dann sitzt dort dein eigener Charakter.
+Der physische Objektstrahl verwendet dieselben Grenzen wie beim UFO 2000: höchstens
+12.000 kg und 4,5 × 4 × 8 m. Die Offline-Smoke-Tests bestehen; tatsächliche
+Physik, Kollisionen und Multiplayer müssen noch im FS25 getestet werden.
+
+Das HUD zeigt Höhe, Modus, Strahlzustand, Tank- und Laderauminhalt sowie den
+Transferstatus. Das Cockpit zeigt rechts das Muster-Rad mit Zeiger, links die
+Modus-Tafel, dazu ein Hologramm über dem Pult. Zorp wippt beim Schweben mit dem
+Kopf und verschwindet, sobald du einsteigst – dann sitzt dort dein eigener Charakter.
 
 ### Kornkreise
 
-Der letzte Eintrag im Muster-Rad ist der **freie Stift**: mit `+`/`−` stellst du
-den Radius in 50-cm-Schritten ein und malst die Figur selbst, während du fliegst.
+Im **Bordmenü (`M`)** wählst du links eine Form; `Bild ↑ / ↓` blättert durch die
+Muster. Der letzte Eintrag ist der **freie Stift**: mit `J` / `L` stellst du den
+Radius in 50-cm-Schritten ein und malst die Figur selbst, während du fliegst.
 Die anderen Einträge sind fertige Geometrien (Ring, Dreifachring, Spirale,
 Blume, Stern, Alien, Blume des Lebens, Sonne), die der Strahl von allein ins Feld
-drückt. Ertrag geht dabei nicht verloren – das Korn landet im Tank.
+drückt. Ertrag geht dabei nicht verloren – der Strahl drückt die Frucht platt.
 
 ![Captain Zorp im Cockpit](docs/renders/cropharvester_pilot.png)
 
@@ -576,6 +632,34 @@ erlaubt.
 ```bash
 python tools/build_babajaga_mod.py       # Modell -> Texturen -> XML -> ZIP
 python tools/babajaga/validate.py        # Prüfung ohne Spiel
+```
+
+## 9b. Baba Jagas Wohnhütte (separates, konsolenfreundliches Haus)
+
+`FS25_BabaJagaHouse` ist ein **zusätzlicher Wohn-Placeable**; die Hühnerhütte
+`FS25_BabaJaga` bleibt der unveränderte Hühnerstall. Die Hütte steht ebenfalls
+auf dem großen Vogelbein, ist aber als Haus mit Innenraum gebaut.
+
+* Eine echte, steile Holztreppe mit einzelnen Kollisionsstufen führt zur erhöhten
+  Hütte — kein Teleport. Der obere Balkon ist begehbar und an die Treppe
+  angeschlossen.
+* Die Eingangstür lässt sich über die native FS25-AnimatedObject-Funktion öffnen.
+* Im Haus sind ein Schlaf-Trigger und eine Garderobe zum Kleidungwechseln
+  eingebaut; beide verwenden die nativen Farmhouse-/Wardrobe-Placeable-Tags.
+* Das Mod-Paket enthält **kein Lua und keine eigenen Input-Actions**. Die
+  Interaktionen beruhen auf Grundspiel-Placeable-Funktionen und sind für
+  Konsolen vorgesehen.
+
+![Baba Jagas Wohnhütte](docs/renders/babajaga_house_hero.png)
+
+Preis: **28.500 €**, Unterhalt **18 €/Tag**. In den Shop-Kategorien unter
+**Farmhäuser** separat aufstellen. Die XML-/Modellprüfung ist statisch möglich;
+Türanimation, Treppenbegehbarkeit sowie Schlafen/Garderobe wurden noch nicht in
+einer laufenden FS25-Instanz getestet.
+
+```bash
+python tools/build_babajaga_house_mod.py
+python tools/babajaga/validate_house.py
 ```
 
 ## 10. Die Hofdisco (`FS25_Disco`)
@@ -756,7 +840,7 @@ python tools/venue/validate.py --mod autokino      # Prüfung ohne Spiel
 
 ## 12b. Schnelltest – was ich zuerst anschauen würde
 
-Die neun ZIPs aus `dist/` in den Mods-Ordner legen, Spiel starten, dann in dieser
+Die Mod-ZIPs aus `dist/` in den Mods-Ordner legen, Spiel starten, dann in dieser
 Reihenfolge:
 
 1. **Shop → Platzierbare Objekte → Deko**: Alien 1.3.0.0 (750/1.200/1.500 €) –
@@ -770,19 +854,67 @@ Reihenfolge:
 3. **Shop → Platzierbare Objekte → Distillery 1.1.0.0** (185.000 €) aufstellen,
    um das Haus laufen (Turm, Graffiti, Feuerleiter) und dann **durch den Garten**
    gehen: Barhütte, Sitzgruppen, zwei Pergolen, zwei Chill-out-Ecken.
-4. **Baba Jaga 1.1.0.0** (18.500 €) aufstellen: Bein, Schild mit Schrift,
+4. **Baba Jaga 1.1.0.0** (18.500 €) als Hühnerstall aufstellen: Bein, Schild,
    Schädel auf den Zaunpfählen; Weizen in den Trigger, Hühner einsetzen.
+5. **Baba Jaga's Home 1.0.0.0** (28.500 €) separat unter Farmhäuser aufstellen;
+   die Treppe und den Balkon begehen, die Tür öffnen, Schlaf- und Garderoben-
+   Trigger prüfen. Das ist noch ein Ingame-Test, keine bestätigte Prüfung.
+6. **Höhensturm 1.2.0.0** (1.650.000 €) auf großer freier Fläche platzieren;
+   am Bahnhof mieten, vorne links einsteigen und die beiden Überschläge sowie
+   die Spiralpassage testen. Mit drei Mitfahrern auf anderen PCs zusammenfahren.
+   PC-only: Lua ist nötig, daher nicht auf Konsole.
 
 Wenn etwas nicht lädt oder komisch aussieht: `log.txt` schicken, Zeilen mit dem
 Mod-Namen. Die Mods-Ordner im Spiel heißen wie die Zips (`FS25_Distillery` usw.).
 
-## 12c. Handbücher als PDF (`docs/pdf/`)
+## 12c. Höhensturm — Inversions-Achterbahn (`FS25_Hoehensturm`)
 
-Zu jedem Mod gehört ein eigenes deutsches Handbuch. Alle neun haben denselben
-Aufbau: Deckblatt mit Render, „Was ist das?“ mit Bildern **aus dem Spiel** und
-den **Vorlagen**, nach denen gebaut wurde, Bedienung als Tastentabelle, „Worauf
-du achten solltest“, Kompatibilität (PC / Konsole / Multiplayer) und
-technische Daten.
+PC-only, große Achterbahn mit echter Roll-Ausrichtung: ein aufsteigender
+1,5-facher Spiralabschnitt, zwei vollständige vertikale Loopings und 55,5 m
+Höhenunterschied. Der gemeinsame Wagen hat vier Plätze in 2×2: Fahrer vorne
+links, drei Mitfahrer nebendran und dahinter. Im Multiplayer können die Spieler
+denselben Wagen nutzen; alle PCs brauchen den Mod. Der Fahrer startet manuell
+am Bahnhof; sobald sich der Wagen bewegt, fährt er eine vollständige Runde
+automatisch zurück. Während der Fahrt sind Bremsen, Rückwärtsfahren und Aussteigen
+gesperrt; erst am Bahnhof nach dem Stillstand wird wieder freigegeben. Die
+verglaste Bahnhofshalle erhält cyan/violette LED-Lichttunnel an Loopings und
+Spirale, wenige echte Lichtquellen sowie eine eigens erzeugte Motor-, Start-/Stopp-
+und Fahrtwind-Soundkulisse.
+
+![Höhensturm — Gesamtstrecke](docs/renders/hohensturm_coaster_hero.png)
+![Glasbahnhof mit cyan-violetter LED-Beleuchtung](docs/renders/hohensturm_station_glass_detail.png)
+![LED-Tunnel an Loopings und Spiralabschnitt](docs/renders/hohensturm_coaster_detail.png)
+
+| | |
+| --- | --- |
+| Höchstgeschwindigkeit | 120 km/h |
+| Höhenprofil | 2,5 m bis etwa 58 m |
+| Sitze | 1 Fahrer + 3 Mitfahrer, 2×2 |
+| Steuerung | Manuell am Bahnhof starten; danach automatische Runde ohne Bremse |
+| Aussteigen | Während der Runde gesperrt, Freigabe erst bei Stillstand am Bahnhof |
+| Atmosphäre | Glashalle, LED-Tunnel an den Inversionen, cyan/violette Lichter und Original-Sound |
+| Plattform | PC-only; Lua für Roll-Ausrichtung und Runden-/Ausstiegssperre |
+
+```bash
+python tools/build_rollercoaster_mod.py       # Modell, Roll-Spezialisierung, ZIP
+python tools/coaster/luatest.py               # Lua-Roll-Smoke-Test (benötigt Lupa)
+```
+
+Das Placeable braucht etwa 180 × 370 m freie Fläche. Der native FS25-TrainSystem
+übernimmt Fahrt, Miete und Netzwerksynchronisierung; `CoasterRoll.lua` ergänzt
+den geschlossenen, rollenden Rahmen und sperrt nach dem Start die Eingriffe sowie
+die Fahrer- und Mitfahrerausstiege bis zum Halt am Bahnhof. Jeder Mitfahrer kann
+danach selbst aussteigen. Bei Verbindungsabbruch bleiben FS25s native Player-/Sitz-
+Aufräumwege aktiv; steigt der Fahrer aus oder wird getrennt, setzt Lua die Fahrt
+zum Bahnhof fort, statt den Zug durch eine blockierte Leave-Funktion einzufrieren.
+
+## 12d. Handbücher als PDF (`docs/pdf/`)
+
+Neun Mods haben ein eigenes deutsches Handbuch im selben Aufbau: Deckblatt mit
+Render, „Was ist das?“ mit Bildern **aus dem Spiel** und den **Vorlagen**, nach
+denen gebaut wurde, Bedienung als Tastentabelle, „Worauf du achten solltest“,
+Kompatibilität (PC / Konsole / Multiplayer) und technische Daten. Für die neue
+Wohnhütte und Höhensturm gibt es derzeit noch kein separates PDF-Handbuch.
 
 | PDF | Inhalt |
 | --- | --- |
@@ -809,7 +941,7 @@ Textwunsch ist eine Zeile dort und ein neuer Lauf.
 
 Getestet ist alles, was ohne Spiel geht – **im echten FS25 lief es noch nicht**
 (hier ist keins installiert). Wenn etwas klemmt, hilft die `log.txt`; Zeilen mit
-„UFO2000", „UFO2500", „UFO4500", „BabaJaga", „Alien", „Disco", „Distillery", „Autokino" oder „CropHarvester" zeigen die Stelle, dann bessere ich gezielt nach.
+„UFO2000", „UFO2500", „UFO4500", „BabaJaga", „BabaJagaHouse", „Alien", „Disco", „Distillery", „Autokino", „CropHarvester" oder „CoasterRoll" zeigen die Stelle, dann bessere ich gezielt nach.
 
 Beim UFO 2500 sind drei Dinge die ersten Kandidaten für Feinschliff, falls es im
 Spiel komisch aussieht: die Fahrhöhe (Federn/Dämpfer der unsichtbaren Räder,

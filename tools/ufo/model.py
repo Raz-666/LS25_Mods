@@ -634,6 +634,15 @@ def build_scene():
                       nonRenderable="false"))
         beam_fx_nodes(beam, suffix)
 
+    # narrow second emitter, offset from the main cone so harvested grain can
+    # be shown flowing into a truck / trailer without hiding the green beam
+    transfer = visual.add(Node("TransformGroup", "transferBeamNode",
+                               translation="3.0 0.19 0", visibility="false"))
+    transfer.add(Node("Shape", "transferBeamMesh", beam_mesh(),
+                      materials=["beamRed"], castsShadows="false",
+                      receiveShadows="false", nonRenderable="false"))
+    beam_fx_nodes(transfer, "Transfer")
+
     ring = visual.add(Node("TransformGroup", "groundRing", translation="0 0.05 0",
                            visibility="false", scale="1 1 1"))
     ring.add(Node("Shape", "groundRingMesh", circle_ring_mesh(), materials=["lensGreen"],
