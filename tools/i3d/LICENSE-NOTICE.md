@@ -2,7 +2,7 @@
 
 | File | Licence |
 |---|---|
-| `i3d_shapes_writer.py`, `binarize_i3d.py`, `verify_shapes.py`, `test_data/*` | GPL-3.0-or-later |
+| `i3d_shapes_writer.py`, `i3d_shapes_reader.py`, `binarize_i3d.py`, `verify_shapes.py`, `test_data/*` | GPL-3.0-or-later |
 | `_i3d_cipher_keys.py` | MIT (Copyright (c) 2017 Daniel Hultgren), values copied verbatim |
 
 The GPL-3.0-or-later files re-implement format knowledge and algorithms from
