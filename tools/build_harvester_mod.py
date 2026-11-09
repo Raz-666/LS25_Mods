@@ -22,7 +22,9 @@ import argparse
 import os
 import re
 import shutil
+import subprocess
 import sys
+import tempfile
 import zipfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,7 +41,7 @@ sys.path.insert(0, os.path.join(TOOLS, "i3d"))
 
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt", ".lua")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".txt", ".lua")
 
 I3D = "ufo4500.i3d"
 LUA = "scripts/UFO4500.lua"
@@ -196,7 +198,7 @@ def build_xml(mappings):
     xml = xml.replace("$l10n_configuration_ufo_", "$l10n_configuration_ufo4500_")
     xml = xml.replace("$l10n_function_ufo", "$l10n_function_ufo4500")
     xml = xml.replace("$l10n_typeDesc_ufo", "$l10n_typeDesc_ufo4500")
-    xml = xml.replace("<image>store_ufo.png</image>", "<image>store_ufo4500.png</image>")
+    xml = xml.replace("<image>store_ufo.dds</image>", "<image>store_ufo4500.dds</image>")
     xml = xml.replace("<price>42000</price>", "<price>185000</price>")
     xml = xml.replace("<power>113</power>", "<power>300</power>")
     xml = xml.replace("<maxSpeed>32</maxSpeed>", "<maxSpeed>25</maxSpeed>")
@@ -375,14 +377,13 @@ def build_images():
                          fov=40, ss=2, beam=True, root=scene())
     p = os.path.join(BUILD, "icon_ufo4500.png")
     icon.save(p)
-    ufo_images._dds(p, os.path.join(MOD, "icon_ufo4500.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(MOD, "icon_ufo4500.dds"), "bc1", sys.executable,
+                    no_mips=True)
 
+    store_png = os.path.join(MOD, "store_ufo4500.png")
     render.render(size=512, eye=(9.5, 5.0, 9.5), target=(0, 1.6, 0), fov=40, ss=2,
-                  return_alpha=True, beam=True, root=scene()).save(
-        os.path.join(MOD, "store_ufo4500.png"))
-    render.render(size=512, eye=(8.0, 6.5, 8.5), target=(0, 1.4, 0), fov=40, ss=2,
-                  return_alpha=True, beam=True, root=scene(altitude=9.0)).save(
-        os.path.join(MOD, "store_ufo4500_beam.png"))
+                  return_alpha=True, beam=True, root=scene()).save(store_png)
+    ufo_images._dds(store_png, os.path.join(MOD, "store_ufo4500.dds"), "bc7", sys.executable)
 
     render.render(size=900, eye=(9.5, 5.0, 9.5), target=(0, 1.6, 0), fov=40, ss=2,
                   beam=True, root=scene()).save(os.path.join(docs, "ufo4500_hero.png"))
@@ -391,7 +392,7 @@ def build_images():
     render.render(size=900, eye=(8.5, 7.0, 8.0), target=(0, 1.2, 0), fov=42, ss=2,
                   beam=True, root=scene(altitude=12.0)).save(
         os.path.join(docs, "ufo4500_beam.png"))
-    print("  icon, 2 store pictures, 3 doc renders")
+    print("  icon, store DDS, 3 doc renders")
 
 
 # --------------------------------------------------------------------------
@@ -441,7 +442,8 @@ def validate_zip():
         os.path.join(MOD, "ufo4500.xml"), encoding="utf-8").read()))
     for lang in ("de", "en"):
         have = {t.get("name") for t in ET.parse(os.path.join(
-            MOD, "translations", "translation_%s.xml" % lang)).getroot().iter("text")}
+            MOD, "translations", "translation_%s.xml" % lang)).getroot().iter("text")
+                if t.find(lang) is not None}
         missing = sorted(keys - have - {"unit_literShort", "info_transmission_automatic",
                                         "configuration_valueDefault"})
         check(not missing, "%s: missing l10n keys %s" % (lang, ", ".join(missing)))
@@ -458,17 +460,23 @@ def validate_zip():
 # --------------------------------------------------------------------------
 def make_zip():
     step("zip")
+    os.makedirs(BUILD, exist_ok=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_UFO4500.zip")
-    count = 0
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-        for root, _dirs, files in os.walk(MOD):
-            for name in sorted(files):
-                if not name.lower().endswith(ZIP_EXT):
-                    continue
-                full = os.path.join(root, name)
-                zf.write(full, os.path.relpath(full, MOD).replace(os.sep, "/"))
-                count += 1
+    with tempfile.TemporaryDirectory(prefix="ufo4500-package-", dir=BUILD) as temp:
+        package = os.path.join(temp, "mod")
+        shutil.copytree(MOD, package)
+        subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), package],
+                       check=True)
+        count = 0
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+            for root, _dirs, files in os.walk(package):
+                for name in sorted(files):
+                    if not name.lower().endswith(ZIP_EXT):
+                        continue
+                    full = os.path.join(root, name)
+                    zf.write(full, os.path.relpath(full, package).replace(os.sep, "/"))
+                    count += 1
     print("  %s (%.1f MB, %d files)" % (out, os.path.getsize(out) / 1e6, count))
 
 
@@ -481,7 +489,7 @@ def main():
     os.makedirs(MOD, exist_ok=True)
     # the header ship is gone - remove what an older build left behind
     for stale in ("ufo4500header.xml", "ufo4500header.i3d",
-                  "ufo4500header.i3d.shapes", "store_ufo4500header.png"):
+                  "ufo4500header.i3d.shapes", "store_ufo4500header.png", "store_ufo4500header.dds"):
         path = os.path.join(MOD, stale)
         if os.path.isfile(path):
             os.remove(path)

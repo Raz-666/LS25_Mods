@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.join(TOOLS, "babajaga"))
 
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".txt")
 
 ICON_EYE = (13.0, 6.4, 12.4)
 ICON_TARGET = (0.3, 3.2, 0.2)
@@ -121,11 +121,13 @@ def build_images():
                          ss=2, root=scene(ground=True))
     p = os.path.join(BUILD, "icon_babajaga.png")
     icon.save(p)
-    ufo_images._dds(p, os.path.join(MOD, "icon_babajaga.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(MOD, "icon_babajaga.dds"), "bc1", sys.executable,
+                    no_mips=True)
 
+    store_png = os.path.join(MOD, "store_babajaga.png")
     render.render(size=512, eye=ICON_EYE, target=ICON_TARGET, fov=ICON_FOV, ss=2,
-                  return_alpha=True, root=scene()).save(
-        os.path.join(MOD, "store_babajaga.png"))
+                  return_alpha=True, root=scene()).save(store_png)
+    ufo_images._dds(store_png, os.path.join(MOD, "store_babajaga.dds"), "bc7", sys.executable)
 
     render.render(size=900, eye=(16.5, 6.2, 10.0), target=(0.4, 3.5, -0.2), fov=40, ss=2,
                   root=scene(ground=True)).save(os.path.join(docs, "babajaga_hero.png"))
@@ -142,6 +144,7 @@ def validate():
 
 def make_zip():
     step("zip")
+    subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), MOD], check=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_BabaJaga.zip")
     count = 0
@@ -162,8 +165,8 @@ def main():
     build_textures()
     inject(mut)
     build_images()
-    validate()
     make_zip()
+    validate()
     print("\nOK - dist/FS25_BabaJaga.zip")
     return 0
 

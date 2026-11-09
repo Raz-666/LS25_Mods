@@ -9,7 +9,7 @@
 
     <storeData>
         <name>$l10n_rollercoaster_name</name>
-        <image>store_rollercoaster.png</image>
+        <image>store_rollercoaster.dds</image>
         <price>1650000</price>
         <dailyUpkeep>1250</dailyUpkeep>
         <functions>

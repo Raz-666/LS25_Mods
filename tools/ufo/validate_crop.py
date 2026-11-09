@@ -29,7 +29,7 @@ MOD = os.path.join(REPO, "FS25_CropHarvester")
 VEHICLE_XML = "crop.xml"
 I3D_XML = "crop.i3d"
 LUA_FILE = "CropHarvester.lua"
-STORE_PNG = "store_crop.png"
+STORE_DDS = "store_crop.dds"
 MAIN_NODE = "crop_main_component1"
 
 errors = []
@@ -88,8 +88,8 @@ def check_moddesc(mod):
     if desc is None:
         return None
     dv = int(desc.get("descVersion", "0"))
-    if not 90 <= dv <= 115:
-        err("modDesc descVersion %d outside the range accepted by FS25 (90..115)" % dv)
+    if not 90 <= dv <= 116:
+        err("modDesc descVersion %d outside the range accepted by FS25 (90..116)" % dv)
     for tag in ("author", "version", "iconFilename", "title", "description"):
         if desc.find(tag) is None:
             err("modDesc.xml: missing <%s>" % tag)
@@ -121,12 +121,15 @@ def check_l10n(mod, desc):
         if root is None:
             continue
         file_keys = set()
+        lang = os.path.basename(f).rsplit("_", 1)[-1].split(".", 1)[0]
         for t in root.iter("text"):
             key = t.get("name")
             if key in file_keys:
                 err("%s: duplicate translation key %r" % (os.path.basename(f), key))
             file_keys.add(key)
             keys.add(key)
+            if lang in ("de", "en") and t.find(lang) is None:
+                err("%s: translation %r has no <%s> value" % (os.path.basename(f), key, lang))
     used = set()
     for f in ("modDesc.xml", VEHICLE_XML):
         with open(os.path.join(MOD, f), encoding="utf-8") as fh:
@@ -335,10 +338,15 @@ def check_zip(zpath):
         names = z.namelist()
     if "modDesc.xml" not in names:
         err("zip: modDesc.xml is not at the archive root")
+    if STORE_DDS not in names:
+        err("zip: store image %s is missing" % STORE_DDS)
+    png_files = [name for name in names if name.lower().endswith(".png")]
+    if png_files:
+        err("zip: PNG source/store images are not allowed: %s" % ", ".join(png_files[:5]))
     for n in names:
         if n.startswith(("FS25_UFO2000/", "FS25_CropHarvester/")) or n.startswith("/") or "\\" in n:
             err("zip: unexpected path %r" % n)
-        if n.lower().endswith((".psd", ".blend", ".py", ".png")) and not n.endswith(STORE_PNG):
+        if n.lower().endswith((".psd", ".blend", ".py")):
             warn("zip: development file %r" % n)
     ok("zip: %d files, %.1f MB" % (len(names), os.path.getsize(zpath) / 1048576.0))
 

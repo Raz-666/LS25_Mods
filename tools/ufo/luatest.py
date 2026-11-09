@@ -988,7 +988,7 @@ def main():
     end
     addToPhysics = function(node) physicsState[node] = "active" end
     removeFromPhysics = function(node)
-        if failRemoveNode == node then error("mock physics removal failure") end
+        if failRemoveNode == node then return false end
         physicsState[node] = "removed"
     end
     failRemoveNode = nil
@@ -1119,7 +1119,7 @@ def main():
     rollbackFirstNodePhysics = physicsState[105]
     failRemoveNode = nil
     """)
-    ok &= check("partial physics-removal failure rolls back without attaching cargo",
+    ok &= check("explicit physics-removal failure rolls back without attaching cargo",
                 lua.eval("rollbackAccepted") is False
                 and lua.eval("rollbackState") is None
                 and lua.eval("rollbackFirstNodePhysics") == "active")

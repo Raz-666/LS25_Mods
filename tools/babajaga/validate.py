@@ -95,8 +95,8 @@ def check_moddesc():
             err("console check: modDesc.xml must not contain <%s>" % tag)
 
     dv = int(desc.get("descVersion", "0"))
-    if not 90 <= dv <= 115:
-        err("modDesc descVersion %d outside 90..115" % dv)
+    if not 90 <= dv <= 116:
+        err("modDesc descVersion %d outside 90..116" % dv)
     for tag in ("author", "version", "iconFilename", "title", "description"):
         if desc.find(tag) is None:
             err("modDesc.xml: missing <%s>" % tag)
@@ -325,14 +325,14 @@ def check_areas(root):
 
 
 def check_media():
-    png = glob.glob(os.path.join(MOD, "store_*.png"))
-    if not png:
-        err("no store_*.png")
+    store_images = glob.glob(os.path.join(MOD, "store_*.dds"))
+    if not store_images:
+        err("no store_*.dds")
     tex = glob.glob(os.path.join(MOD, "textures", "*.dds"))
     if len(tex) < 6:
         err("only %d textures - expected the full material set" % len(tex))
     else:
-        ok("media: %d textures, %d store picture(s)" % (len(tex), len(png)))
+        ok("media: %d textures, %d store picture(s)" % (len(tex), len(store_images)))
     with open(os.path.join(MOD, "babaJaga.xml"), encoding="utf-8") as fh:
         xml = fh.read()
     for tex_name in set(re.findall(r'<Texture fileId="[^"]*" filename="([^"]+)"', xml)):
@@ -358,6 +358,13 @@ def check_zip(path):
     for need in ("modDesc.xml", "babaJaga.xml", "babaJaga.i3d"):
         if prefix + need not in names:
             err("zip: %s is missing" % (prefix + need))
+    png_files = [name for name in names if name.lower().endswith(".png")]
+    if png_files:
+        err("zip contains PNG source/store images: %s" % ", ".join(png_files[:5]))
+    veh = load(os.path.join(MOD, "babaJaga.xml"))
+    store_image = veh.findtext("storeData/image") if veh is not None else None
+    if store_image and prefix + store_image not in names:
+        err("zip: store image %s is missing" % store_image)
     bad = [n for n in names if n.lower().endswith((".py", ".txt", ".blend", ".psd"))]
     if bad:
         warn("zip contains non game files: %s" % ", ".join(bad[:5]))

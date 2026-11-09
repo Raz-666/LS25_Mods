@@ -6,8 +6,8 @@ Steps
   2. binarize         -> FS25_UFO2500/ufo2500.i3d + ufo2500.i3d.shapes
   3. inject the i3d mappings and the wheel configurations into ufo2500.xml
   4. metadata         -> tracked modDesc + German/English translation files
-  5. textures/sounds  -> copied from FS25_UFO2000 (same materials, same audio)
-  6. images           -> icon_ufo2500.dds, store_ufo2500.png, docs renders
+  5. textures/sounds  -> shared textures + only the template-referenced audio
+  6. images           -> icon_ufo2500.dds, store_ufo2500.dds, docs renders
   7. validate         -> tools/ufo/validate2500.py
   8. zip              -> dist/FS25_UFO2500.zip
 
@@ -20,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,7 +38,7 @@ MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
 WHEEL_MARKER = "            <!-- WHEELS -->"
 
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".txt")
 
 # ---------------------------------------------------------------------------
 # wheel configurations
@@ -151,20 +152,30 @@ def inject_xml(mappings):
 
 
 def copy_assets():
-    step("textures + sounds")
+    step("textures + referenced engine sounds")
     copied = 0
+    template_text = open(TEMPLATE, encoding="utf-8").read()
+    used_sounds = set(re.findall(r'file="sounds/([^" ]+\.ogg)"', template_text))
     for sub in ("textures", "sounds"):
         src = os.path.join(SOURCE_MOD, sub)
         dst = os.path.join(MOD, sub)
         if not os.path.isdir(src):
             sys.exit("%s is missing - run tools/build_mod.py first" % src)
         os.makedirs(dst, exist_ok=True)
+        # Old builds can leave unused clips or stale textures behind; remove
+        # the generated asset type before copying the current referenced set.
+        extension = ".dds" if sub == "textures" else ".ogg"
+        for old_name in os.listdir(dst):
+            if old_name.lower().endswith(extension):
+                os.remove(os.path.join(dst, old_name))
         for name in sorted(os.listdir(src)):
             if not name.lower().endswith((".dds", ".ogg")):
                 continue
+            if sub == "sounds" and name not in used_sounds:
+                continue
             shutil.copy2(os.path.join(src, name), os.path.join(dst, name))
             copied += 1
-    print("  %d files" % copied)
+    print("  %d referenced asset files" % copied)
 
 
 def copy_mod_metadata():
@@ -231,7 +242,7 @@ def build_images():
     os.makedirs(docs, exist_ok=True)
     scene = model_console.build_scene()
 
-    # 1) shop / mod icon, 512x512 BC1 with mipmaps - the saucer alone
+    # 1) shop / mod icon, 512x512 BC1 without mipmaps - the saucer alone
     craft = model_console.build_scene()
     for name in ("beamNode", "groundRing"):
         node = model_console.find(craft, name)
@@ -241,12 +252,15 @@ def build_images():
                          ss=2, root=craft)
     p = os.path.join(BUILD, "icon_ufo2500.png")
     icon.save(p)
-    ufo_images._dds(p, os.path.join(mod, "icon_ufo2500.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(mod, "icon_ufo2500.dds"), "bc1", sys.executable,
+                    no_mips=True)
 
     # 2) store picture (RGBA): the whole craft with the beam reaching the ground
     store = render.render(size=512, eye=(20.0, 21.5, 23.0), target=(0, 12.0, 0), fov=40,
                           ss=2, beam=True, return_alpha=True, root=scene)
-    store.save(os.path.join(mod, "store_ufo2500.png"))
+    store_png = os.path.join(mod, "store_ufo2500.png")
+    store.save(store_png)
+    ufo_images._dds(store_png, os.path.join(mod, "store_ufo2500.dds"), "bc7", sys.executable)
 
     # 3) documentation renders
     # the saucer close up, three-quarter from above (it flies, so no ground)
@@ -284,22 +298,30 @@ def validate():
 
 def make_zip():
     step("zip")
+    os.makedirs(BUILD, exist_ok=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_UFO2500.zip")
     if os.path.exists(out):
         os.remove(out)
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-        for root, _dirs, files in os.walk(MOD):
-            for name in sorted(files):
-                if not name.lower().endswith(ZIP_EXT):
-                    continue
-                full = os.path.join(root, name)
-                rel = os.path.relpath(full, MOD).replace(os.sep, "/")
-                z.write(full, rel)
+    # Do not rewrite the working mod folder: a later --skip-media rebuild must
+    # still have every texture referenced by the newly generated model.
+    with tempfile.TemporaryDirectory(prefix="ufo2500-package-", dir=BUILD) as temp:
+        package = os.path.join(temp, "mod")
+        shutil.copytree(MOD, package)
+        subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), package],
+                       check=True)
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+            for root, _dirs, files in os.walk(package):
+                for name in sorted(files):
+                    if not name.lower().endswith(ZIP_EXT):
+                        continue
+                    full = os.path.join(root, name)
+                    rel = os.path.relpath(full, package).replace(os.sep, "/")
+                    z.write(full, rel)
     with zipfile.ZipFile(out) as z:
-        assert "modDesc.xml" in z.namelist(), "modDesc.xml is not at the zip root"
-        count = len(z.namelist())
-    print("  %s (%.1f MB, %d files)" % (out, os.path.getsize(out) / 1048576.0, count))
+        names = z.namelist()
+        assert "modDesc.xml" in names, "modDesc.xml is not at the zip root"
+    print("  %s (%.1f MB, %d files)" % (out, os.path.getsize(out) / 1048576.0, len(names)))
 
 
 def main():
@@ -308,6 +330,7 @@ def main():
     ap.add_argument("--skip-media", action="store_true", help="only rebuild model and xml")
     args = ap.parse_args()
     os.makedirs(BUILD, exist_ok=True)
+    os.makedirs(MOD, exist_ok=True)
     mappings = build_model()
     inject_xml(mappings)
     copy_mod_metadata()

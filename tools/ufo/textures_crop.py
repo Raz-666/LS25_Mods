@@ -126,6 +126,13 @@ def generate(out_dir, build_dir, png2dds=None, python=sys.executable, verbose=Tr
     png2dds = png2dds or os.path.join(os.path.dirname(_HERE), "png2dds.py")
     made = base.generate(out_dir, build_dir, png2dds=png2dds, python=python,
                          verbose=verbose)
+    # model_crop.py uses only the five blueprint beam materials; these legacy
+    # UFO 2000 color variants have no model or Lua references in the crop mod.
+    for name in ("beamBrown_diffuse.dds", "beamCyan_diffuse.dds", "beamOrange_diffuse.dds"):
+        path = os.path.join(out_dir, name)
+        if os.path.isfile(path):
+            os.remove(path)
+            made = [asset for asset in made if os.path.abspath(asset) != os.path.abspath(path)]
     for name, (fn, fmt, mips) in TEXTURES.items():
         png = os.path.join(build_dir, name + ".png")
         fn().save(png)

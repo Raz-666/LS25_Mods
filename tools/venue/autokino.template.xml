@@ -9,7 +9,7 @@
 
     <storeData>
         <name>$l10n_autokino_name</name>
-        <image>store_autokino.png</image>
+        <image>store_autokino.dds</image>
         <price>48000</price>
         <functions>
             <function>$l10n_autokino_function</function>

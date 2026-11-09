@@ -23,6 +23,7 @@ import zipfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MOD = os.path.join(REPO, "FS25_UFO2500")
+STORE_DDS = "store_ufo2500.dds"
 BASE_BRANDS = {"LIZARD"}
 BASE_L10N = {"configuration_valueDefault", "info_transmission_automatic",
              "unit_literShort", "brand_lizard"}
@@ -115,8 +116,8 @@ def check_console_rules():
 
 def check_moddesc(desc):
     dv = int(desc.get("descVersion", "0"))
-    if not 90 <= dv <= 115:
-        err("modDesc descVersion %d outside the range accepted by FS25 (90..115)" % dv)
+    if not 90 <= dv <= 116:
+        err("modDesc descVersion %d outside the range accepted by FS25 (90..116)" % dv)
     for tag in ("author", "version", "iconFilename", "title", "description"):
         if desc.find(tag) is None:
             err("modDesc.xml: missing <%s>" % tag)
@@ -148,8 +149,11 @@ def check_l10n():
         root = load(f)
         if root is None:
             continue
+        lang = os.path.basename(f).rsplit("_", 1)[-1].split(".", 1)[0]
         for t in root.iter("text"):
             keys.add(t.get("name"))
+            if lang in ("de", "en") and t.find(lang) is None:
+                err("%s: translation %r has no <%s> value" % (os.path.basename(f), t.get("name"), lang))
     used = set()
     for name in ("modDesc.xml", "ufo2500.xml"):
         with open(os.path.join(MOD, name), encoding="utf-8") as fh:
@@ -399,13 +403,16 @@ def check_zip(zpath):
         names = z.namelist()
     if "modDesc.xml" not in names:
         err("zip: modDesc.xml is not at the archive root")
+    if STORE_DDS not in names:
+        err("zip: store image %s is missing" % STORE_DDS)
+    png_files = [name for name in names if name.lower().endswith(".png")]
+    if png_files:
+        err("zip: PNG source/store images are not allowed: %s" % ", ".join(png_files[:5]))
     for n in names:
         if n.startswith("/") or "\\" in n:
             err("zip: unexpected path %r" % n)
         if n.lower().endswith((".psd", ".blend", ".py", ".lua")):
             err("zip: development or script file %r" % n)
-        if n.lower().endswith(".png") and n != "store_ufo2500.png":
-            warn("zip: development image %r" % n)
     ok("zip: %d files, %.1f MB" % (len(names), os.path.getsize(zpath) / 1048576.0))
 
 

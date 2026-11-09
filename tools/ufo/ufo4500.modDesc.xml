@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+<modDesc descVersion="116" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
     <author>Arena.ai Agent Mode</author>
-    <version>2.0.0.0</version>
+    <version>2.0.1.0</version>
 
     <title>
         <en>UFO 4500 Mother Ship</en>
@@ -12,6 +12,11 @@
         <en>$l10n_ufo4500_description</en>
         <de>$l10n_ufo4500_description</de>
     </description>
+
+    <changelog>
+        <en><![CDATA[2.0.1.0: Updated for FS25 test version 116; corrected mod metadata and texture packaging.]]></en>
+        <de><![CDATA[2.0.1.0: Für FS25-Testversion 116 aktualisiert; Mod-Metadaten und Texturpakete korrigiert.]]></de>
+    </changelog>
 
     <iconFilename>icon_ufo4500.dds</iconFilename>
     <multiplayer supported="true"/>

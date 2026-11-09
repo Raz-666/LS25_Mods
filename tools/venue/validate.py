@@ -94,8 +94,8 @@ def check_moddesc(m, moddir):
     if desc is None:
         return None
     dv = int(desc.get("descVersion", "0"))
-    if not 90 <= dv <= 115:
-        err("modDesc descVersion %d outside 90..115" % dv)
+    if not 90 <= dv <= 116:
+        err("modDesc descVersion %d outside 90..116" % dv)
     for tag in ("author", "version", "iconFilename", "title", "description",
                 "multiplayer"):
         if desc.find(tag) is None:
@@ -372,9 +372,10 @@ def check_media(m, moddir):
            if f.endswith(".dds")] if os.path.isdir(os.path.join(moddir, "textures")) else []
     if len(tex) < 6:
         err("only %d textures - expected the full material set" % len(tex))
-    store = [f for f in os.listdir(moddir) if f.startswith("store_")]
+    store = [f for f in os.listdir(moddir)
+             if f.startswith("store_") and f.lower().endswith(".dds")]
     if not store:
-        err("no store_*.png")
+        err("no store_*.dds")
     ok("media: %d textures, %d store picture(s)" % (len(tex), len(store)))
     dds = os.path.join(moddir, m["icon"])
     if os.path.isfile(dds) and os.path.getsize(dds) < 1000:
@@ -398,6 +399,13 @@ def check_zip(path, m):
     for need in ("modDesc.xml", m["xml"], m["i3d"], m["lua"]):
         if prefix + need not in names:
             err("zip: %s is missing" % (prefix + need))
+    png_files = [name for name in names if name.lower().endswith(".png")]
+    if png_files:
+        err("zip contains PNG source/store images: %s" % ", ".join(png_files[:5]))
+    veh = load(os.path.join(REPO, m["folder"], m["xml"]))
+    store_image = veh.findtext("storeData/image") if veh is not None else None
+    if store_image and prefix + store_image not in names:
+        err("zip: store image %s is missing" % store_image)
     bad = [n for n in names if n.lower().endswith((".py", ".blend", ".psd"))]
     if bad:
         warn("zip contains non game files: %s" % ", ".join(bad[:5]))

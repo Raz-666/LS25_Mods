@@ -34,7 +34,7 @@ sys.path.insert(0, VENUE)
 
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt", ".lua")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".txt", ".lua")
 
 # sound track for each of the three films
 SOUNDTRACKS = (("country", "film1"), ("techno", "film2"), ("chill", "film3"))
@@ -154,12 +154,14 @@ def build_images():
                        512, ICON_EYE, ICON_TARGET, ICON_FOV)
     p = os.path.join(BUILD, "icon_autokino.png")
     icon.save(p)
-    ufo_images._dds(p, os.path.join(MOD, "icon_autokino.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(MOD, "icon_autokino.dds"), "bc1", sys.executable,
+                    no_mips=True)
 
+    store_png = os.path.join(MOD, "store_autokino.png")
     _with_frame(render.render(size=512, eye=ICON_EYE, target=ICON_TARGET, fov=ICON_FOV,
                               ss=2, return_alpha=True, root=scene()),
-                512, ICON_EYE, ICON_TARGET, ICON_FOV, film_key="tractor", frame=4).save(
-        os.path.join(MOD, "store_autokino.png"))
+                512, ICON_EYE, ICON_TARGET, ICON_FOV, film_key="tractor", frame=4).save(store_png)
+    ufo_images._dds(store_png, os.path.join(MOD, "store_autokino.dds"), "bc7", sys.executable)
 
     _with_frame(render.render(size=900, eye=(30.0, 14.0, 30.0), target=(0.0, 5.0, -7.0),
                               fov=44, ss=2, root=scene()),
@@ -181,6 +183,7 @@ def validate():
 
 def make_zip():
     step("zip")
+    subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), MOD], check=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_Autokino.zip")
     count = 0

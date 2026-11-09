@@ -12,7 +12,7 @@ Steps
   8. zip               -> dist/FS25_UFO2000.zip (modDesc.xml at the zip root)
 
 Usage:  python tools/build_mod.py [--skip-media]
-Needs numpy, pillow and soundfile (see requirements.txt).
+Needs the packages in requirements.txt; BC7 artwork uses ispc_texcomp.
 """
 
 import argparse
@@ -21,6 +21,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,7 +36,7 @@ sys.path.insert(0, os.path.join(TOOLS, "i3d"))
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
 
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".lua", ".txt")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".lua", ".txt")
 
 
 def step(msg):
@@ -133,24 +134,32 @@ def validate():
 
 def make_zip():
     step("zip")
+    os.makedirs(BUILD, exist_ok=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_UFO2000.zip")
     if os.path.exists(out):
         os.remove(out)
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-        for root, _dirs, files in os.walk(MOD):
-            for name in sorted(files):
-                if not name.lower().endswith(ZIP_EXT):
-                    continue
-                full = os.path.join(root, name)
-                rel = os.path.relpath(full, MOD).replace(os.sep, "/")
-                z.write(full, rel)
+    # Keep the generated source folder intact: console, crop and Alien builds
+    # share its textures and I3D references. Deduplicate only a package copy.
+    with tempfile.TemporaryDirectory(prefix="ufo2000-package-", dir=BUILD) as temp:
+        package = os.path.join(temp, "mod")
+        shutil.copytree(MOD, package)
+        subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), package],
+                       check=True)
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+            for root, _dirs, files in os.walk(package):
+                for name in sorted(files):
+                    if not name.lower().endswith(ZIP_EXT):
+                        continue
+                    full = os.path.join(root, name)
+                    rel = os.path.relpath(full, package).replace(os.sep, "/")
+                    z.write(full, rel)
     # modDesc.xml must be at the root of the archive
     with zipfile.ZipFile(out) as z:
-        assert "modDesc.xml" in z.namelist(), "modDesc.xml is not at the zip root"
+        names = z.namelist()
+        assert "modDesc.xml" in names, "modDesc.xml is not at the zip root"
     size = os.path.getsize(out)
-    print("  %s (%.1f MB, %d files)" % (out, size / 1048576.0,
-                                        len(zipfile.ZipFile(out).namelist())))
+    print("  %s (%.1f MB, %d files)" % (out, size / 1048576.0, len(names)))
 
 
 def main():

@@ -251,6 +251,13 @@ def check_zip(path):
                 err("zip must have modDesc.xml at its root, not in a nested directory")
             if any(name.lower().endswith(".lua") for name in names):
                 err("console compatibility: zip must not contain Lua")
+            png_files = [name for name in names if name.lower().endswith(".png")]
+            if png_files:
+                err("zip contains PNG source/store images: %s" % ", ".join(png_files[:5]))
+            placeable = load(os.path.join(MOD, "babaJagaHouse.xml"))
+            store_image = placeable.findtext("storeData/image") if placeable is not None else None
+            if store_image and store_image not in names:
+                err("zip: store image is missing: %s" % store_image)
             bad = archive.testzip()
             if bad:
                 err("corrupt zip entry: %s" % bad)
