@@ -16,6 +16,7 @@ series:
 
 import argparse
 import os
+import shutil
 import sys
 
 from reportlab.lib import colors
@@ -216,7 +217,7 @@ MODS = [
         "file": "UFO2000",
         "title": "UFO 2000",
         "subtitle": "Die schwebende Untertasse mit Traktorstrahl",
-        "version": "1.1.0.0",
+        "version": "1.2.0.0",
         "price": "42.000 €",
         "category": "Autos",
         "hero": "ufo_hero.png",
@@ -236,6 +237,12 @@ MODS = [
             "ernten, grubbern, pflügen, säen, düngen, aufnehmen und abladen. "
             "Jeder Modus hat seine eigene Strahlfarbe, sein eigenes Summen und "
             "seine eigene Anzeige im Cockpit.",
+            "<b>Neu in 1.2:</b> ein zweiter, schmaler Strahl neben dem Hauptkegel "
+            "füllt beim Ernten einen kompletten Zug von oben – LKW und jeder "
+            "Anhänger dahinter, einer nach dem anderen, ohne dass du umparken "
+            "musst. Dazu eine Statuszeile im HUD, die jede Tastenänderung "
+            "anzeigt („Strahl-Modus 2/8 · Ernten · Strahl AN“, „Höhe: 6,0 m“, "
+            "„Strahlbreite 6,5 m“).",
         ],
         "keys": [
             ("<b>V</b>", "Abheben / Landen – die Beine klappen ein oder aus."),
@@ -248,6 +255,10 @@ MODS = [
             ("<b>M</b>", "Bordmenü: Muster, Modi, Tank – auch mit der Maus bedienbar."),
             ("<b>U</b>", "Abladen an/aus."),
             ("<b>I</b>", "Korntank unendlich an/aus."),
+            ("<b>B</b>", "Zweiten Strahl an/aus – erntet und füllt gleichzeitig "
+                        "LKW und Anhänger unter dem Schiff."),
+            ("<b>O</b>", "Greifstrahl: Ballen, Paletten und Anbaugeräte aufnehmen "
+                        "und wieder absetzen."),
             ("<b>Hupe / C</b>", "Alien-Melodie als Gruß, Kamera innen/außen."),
         ],
         "keys_note": "Alle Belegungen liegen unter <i>Optionen → Steuerung</i> "
@@ -264,6 +275,16 @@ MODS = [
             "kollidiert das Schiff mit dem Auflieger.",
             "Start und Landung drücken einen Fleck von ca. 3,8 m in die Frucht. "
             "Das ist gewollt – auf Hof, Straße und Wiese passiert nichts.",
+            "<b>LKW mit Anhängern füllen:</b> mit <b>B</b> den zweiten Strahl "
+            "einschalten, über den Zug fliegen – im Erntemodus geht das Korn "
+            "gleich in den ersten Behälter mit Platz. Ist der voll, nimmt der "
+            "Strahl automatisch den nächsten Anhänger. Das HUD zeigt die ganze "
+            "Reihe mit dem freien Platz je Fahrzeug.",
+            "<b>Alles transportieren:</b> der große Laderaum (5 Mio. l) nimmt "
+            "jedes Massengut an, auch Holzspäne, Sägemehl, Schweinefutter und "
+            "Mineralfutter. Ballen, Paletten und Anbaugeräte laufen über den "
+            "Greifstrahl (<b>O</b>) – schweben, Taste drücken, oben mitfliegen, "
+            "Taste noch einmal zum Absetzen.",
         ],
         "compat": [
             ("PC (Windows)", "Ja", "Mod-Ordner, wie oben beschrieben."),
@@ -406,7 +427,7 @@ MODS = [
         "file": "UFO4500",
         "title": "UFO 4500 Mutterschiff",
         "subtitle": "Ernten, grubbern, säen, Kornkreise – nur mit dem Strahl",
-        "version": "2.0.0.0",
+        "version": "2.1.0.0",
         "price": "185.000 €",
         "category": "Autos",
         "hero": "ufo4500_hero.png",
@@ -424,6 +445,9 @@ MODS = [
             "Der Strahl ist animiert: ein weißer Kern, eine drehende Helix und "
             "vier Ringe, die von der Bordwand zum Boden wandern. Dazu pulsiert "
             "die Lichtfarbe im Takt des Modus.",
+            "<b>Neu in 2.1:</b> der zweite Strahl füllt einen kompletten Zug "
+            "(LKW plus Anhänger) automatisch, das HUD meldet jede Änderung und "
+            "zeigt die ganze Fahrzeugreihe mit dem freien Platz.",
         ],
         "keys": [
             ("<b>V</b>", "Abheben / Landen."),
@@ -434,6 +458,9 @@ MODS = [
             ("<b>M</b>", "Muster-Menü für die Kornkreise."),
             ("<b>U</b>", "Abladen über Anhänger oder Abkippstelle."),
             ("<b>I</b>", "Korntank endlos (2.000.000 l sind Standard)."),
+            ("<b>B</b>", "Zweiter Strahl: ernten und gleichzeitig LKW + Anhänger "
+                        "füllen."),
+            ("<b>O</b>", "Greifstrahl für Ballen, Paletten und Anbaugeräte."),
         ],
         "keys_note": "Die Tasten heißen intern <i>ufo4500_*</i>, damit UFO 2000, "
                      "UFO 01 und UFO 4500 gleichzeitig installiert sein können. "
@@ -471,7 +498,7 @@ MODS = [
         "file": "CropHarvester",
         "title": "UFO 01 Crop Harvester",
         "subtitle": "Die Erntemaschine aus dem Blaupausen-Set",
-        "version": "1.2.0.0",
+        "version": "1.4.0.0",
         "price": "96.000 €",
         "category": "Autos",
         "hero": "cropharvester_hero.png",
@@ -489,6 +516,9 @@ MODS = [
             "Die Kuppel ist ein echtes Glasmodell mit Sitz, Konsole, "
             "Moduswahlrad, Hologramm-Ring und dem Piloten, der bei der Fahrt "
             "leicht mitwippt und verschwindet, sobald du selbst einsteigst.",
+            "<b>Neu in 1.4:</b> der zweite Strahl füllt beim Ernten einen "
+            "kompletten Zug (LKW + Anhänger) automatisch von oben, und das HUD "
+            "sagt bei jeder Taste, was sich geändert hat.",
         ],
         "keys": [
             ("<b>V</b>", "Abheben / Landen."),
@@ -500,6 +530,9 @@ MODS = [
             ("<b>M</b>", "Kornkreis-Menü mit neun Mustern und dem Handstift."),
             ("<b>U</b>", "Abladen."),
             ("<b>I</b>", "Korntank endlos."),
+            ("<b>B</b>", "Zweiter Strahl: erntet und füllt gleichzeitig LKW "
+                        "und Anhänger."),
+            ("<b>O</b>", "Greifstrahl für Ballen, Paletten und Anbaugeräte."),
         ],
         "keys_note": "Die Belegung ist identisch zur UFO 2000, nur mit eigenen "
                      "internen Namen (`crop_*`), damit beide Mods nebeneinander "
@@ -512,6 +545,9 @@ MODS = [
             "Der Handstift zeichnet mit ca. 50 cm Durchmesser – langsam fliegen "
             "gibt feine Linien, schneller grobe Striche.",
             "Captain Zorp ist Deko: sobald du einsteigst, wird er ausgeblendet.",
+            "LKW mit Hänger: <b>B</b> drücken, über den Zug fliegen – der zweite "
+            "Strahl füllt erst den LKW, dann jeden Anhänger. Das HUD listet die "
+            "Fahrzeuge mit dem freien Platz auf.",
         ],
         "compat": [
             ("PC (Windows)", "Ja", "Eigenes Lua-Skript (`scripts/CropHarvester.lua`)."),
@@ -841,8 +877,13 @@ def main():
     wanted = [m for m in MODS if not args.only or m["file"] in args.only]
     if not wanted:
         sys.exit("no matching mod - known: " + ", ".join(m["file"] for m in MODS))
+    dist = os.path.join(REPO, "dist")
     for mod in wanted:
         path = build_manual(mod, styles)
+        # the manuals ship next to the finished zips, so the download folder
+        # has everything in one place
+        os.makedirs(dist, exist_ok=True)
+        shutil.copy2(path, os.path.join(dist, os.path.basename(path)))
         print("  %-22s %6.1f kB" % (os.path.basename(path),
                                     os.path.getsize(path) / 1024.0))
     print("\n%d Handbuch/Handbücher in docs/pdf/" % len(wanted))

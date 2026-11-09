@@ -97,7 +97,9 @@ def build_model():
 # --------------------------------------------------------------------------
 def build_script():
     step("script")
-    with open(os.path.join(SRC_MOD, "scripts", "UFO2000.lua"), encoding="utf-8") as fh:
+    # always read the Lua *source* (tools/ufo/UFO2000.lua), never the built
+    # copy - otherwise a stale build would be renamed and shipped
+    with open(os.path.join(UFO, "UFO2000.lua"), encoding="utf-8") as fh:
         lua = fh.read()
 
     # own class, own specialization, own action and l10n keys, so that
