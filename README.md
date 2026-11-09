@@ -132,12 +132,37 @@ Füllbehältern. Physische Objekte verwenden den separaten Traktorstrahl unten.
 * **Abladen:** mit Modus 8 über Anhänger **oder** Abkippstelle schweben und
   **Z** drücken – 3.000 l/s gehen nach unten. Erst läuft der Korntank leer,
   dann der große Laderaum.
-* **Beim Ernten direkt abgeben:** **B** einschalten und einen Anhänger oder
-  LKW unter den schmalen Zweitstrahl stellen. Der grüne Hauptstrahl erntet
-  weiter, während der rote Zweitstrahl den Korntank in den Ziel-Füllbehälter
-  entleert. Das HUD zeigt, ob ein Ziel erkannt wurde.
+* **Beim Ernten direkt abgeben:** **B** einschalten und einen LKW **mit
+  Anhängern** unter den schmalen Zweitstrahl stellen. Der grüne Hauptstrahl
+  erntet weiter, während der rote Zweitstrahl den Korntank von oben in den Zug
+  entleert – **erst den LKW, dann jeden Anhänger dahinter, automatisch**. Ist
+  ein Behälter voll, nimmt der Strahl den nächsten; ein Ziel, das die Frucht
+  nicht annimmt, wird 2,5 s übersprungen. Das HUD listet die ganze Reihe mit
+  dem freien Platz auf („LKW 12 Tsd frei · Hänger 25 Tsd frei“).
 * Ein ganzes Feld am Stück ernten ist damit kein Problem: der Tank läuft nicht
   mehr über, und mit **I** ist sogar die Tankgrenze abgeschaltet.
+
+### HUD und Rückmeldung – was passiert gerade?
+
+Damit man im Stress nicht raten muss, zeigt die Statuszeile unter der Kuppel
+immer den aktuellen Zustand, und **jede** Änderung erscheint zusätzlich als
+kurze Meldung (Spiel-Notification **und** 4 s lang in der Farbe des Modus):
+
+| Zeile im HUD | Bedeutung |
+| --- | --- |
+| `Modus 2/8 · Ernten · Strahl AN` | gewählter Modus in Modusfarbe, Strahlstatus |
+| `Höhe 6,3 m` / `gelandet` | aktuelle Flughöhe |
+| `Korntank: 12.400 / 25.000 l · Weizen` | Füllstand und Frucht |
+| `Laderaum: 300.000 / 5.000.000 l · Silage` | der große Universalspeicher |
+| `Greifstrahl: Ballen · 780 kg` | was gerade in der Luft hängt |
+| `Muster: Ring · Radius 6,5 m · Breite 13 m` | Kornkreis-Einstellung |
+| `Ernte → Anhänger: AN → Kipper [LKW 12 Tsd frei · Hänger 25 Tsd frei]` | zweiter Strahl und die ganze Fahrzeugreihe |
+| `Abladen: LKW` / `Aufnehmen: Kipper` | läuft gerade |
+| unterste Zeile (Modusfarbe) | die letzte Aktion, z. B. „Höhe: 9,0 m“, „Strahlbreite 6,50 m“, „Saatgut: Weizen“, „Kein Abnehmer unter dem Strahl“ |
+
+Neu dabei: Höhenänderungen melden sich gedrosselt (max. alle 0,9 s), damit
+Halten der Taste nicht zuspammt – und wenn der Abladestrahl kein Ziel findet,
+sagt das Spiel das ausdrücklich, statt still aufzuhören.
 
 ### Physische Ladung (separat vom virtuellen Füllgut)
 
@@ -927,6 +952,10 @@ Wohnhütte und Höhensturm gibt es derzeit noch kein separates PDF-Handbuch.
 | `docs/pdf/FS25_Disco.pdf` | Hofdisco, synchronisierte Musik |
 | `docs/pdf/FS25_Autokino.pdf` | Leinwand, Filme, MP-Sync |
 | `docs/pdf/FS25_Distillery.pdf` | Club nach Grundriss, Titelliste, Radio |
+
+Die PDFs liegen zusätzlich **neben den ZIPs in `dist/`**, damit der
+Download-Ordner alles auf einmal enthält (der Generator kopiert sie beim Bauen
+automatisch mit).
 
 ```bash
 python tools/build_manuals.py                  # alle neun

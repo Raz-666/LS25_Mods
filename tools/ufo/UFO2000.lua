@@ -130,6 +130,9 @@ UFO2000.HARVEST_TRAILER_SPEED = 4500.0 -- l/s delivered to a nearby vehicle
 UFO2000.HARVEST_TRAILER_OFFSET = 3.0   -- m to the right of the main beam
 UFO2000.HARVEST_TRAILER_RANGE = 6.0    -- m from the beam axis to a trailer root
 UFO2000.HARVEST_TRAILER_RADIUS = 0.85  -- m, narrow visible transfer beam
+UFO2000.TRANSFER_MAX_TARGETS = 4        -- truck + trailers shown in the HUD
+UFO2000.TRANSFER_RETRY_TIME = 2.5       -- s before a refusing target is retried
+UFO2000.STATUS_TIME = 4.0               -- s the action ticker stays visible
 
 -- physical-object transport -------------------------------------------------
 -- One dynamic object at a time. The beam accepts only cargo whose collision
@@ -1340,19 +1343,21 @@ end
 -- ---------------------------------------------------------------------------
 --- Finds a trailer or a tip station below the saucer.
 --- Returns the target object, its display name and whether it is a station.
-function UFO2000.findUnloadTarget(vehicle, fillTypeIndex, centerX, centerZ,
+--- Every destination under the saucer, nearest first.
+--- A truck and the trailers behind it are separate vehicles in FS25, so this
+--- returns a list: the transfer beam works through the whole combination one
+--- after the other, without any extra key press.
+function UFO2000.findUnloadTargets(vehicle, fillTypeIndex, centerX, centerZ,
         includeStations, searchRange)
     local cx, cy, cz = getWorldTranslation(vehicle.components[1].node)
-    -- The secondary harvest beam is a little to one side of the main emitter.
     cx = centerX or cx
     cz = centerZ or cz
     local farmId = vehicle:getOwnerFarmId()
     local range = searchRange or UFO2000.UNLOAD_RANGE
-    local best, bestDist = nil, range * range
-    local bestName, bestIsStation = "", false
+    local list, seen = {}, {}
 
-    local function consider(obj, node, name, isStation)
-        if node == nil then
+    local function consider(obj, node, name, isStation, free)
+        if node == nil or obj == nil or seen[obj] then
             return
         end
         local tx, ty, tz = getWorldTranslation(node)
@@ -1363,10 +1368,17 @@ function UFO2000.findUnloadTarget(vehicle, fillTypeIndex, centerX, centerZ,
         end
         local dx, dz = tx - cx, tz - cz
         local dist = dx * dx + dz * dz
-        if dist < bestDist then
-            best, bestDist = obj, dist
-            bestName, bestIsStation = name or "", isStation
+        if dist > range * range then
+            return
         end
+        seen[obj] = true
+        table.insert(list, {
+            target = obj,
+            name = name or "",
+            isStation = isStation,
+            free = free or 0,
+            dist = dist,
+        })
     end
 
     -- 1. tip stations: the classic "hover over the yard" case
@@ -1377,7 +1389,7 @@ function UFO2000.findUnloadTarget(vehicle, fillTypeIndex, centerX, centerZ,
                 and station:getIsFillTypeAllowed(fillTypeIndex)
             local free = 0
             if allowed and station.getFreeCapacity ~= nil then
-                free = station:getFreeCapacity(fillTypeIndex, farmId)
+                free = station:getFreeCapacity(fillTypeIndex, farmId) or 0
             end
             if free > 1 then
                 local node = nil
@@ -1385,41 +1397,140 @@ function UFO2000.findUnloadTarget(vehicle, fillTypeIndex, centerX, centerZ,
                     for _, trigger in pairs(station.unloadTriggers) do
                         node = trigger.exactFillRootNode or trigger.triggerNode
                         if node ~= nil then
-                            consider(station, node, station.stationName or "Tip station", true)
+                            consider(station, node, station.stationName or "Tip station",
+                                true, free)
                         end
                     end
                 end
                 if node == nil then
-                    consider(station, station.rootNode, station.stationName or "Tip station", true)
+                    consider(station, station.rootNode, station.stationName or "Tip station",
+                        true, free)
                 end
             end
         end
     end
 
-    -- 2. trailers standing below the saucer
+    -- 2. every vehicle below the saucer: the truck first, then its trailers
     if g_currentMission ~= nil and g_currentMission.vehicleSystem ~= nil then
         for _, other in pairs(g_currentMission.vehicleSystem:getVehicles()) do
             if other ~= vehicle and other.getFillUnitCount ~= nil then
+                local free = 0
                 for i = 1, other:getFillUnitCount() do
                     local supports = other.getFillUnitSupportsFillType ~= nil
                         and other:getFillUnitSupportsFillType(i, fillTypeIndex)
-                    local free = 0
                     if supports and other.getFillUnitFreeCapacity ~= nil then
-                        free = other:getFillUnitFreeCapacity(i, fillTypeIndex, farmId) or 0
+                        free = free
+                            + (other:getFillUnitFreeCapacity(i, fillTypeIndex, farmId) or 0)
                     end
-                    if free > 1 and other.components ~= nil then
-                        local name = other.getName ~= nil and other:getName() or "Trailer"
-                        consider(other, other.components[1].node, name, false)
-                    end
-                    if best == other then
-                        break
-                    end
+                end
+                if free > 1 and other.components ~= nil then
+                    local name = other.getName ~= nil and other:getName() or "Trailer"
+                    consider(other, other.components[1].node, name, false, free)
                 end
             end
         end
     end
-    return best, bestName, bestIsStation
+
+    table.sort(list, function(a, b)
+        return a.dist < b.dist
+    end)
+    return list
 end
+
+
+--- Nearest destination only - used by the loading beam and the old call sites.
+function UFO2000.findUnloadTarget(vehicle, fillTypeIndex, centerX, centerZ,
+        includeStations, searchRange)
+    local list = UFO2000.findUnloadTargets(vehicle, fillTypeIndex, centerX,
+        centerZ, includeStations, searchRange)
+    local entry = list[1]
+    if entry == nil then
+        return nil, "", false
+    end
+    return entry.target, entry.name, entry.isStation
+end
+
+
+--- Next destination that still has room and did not just refuse this fill type
+--- (a trailer that only takes a different fruit, for example).
+function UFO2000.pickTransferTarget(vehicle, list)
+    local spec = vehicle.spec_ufo2000
+    local now = g_currentMission ~= nil and g_currentMission.time or 0
+    spec.transferSkip = spec.transferSkip or {}
+    for i = 1, #list do
+        local entry = list[i]
+        local skipUntil = spec.transferSkip[tostring(entry.target)]
+        if (skipUntil == nil or skipUntil < now) and entry.free > 1 then
+            return entry
+        end
+    end
+    return nil
+end
+
+
+--- Remembers that a destination refused, so the beam moves on to the next one
+--- instead of hammering the same trailer every frame.
+function UFO2000.markTransferRefused(vehicle, entry)
+    if entry == nil or entry.target == nil then
+        return
+    end
+    local spec = vehicle.spec_ufo2000
+    local now = g_currentMission ~= nil and g_currentMission.time or 0
+    spec.transferSkip = spec.transferSkip or {}
+    spec.transferSkip[tostring(entry.target)] = now + UFO2000.TRANSFER_RETRY_TIME * 1000
+end
+
+
+--- Short litre format for the HUD: 21.500 l -> "21,5 Tsd".
+function UFO2000.formatLiters(liters)
+    liters = liters or 0
+    if liters >= 1000000 then
+        return string.format("%.1f Mio", liters / 1000000)
+    elseif liters >= 10000 then
+        return string.format("%.0f Tsd", liters / 1000)
+    end
+    return string.format("%d", math.floor(liters))
+end
+
+
+--- Builds the "who is being filled" list for the HUD. Runs twice a second on
+--- the client as well, so multiplayer players see the same queue.
+function UFO2000.updateTransferQueue(vehicle, dt)
+    local spec = vehicle.spec_ufo2000
+    spec.transferQueueTime = (spec.transferQueueTime or 0) + dt
+    if spec.transferQueueTime < 0.5 then
+        return
+    end
+    spec.transferQueueTime = 0
+    spec.transferQueue = {}
+    if not (spec.harvestToTrailer or spec.unloading) or not spec.isHovering then
+        return
+    end
+
+    local fillUnitIndex, fillTypeIndex
+    if spec.unloading then
+        fillUnitIndex, fillTypeIndex = UFO2000.getLoadedFillUnitIndex(vehicle)
+    else
+        fillUnitIndex = UFO2000.HARVEST_TANK_INDEX
+        fillTypeIndex = vehicle:getFillUnitFillType(fillUnitIndex)
+    end
+    if fillUnitIndex == nil or fillTypeIndex == nil
+        or fillTypeIndex == FillType.UNKNOWN then
+        return
+    end
+
+    local centerX, centerZ
+    if not spec.unloading then
+        centerX, centerZ = UFO2000.getHarvestTransferPosition(vehicle)
+    end
+    local list = UFO2000.findUnloadTargets(vehicle, fillTypeIndex, centerX, centerZ,
+        spec.unloading,
+        spec.unloading and UFO2000.UNLOAD_RANGE or UFO2000.HARVEST_TRAILER_RANGE)
+    for i = 1, math.min(#list, UFO2000.TRANSFER_MAX_TARGETS) do
+        table.insert(spec.transferQueue, {name = list[i].name, free = list[i].free})
+    end
+end
+
 
 --- Moves a limited amount from one UFO fill unit to a vehicle or tip station.
 --- Any amount the destination refuses is put back into the source unit.
@@ -1482,12 +1593,19 @@ function UFO2000.updateUnloading(vehicle, dt)
     end
     local fillLevel = vehicle:getFillUnitFillLevel(fillUnitIndex)
 
-    local target, name, isStation = UFO2000.findUnloadTarget(vehicle, fillTypeIndex)
-    if target == nil then
+    local list = UFO2000.findUnloadTargets(vehicle, fillTypeIndex)
+    local entry = UFO2000.pickTransferTarget(vehicle, list)
+    if entry == nil then
+        -- tell the player why nothing happens instead of silently stopping
+        local now = g_currentMission ~= nil and g_currentMission.time or 0
+        if spec.lastNoTargetNotify == nil or now - spec.lastNoTargetNotify > 4000 then
+            spec.lastNoTargetNotify = now
+            notify(vehicle, "ufo_notify_noTarget")
+        end
         UFO2000.setUnloadingState(vehicle, false)
         return
     end
-    UFO2000.setUnloadTargetName(vehicle, name)
+    UFO2000.setUnloadTargetName(vehicle, entry.name)
 
     local amount = math.min(fillLevel, UFO2000.UNLOAD_SPEED * dt)
     if amount <= 0 then
@@ -1497,26 +1615,21 @@ function UFO2000.updateUnloading(vehicle, dt)
 
     -- The helper restores any amount the destination did not accept.
     local moved = UFO2000.transferFillToTarget(vehicle, fillUnitIndex,
-        fillTypeIndex, target, isStation, amount)
+        fillTypeIndex, entry.target, entry.isStation, amount)
     if moved <= 0 then
+        -- try the next vehicle of the combination instead of stalling
+        UFO2000.markTransferRefused(vehicle, entry)
         spec.unloadIdle = (spec.unloadIdle or 0) + dt
-        if spec.unloadIdle > 1.0 then
+        if spec.unloadIdle > 2.5 then
             UFO2000.setUnloadingState(vehicle, false)
             spec.unloadIdle = 0
         end
         return
     end
     spec.unloadedTotal = spec.unloadedTotal + moved
-    if moved > 0 then
-        spec.unloadIdle = 0
-    else
-        spec.unloadIdle = (spec.unloadIdle or 0) + dt
-        if spec.unloadIdle > 1.0 then
-            UFO2000.setUnloadingState(vehicle, false)
-            spec.unloadIdle = 0
-        end
-    end
+    spec.unloadIdle = 0
 end
+
 
 --- World position of the narrow, offset second tractor beam used for filling
 --- a truck or trailer while the primary beam stays in harvest mode.
@@ -1608,17 +1721,24 @@ function UFO2000.updateHarvestToTrailer(vehicle, dt)
     end
 
     local beamX, beamZ = UFO2000.getHarvestTransferPosition(vehicle)
-    local target, name = UFO2000.findUnloadTarget(vehicle, fillTypeIndex,
-        beamX, beamZ, false, UFO2000.HARVEST_TRAILER_RANGE)
-    if target == nil then
+    local list = UFO2000.findUnloadTargets(vehicle, fillTypeIndex, beamX, beamZ,
+        false, UFO2000.HARVEST_TRAILER_RANGE)
+    local entry = UFO2000.pickTransferTarget(vehicle, list)
+    if entry == nil then
         UFO2000.setDirectTargetName(vehicle, "")
         return
     end
-    UFO2000.setDirectTargetName(vehicle, name)
+    UFO2000.setDirectTargetName(vehicle, entry.name)
     local moved = UFO2000.transferFillToTarget(vehicle, fillUnitIndex,
-        fillTypeIndex, target, false, UFO2000.HARVEST_TRAILER_SPEED * dt)
+        fillTypeIndex, entry.target, entry.isStation,
+        UFO2000.HARVEST_TRAILER_SPEED * dt)
+    if moved <= 0 then
+        UFO2000.markTransferRefused(vehicle, entry)
+        return
+    end
     spec.unloadedTotal = (spec.unloadedTotal or 0) + moved
 end
+
 
 --- presses the next slice of the pattern into the field (server side)
 function UFO2000.updateDrawing(vehicle, dt)
@@ -1702,15 +1822,22 @@ end
 
 --- Common, localized feedback for a user-initiated setting change.
 local function notify(vehicle, textKey, ...)
-    if g_currentMission == nil or g_currentMission.addIngameNotification == nil
-        or vehicle.getIsEntered == nil or not vehicle:getIsEntered() then
-        return
-    end
     local text = g_i18n ~= nil and g_i18n:getText(textKey) or textKey
     local args = {...}
     if #args > 0 then
         local unpackArgs = table.unpack or unpack
         text = string.format(text, unpackArgs(args))
+    end
+    -- the same text also runs through the HUD ticker, so the player can see
+    -- what the last key press changed even when notifications are switched off
+    local spec = vehicle.spec_ufo2000
+    if spec ~= nil then
+        spec.statusText = text
+        spec.statusTime = UFO2000.STATUS_TIME
+    end
+    if g_currentMission == nil or g_currentMission.addIngameNotification == nil
+        or vehicle.getIsEntered == nil or not vehicle:getIsEntered() then
+        return
     end
     g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO, text)
 end
@@ -1837,6 +1964,22 @@ function UFO2000.actionEventMenu(vehicle, actionName, inputValue, callbackState)
     UFO2000.setMenuCursor(spec.menuOpen)
 end
 
+--- Throttled height feedback: holding the key must not flood the log, but the
+--- player should see where the saucer is heading.
+local function showAltitudeFeedback(vehicle)
+    local spec = vehicle.spec_ufo2000
+    if not spec.isHovering then
+        return
+    end
+    local now = g_currentMission ~= nil and g_currentMission.time or 0
+    if spec.lastAltitudeNotify ~= nil and now - spec.lastAltitudeNotify < 900 then
+        return
+    end
+    spec.lastAltitudeNotify = now
+    notify(vehicle, "ufo_notify_altitude", spec.altitudeTarget)
+end
+
+
 function UFO2000.actionEventAltitudeUp(vehicle, actionName, inputValue, callbackState)
     local spec = vehicle.spec_ufo2000
     local pressed = inputValue ~= 0
@@ -1849,6 +1992,9 @@ function UFO2000.actionEventAltitudeUp(vehicle, actionName, inputValue, callback
     end
     spec.digitalUp = pressed
     UFO2000.updateAxis(vehicle)
+    if pressed then
+        showAltitudeFeedback(vehicle)
+    end
 end
 
 function UFO2000.actionEventAltitudeDown(vehicle, actionName, inputValue, callbackState)
@@ -1863,6 +2009,9 @@ function UFO2000.actionEventAltitudeDown(vehicle, actionName, inputValue, callba
     end
     spec.digitalDown = pressed
     UFO2000.updateAxis(vehicle)
+    if pressed then
+        showAltitudeFeedback(vehicle)
+    end
 end
 
 function UFO2000.actionEventAxis(vehicle, actionName, inputValue, callbackState, isAnalog)
@@ -2664,6 +2813,8 @@ function UFO2000:onUpdateTick(dt, isActiveForInput, isActiveForInputIgnoreSelect
     local spec = self.spec_ufo2000
     spec.legsAlpha = UFO2000.clamp(
         spec.legsAlpha + (spec.legsTarget - spec.legsAlpha) * math.min(dt * spec.legSpeed, 1), 0, 1)
+    spec.statusTime = math.max((spec.statusTime or 0) - dt, 0)
+    UFO2000.updateTransferQueue(self, dt)
 
     if self.isServer then
         UFO2000.updateAxis(self)
@@ -2826,8 +2977,12 @@ function UFO2000:onUpdate(dt, isActiveForInput, isActiveForInputIgnoreSelection,
             end
         end
 
-        local transferVisible = spec.harvestToTrailer
-            and spec.beamMode == UFO2000.BEAM_MODE_HARVEST
+        -- the second emitter shows up whenever the ship is actually feeding
+        -- somebody: during harvest-with-trailer and while the unloading mode
+        -- pours into a truck or a station
+        local transferVisible = (spec.harvestToTrailer
+                and spec.beamMode == UFO2000.BEAM_MODE_HARVEST)
+            or (spec.unloading and spec.beamMode == UFO2000.BEAM_MODE_UNLOAD)
         if spec.transferBeamNode ~= nil then
             setVisibility(spec.transferBeamNode, transferVisible)
             if transferVisible then
@@ -3076,9 +3231,16 @@ function UFO2000.drawHud(vehicle)
         or g_i18n:getText("ufo_hud_landed")
     local beamState = spec.beamActive and g_i18n:getText("ufo_hud_on")
         or g_i18n:getText("ufo_hud_off")
-    local modeLine = string.format("%s: %s · %s", g_i18n:getText("ufo_hud_mode"),
+    local modeLine = string.format("%s %d/%d · %s · %s",
+        g_i18n:getText("ufo_hud_mode"), spec.beamMode, UFO2000.MODE_COUNT,
         modeName, beamState)
-    local beamColor = spec.beamActive and green or dim
+    -- the mode line always carries the beam colour of the selected mode, so
+    -- the player can tell the eight functions apart at a glance
+    local modeLight = modeInfo.light or {0.35, 1.0, 0.42}
+    local beamColor = spec.beamActive
+        and {modeLight[1] * 0.75 + 0.25, modeLight[2] * 0.75 + 0.25,
+             modeLight[3] * 0.75 + 0.25, 1}
+        or dim
 
     local grainLevel = vehicle:getFillUnitFillLevel(UFO2000.HARVEST_TANK_INDEX) or 0
     local grainCapacity = vehicle:getFillUnitCapacity(UFO2000.HARVEST_TANK_INDEX) or 0
@@ -3119,6 +3281,19 @@ function UFO2000.drawHud(vehicle)
             g_i18n:getText("ufo_hud_radius"), radius,
             g_i18n:getText("ufo_hud_width"), radius * 2)
 
+    -- "LKW (21 Tsd frei) · Hänger (25 Tsd frei)": the whole combination, not
+    -- just the vehicle that is being filled right now
+    local queueText = ""
+    if spec.transferQueue ~= nil and #spec.transferQueue > 0 then
+        local parts = {}
+        for i = 1, #spec.transferQueue do
+            local entry = spec.transferQueue[i]
+            table.insert(parts, string.format("%s %s %s", entry.name,
+                UFO2000.formatLiters(entry.free), g_i18n:getText("ufo_hud_free")))
+        end
+        queueText = "  [" .. table.concat(parts, " · ") .. "]"
+    end
+
     local directLine
     if spec.harvestToTrailer then
         if spec.infiniteTank then
@@ -3129,8 +3304,8 @@ function UFO2000.drawHud(vehicle)
             directLine = string.format("%s: %s · %s", g_i18n:getText("ufo_hud_trailerBeam"),
                 g_i18n:getText("ufo_hud_on"), g_i18n:getText("ufo_hud_transferPaused"))
         elseif spec.directTargetName ~= "" then
-            directLine = string.format("%s: %s → %s", g_i18n:getText("ufo_hud_trailerBeam"),
-                g_i18n:getText("ufo_hud_on"), spec.directTargetName)
+            directLine = string.format("%s: %s → %s%s", g_i18n:getText("ufo_hud_trailerBeam"),
+                g_i18n:getText("ufo_hud_on"), spec.directTargetName, queueText)
         else
             directLine = string.format("%s: %s · %s", g_i18n:getText("ufo_hud_trailerBeam"),
                 g_i18n:getText("ufo_hud_on"), g_i18n:getText("ufo_hud_waiting"))
@@ -3174,6 +3349,15 @@ function UFO2000.drawHud(vehicle)
             g_i18n:getText("ufo_hud_off"))
     end
     drawText(0.5, 0.058, 0.012, activityLine, RenderText.ALIGN_CENTER, activityColor)
+
+    -- action ticker: shows what the last key press changed, in the mode colour
+    if spec.statusText ~= nil and spec.statusText ~= ""
+        and (spec.statusTime or 0) > 0 then
+        local fade = UFO2000.clamp(spec.statusTime / 1.0, 0.25, 1.0)
+        drawText(0.5, 0.036, 0.0135, spec.statusText, RenderText.ALIGN_CENTER,
+            {modeLight[1] * 0.7 + 0.3, modeLight[2] * 0.7 + 0.3,
+             modeLight[3] * 0.7 + 0.3, fade})
+    end
 
     if not spec.menuOpen then
         return

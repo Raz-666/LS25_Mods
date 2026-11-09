@@ -814,6 +814,19 @@ def main():
                 needle is not None and abs(needle[2] + 135) < 1e-6,
                 "rotation=%s" % (needle,))
 
+    # every setting change also lands in the HUD ticker (statusText), so the
+    # player sees what the last key press did even without notifications
+    lua.execute("""
+    vehicle.spec_ufo2000.statusText = ""
+    vehicle.spec_ufo2000.statusTime = 0
+    UFO2000.actionEventBeamMode(vehicle, "ufo_beamMode", 1, nil)
+    tickerText = vehicle.spec_ufo2000.statusText or ""
+    tickerTime = vehicle.spec_ufo2000.statusTime or 0
+    """)
+    ok &= check("mode key writes a message into the HUD ticker",
+                lua.eval("tickerText") != "" and lua.eval("tickerTime") > 0,
+                lua.eval("tostring(tickerText)"))
+
     # sowing uses the selected seed and the keys can change it
     lua.execute("""
     vehicle:setUFOBeamMode(5)
@@ -911,6 +924,72 @@ def main():
     ok &= check("second beam is visible during harvesting",
                 lua.eval("world.visibility[58]") is True)
 
+    # ---- a truck with two trailers: the beam fills the whole combination --
+    lua.execute("""
+    local function makeTarget(node, name, capacity)
+        local t = newVehicle()
+        t.isServer = true
+        t.components = { { node = node } }
+        t.fillUnits = { { fillType = FillType.UNKNOWN, fillLevel = 0, capacity = capacity } }
+        t.getFillUnitSupportsFillType = function(self, i, fillType) return true end
+        t.getFillUnitFreeCapacity = function(self, i, fillType, farmId)
+            return self.fillUnits[i].capacity - self.fillUnits[i].fillLevel
+        end
+        t.addFillUnitFillLevel = function(self, farmId, i, delta, fillType, toolType, pos)
+            local fu = self.fillUnits[i]
+            local before = fu.fillLevel
+            fu.fillType = fillType
+            fu.fillLevel = math.max(0, math.min(fu.capacity, fu.fillLevel + delta))
+            return fu.fillLevel - before
+        end
+        t.getName = function() return name end
+        return t
+    end
+
+    -- truck + two trailers, all standing under the second (offset) beam
+    truck = makeTarget(3, "LKW", 300)
+    trailerB = makeTarget(4, "Haenger2", 300)
+    trailer.fillUnits[1].capacity = 300
+    trailer.fillUnits[1].fillLevel = 0
+    trailer.getFillUnitSupportsFillType = function(self, i, fillType) return true end
+    world.nodes[3] = { 3, 0, 0.0 }
+    world.nodes[4] = { 3, 0, 1.5 }
+    world.nodes[2] = { 3, 0, 3.0 }
+    g_currentMission.vehicleSystem = {
+        getVehicles = function() return { vehicle, trailer, truck, trailerB } end,
+    }
+    world.field = false
+    vehicle.fillUnits[2].fillType = FillType.WHEAT
+    vehicle.fillUnits[2].fillLevel = 900
+    vehicle.spec_ufo2000.harvestToTrailer = true
+    vehicle.spec_ufo2000.infiniteTank = false
+    vehicle.spec_ufo2000.unloading = false
+    vehicle:setUFOIsHovering(true)
+    vehicle:setUFOBeamMode(UFO2000.BEAM_MODE_HARVEST)
+    vehicle:setUFOBeamActive(true)
+    for i = 1, 600 do
+        -- keep the saucer over the combination: the second beam sits 3 m to
+        -- the right, so the whole line has to stand under it
+        world.nodes[1] = { 0, 20, 0 }
+        vehicle.spec_ufo2000.yaw = 0
+        g_currentMission.time = g_currentMission.time + 16
+        callEvent(vehicle, "onUpdateTick", 1/60, true, true, true)
+    end
+    combinationLevels = truck.fillUnits[1].fillLevel + trailerB.fillUnits[1].fillLevel
+        + trailer.fillUnits[1].fillLevel
+    combinationLeft = vehicle.fillUnits[2].fillLevel
+    queueCount = #(vehicle.spec_ufo2000.transferQueue or {})
+    trailer.fillUnits[1].capacity = 20000      -- back to a normal trailer
+    """)
+    ok &= check("combination: the whole truck + trailer line is filled",
+                lua.eval("combinationLevels") > 850,
+                "%.0f l arrived" % lua.eval("combinationLevels"))
+    ok &= check("combination: the grain tank is empty afterwards",
+                lua.eval("combinationLeft") < 60,
+                "%.0f l left" % lua.eval("combinationLeft"))
+    ok &= check("combination: the HUD lists the targets that still have room",
+                lua.eval("queueCount") >= 0)
+
     lua.execute("""
     vehicle.spec_ufo2000.harvestToTrailer = false
     vehicle.fillUnits[3].fillType = 42
@@ -942,6 +1021,38 @@ def main():
                 lua.eval("string.find(hudText, 'ufo_hud_transferPaused', 1, true) ~= nil"))
     ok &= check("HUD always shows unloading off when idle",
                 lua.eval("string.find(hudText, 'ufo_hud_unloadState: ufo_hud_off', 1, true) ~= nil"))
+
+    # ---- the second emitter shows while the ship feeds somebody ----------
+    lua.execute("""
+    local spec = vehicle.spec_ufo2000
+    spec.isHovering = true
+    spec.beamActive = true
+    spec.beamMode = UFO2000.BEAM_MODE_UNLOAD
+    spec.unloading = true
+    spec.harvestToTrailer = false
+    world.y = 6.0
+    g_currentMission.time = (g_currentMission.time or 0) + 16
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("second beam shows up while unloading",
+                lua.eval("world.visibility[58]") is True)
+    lua.execute("""
+    local spec = vehicle.spec_ufo2000
+    spec.beamMode = UFO2000.BEAM_MODE_HARVEST
+    spec.harvestToTrailer = true
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("second beam shows up during harvest-to-trailer",
+                lua.eval("world.visibility[58]") is True)
+    lua.execute("""
+    local spec = vehicle.spec_ufo2000
+    spec.unloading = false
+    spec.harvestToTrailer = false
+    spec.beamActive = false
+    callEvent(vehicle, "onUpdate", 1/60, true, true, true)
+    """)
+    ok &= check("second beam hidden when nothing is fed",
+                lua.eval("world.visibility[58]") is False)
 
     # ---- physical cargo: pickup, size/mass guards, logs and safe release --
     lua.execute("""

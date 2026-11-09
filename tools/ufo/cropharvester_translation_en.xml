@@ -125,4 +125,7 @@ Controls: V take off/land, Page Up/Down altitude, Z beam, K mode, J/L beam width
     <text name="crop_notify_cargoSafeDrop"><en>Cargo placed safely because the UFO was removed.</en></text>
     <text name="crop_notify_cargoTooHigh"><en>Hover no more than 18 m above the ground to lift cargo.</en></text>
     <text name="crop_notify_cargoAlreadyHeld"><en>Already carrying physical cargo: %s</en></text>
+    <text name="crop_hud_free"><en>free</en></text>
+    <text name="crop_notify_altitude"><en>Height: %.1f m</en></text>
+    <text name="crop_notify_noTarget"><en>No receiver under the beam - park a truck or trailer below.</en></text>
 </l10n>

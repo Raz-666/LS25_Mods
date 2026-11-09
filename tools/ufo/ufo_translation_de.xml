@@ -111,4 +111,7 @@
     <text name="ufo_notify_cargoSafeDrop"><de>Ladung sicher abgelegt, weil das UFO entfernt wurde.</de></text>
     <text name="ufo_notify_cargoTooHigh"><de>Zum Aufnehmen höchstens 18 m über dem Boden schweben.</de></text>
     <text name="ufo_notify_cargoAlreadyHeld"><de>Bereits Ladung am Strahl: %s</de></text>
+    <text name="ufo_hud_free"><de>frei</de></text>
+    <text name="ufo_notify_altitude"><de>Höhe: %.1f m</de></text>
+    <text name="ufo_notify_noTarget"><de>Kein Abnehmer unter dem Strahl – LKW oder Anhänger darunter stellen.</de></text>
 </l10n>

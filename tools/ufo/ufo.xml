@@ -204,7 +204,7 @@
                     <!-- 3: universal virtual fill-unit hold. The Lua specialization
                          also accepts every registered base-game / mod fill type.
                          Physical objects use a separate one-item beam carry system. -->
-                    <fillUnit unitTextOverride="$l10n_unit_literShort" showOnHud="true" showInShop="true" fillTypes="WHEAT BARLEY OAT CANOLA MAIZE SUNFLOWER SOYBEAN SORGHUM RYE TRITICALE SPELT RICE POTATO SUGARBEET SUGARCANE GRAPE OLIVE COTTON GRASS_WINDROW DRYGRASS_WINDROW STRAW HAY SILAGE CHAFF FORAGE FORAGE_MIXING FERTILIZER LIME MANURE LIQUID_MANURE SLURRY DIGESTATE SEEDS WATER MILK" capacity="5000000">
+                    <fillUnit unitTextOverride="$l10n_unit_literShort" showOnHud="true" showInShop="true" fillTypes="WHEAT BARLEY OAT CANOLA MAIZE SUNFLOWER SOYBEAN SORGHUM RYE TRITICALE SPELT RICE POTATO SUGARBEET SUGARCANE GRAPE OLIVE COTTON GRASS_WINDROW DRYGRASS_WINDROW STRAW HAY SILAGE CHAFF FORAGE FORAGE_MIXING FERTILIZER LIME MANURE LIQUID_MANURE SLURRY DIGESTATE SEEDS WATER MILK WOODCHIPS SAWDUST PIGFOOD MINERAL_FEED" capacity="5000000">
                         <exactFillRootNode node="exactFillRootNode"/>
                     </fillUnit>
                 </fillUnits>
