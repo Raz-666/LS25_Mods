@@ -4,7 +4,7 @@
 
     <storeData>
         <name>$l10n_rollercoaster_car_name</name>
-        <image>store_rollercoaster.png</image>
+        <image>store_rollercoaster.dds</image>
         <price>1</price>
         <canBeSold>false</canBeSold>
         <showInStore>false</showInStore>

@@ -29,7 +29,7 @@ sys.path.insert(0, BABAJAGA)
 
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".txt")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".txt")
 
 
 def step(message):
@@ -108,11 +108,14 @@ def build_images():
     icon_png = os.path.join(BUILD, "icon_babaJagaHouse.png")
     icon.save(icon_png)
     ufo_images._dds(icon_png, os.path.join(MOD, "icon_babaJagaHouse.dds"),
-                    "bc1", sys.executable)
+                    "bc1", sys.executable, no_mips=True)
 
+    store_png = os.path.join(MOD, "store_babaJagaHouse.png")
     render.render(size=512, eye=(12.2, 7.0, 14.2), target=(0.2, 4.0, 1.8),
                   fov=39, ss=2, return_alpha=True,
-                  root=_render_scene()).save(os.path.join(MOD, "store_babaJagaHouse.png"))
+                  root=_render_scene()).save(store_png)
+    ufo_images._dds(store_png, os.path.join(MOD, "store_babaJagaHouse.dds"),
+                    "bc7", sys.executable)
 
     docs = os.path.join(REPO, "docs", "renders")
     os.makedirs(docs, exist_ok=True)
@@ -129,6 +132,7 @@ def validate():
 
 
 def make_zip():
+    subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), MOD], check=True)
     step("package")
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_BabaJagaHouse.zip")

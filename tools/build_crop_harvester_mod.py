@@ -31,6 +31,7 @@ import shutil
 import subprocess
 import math
 import sys
+import tempfile
 import zipfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,7 +47,7 @@ sys.path.insert(0, os.path.join(TOOLS, "i3d"))
 
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt", ".lua")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".txt", ".lua")
 
 VEHICLE_XML = "crop.xml"
 I3D = "crop.i3d"
@@ -229,7 +230,7 @@ def build_xml(mappings):
 
     xml = xml.replace('<vehicle type="UFO2000"', '<vehicle type="CropHarvester"')
     xml = xml.replace("<name>$l10n_ufo_name</name>", "<name>$l10n_crop_name</name>")
-    xml = xml.replace("<image>store_ufo.png</image>", "<image>store_crop.png</image>")
+    xml = xml.replace("<image>store_ufo.dds</image>", "<image>store_crop.dds</image>")
     xml = xml.replace("<brand>UFO2000</brand>", "<brand>CropHarvester</brand>")
     xml = xml.replace("<price>42000</price>", "<price>96000</price>")
     xml = xml.replace("<typeDesc>$l10n_typeDesc_ufo</typeDesc>",
@@ -336,12 +337,15 @@ def build_images():
     icon = render.add_shadow(icon, strength=0.30)
     p = os.path.join(BUILD, "icon_crop.png")
     icon.save(p)
-    ufo_images._dds(p, os.path.join(MOD, "icon_cropharvester.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(MOD, "icon_cropharvester.dds"), "bc1", sys.executable,
+                    no_mips=True)
 
     store = render.render(size=512, eye=(6.8, 4.0, 9.4), target=(0, 1.5, 0), fov=34,
                           ss=2, return_alpha=True, beam=True, root=scene())
     store = ufo_images._with_shadow(store, cy=0.90, rx=0.34, ry=0.05, strength=0.30)
-    store.save(os.path.join(MOD, "store_crop.png"))
+    store_png = os.path.join(MOD, "store_crop.png")
+    store.save(store_png)
+    ufo_images._dds(store_png, os.path.join(MOD, "store_crop.dds"), "bc7", sys.executable)
 
     from PIL import Image, ImageDraw
     brand = Image.new("RGBA", (512, 256), (0, 0, 0, 0))
@@ -352,7 +356,8 @@ def build_images():
     d.text((256, 224), "UFO 01", anchor="mm", fill=(38, 58, 54, 255))
     p = os.path.join(BUILD, "brand_crop.png")
     brand.save(p)
-    ufo_images._dds(p, os.path.join(MOD, "brand_cropharvester.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(MOD, "brand_cropharvester.dds"), "bc7", sys.executable,
+                    no_mips=True)
 
     render.render(size=1000, eye=(6.4, 3.8, 9.0), target=(0, 1.5, 0), fov=36, ss=2,
                   beam=True, root=scene()).save(os.path.join(docs, "cropharvester_hero.png"))
@@ -367,19 +372,27 @@ def build_images():
 
 def make_zip():
     step("zip")
+    os.makedirs(BUILD, exist_ok=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_CropHarvester.zip")
     if os.path.exists(out):
         os.remove(out)
-    count = 0
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-        for root, _dirs, files in os.walk(MOD):
-            for name in sorted(files):
-                if not name.lower().endswith(ZIP_EXT):
-                    continue
-                full = os.path.join(root, name)
-                zf.write(full, os.path.relpath(full, MOD).replace(os.sep, "/"))
-                count += 1
+    # Keep the full generated asset set available to UFO4500 and Alien builds;
+    # path rewrites/removals happen only in this throwaway packaging copy.
+    with tempfile.TemporaryDirectory(prefix="crop-harvester-package-", dir=BUILD) as temp:
+        package = os.path.join(temp, "mod")
+        shutil.copytree(MOD, package)
+        subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), package],
+                       check=True)
+        count = 0
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+            for root, _dirs, files in os.walk(package):
+                for name in sorted(files):
+                    if not name.lower().endswith(ZIP_EXT):
+                        continue
+                    full = os.path.join(root, name)
+                    zf.write(full, os.path.relpath(full, package).replace(os.sep, "/"))
+                    count += 1
     print("  %s (%.1f MB, %d files)" % (out, os.path.getsize(out) / 1e6, count))
 
 

@@ -145,6 +145,15 @@ def main():
             names = z.namelist()
         if "modDesc.xml" not in names:
             err("zip: modDesc.xml not at the archive root")
+        required = ("alien.xml", "alienLeader.xml", "zorp.xml", "alien.i3d",
+                    "alienLeader.i3d", "zorp.i3d", "icon_alien.dds",
+                    "store_alien.dds", "store_alienLeader.dds", "store_zorp.dds")
+        missing = [name for name in required if name not in names]
+        if missing:
+            err("zip: required game assets are missing: %s" % ", ".join(missing))
+        png_files = [name for name in names if name.lower().endswith(".png")]
+        if png_files:
+            err("zip: PNG source/store images are not allowed: %s" % ", ".join(png_files[:5]))
         ok("zip: %d files, %.1f MB" % (len(names), os.path.getsize(args.zip) / 1048576.0))
     else:
         warn("zip not built yet")

@@ -67,7 +67,7 @@ UFO2000.MIN_HARVEST_STATE = 1       -- growth state that can be cut
 
 -- v7: the full set of working modes -----------------------------------------
 -- 1 flatten (crop circles) 2 harvest 3 cultivate 4 plow 5 sow 6 fertilize
--- 7 load (suction) 8 unload (pour)
+-- 7 cargo intake (suction) 8 cargo release (pour)
 UFO2000.BEAM_MODE_CULTIVATE = 3
 UFO2000.BEAM_MODE_PLOW = 4
 UFO2000.BEAM_MODE_SOW = 5
@@ -2315,17 +2315,17 @@ local function physicalCargoRootNodes(object)
 end
 
 local function physicalCargoMass(object, rootNode)
-    local ok, mass
-    if object ~= nil and object.isSplitShape and getMass ~= nil then
-        ok, mass = pcall(getMass, rootNode)
-    elseif object ~= nil and object.getTotalMass ~= nil then
-        ok, mass = pcall(object.getTotalMass, object)
-    elseif object ~= nil and object.getMass ~= nil then
-        ok, mass = pcall(object.getMass, object)
-    elseif getMass ~= nil then
-        ok, mass = pcall(getMass, rootNode)
+    local mass
+    if object ~= nil and object.isSplitShape and type(getMass) == "function" then
+        mass = getMass(rootNode)
+    elseif object ~= nil and type(object.getTotalMass) == "function" then
+        mass = object:getTotalMass()
+    elseif object ~= nil and type(object.getMass) == "function" then
+        mass = object:getMass()
+    elseif type(getMass) == "function" then
+        mass = getMass(rootNode)
     end
-    if not ok or type(mass) ~= "number" or mass ~= mass
+    if type(mass) ~= "number" or mass ~= mass
         or mass <= 0 or mass == math.huge then
         return nil
     end
@@ -2337,11 +2337,11 @@ local function physicalCargoBounds(object, rootNode)
         maxX = -math.huge, maxY = -math.huge, maxZ = -math.huge, shapes = 0}
     local seen = {}
     local function addSphere(node)
-        if getShapeBoundingSphere == nil or localToLocal == nil then
+        if type(getShapeBoundingSphere) ~= "function" or type(localToLocal) ~= "function" then
             return
         end
-        local ok, x, y, z, radius = pcall(getShapeBoundingSphere, node)
-        if not ok or type(radius) ~= "number" or radius <= 0 or radius == math.huge then
+        local x, y, z, radius = getShapeBoundingSphere(node)
+        if type(radius) ~= "number" or radius <= 0 or radius == math.huge then
             return
         end
         local lx, ly, lz = localToLocal(node, rootNode, x or 0, y or 0, z or 0)
@@ -2407,21 +2407,21 @@ local function physicalCargoBounds(object, rootNode)
 end
 
 local function physicalCargoSplitShape(node)
-    if getSplitType == nil or getSplitShapeStats == nil or g_splitShapeManager == nil
-        or g_splitShapeManager.getSplitTypeByIndex == nil then
+    if type(getSplitType) ~= "function" or type(getSplitShapeStats) ~= "function"
+        or g_splitShapeManager == nil
+        or type(g_splitShapeManager.getSplitTypeByIndex) ~= "function" then
         return nil
     end
-    local ok, splitIndex = pcall(getSplitType, node)
-    if not ok or splitIndex == nil then
+    local splitIndex = getSplitType(node)
+    if splitIndex == nil then
         return nil
     end
-    local valid, splitType = pcall(g_splitShapeManager.getSplitTypeByIndex,
-        g_splitShapeManager, splitIndex)
-    if not valid or splitType == nil then
+    local splitType = g_splitShapeManager:getSplitTypeByIndex(splitIndex)
+    if splitType == nil then
         return nil
     end
-    local statsOk, sx, sy, sz = pcall(getSplitShapeStats, node)
-    if not statsOk or type(sx) ~= "number" or type(sy) ~= "number"
+    local sx, sy, sz = getSplitShapeStats(node)
+    if type(sx) ~= "number" or type(sy) ~= "number"
         or type(sz) ~= "number" then
         return nil
     end
@@ -2431,9 +2431,9 @@ local function physicalCargoSplitShape(node)
 end
 
 local function physicalCargoName(object)
-    if object ~= nil and object.getName ~= nil then
-        local ok, name = pcall(object.getName, object)
-        if ok and type(name) == "string" and name ~= "" then
+    if object ~= nil and type(object.getName) == "function" then
+        local name = object:getName()
+        if type(name) == "string" and name ~= "" then
             return name
         end
     end
@@ -2471,9 +2471,9 @@ local function describePhysicalCargo(object, hitNode)
     if physicalCargoIsAttached(object) then
         return nil, "attached"
     end
-    if object.getIsEntered ~= nil then
-        local ok, entered = pcall(object.getIsEntered, object)
-        if ok and entered then
+    if type(object.getIsEntered) == "function" then
+        local entered = object:getIsEntered()
+        if entered then
             return nil, "noTarget"
         end
     end
@@ -2583,28 +2583,27 @@ local function setPhysicalCargoPhysics(cargo, enabled)
     local physicsFunction = enabled and addToPhysics or removeFromPhysics
     if cargo.physicsMode == "object" and object ~= nil then
         local method = enabled and object.addToPhysics or object.removeFromPhysics
-        if method ~= nil then
-            local ok = pcall(method, object)
-            if ok then
-                if enabled and object.raiseActive ~= nil then
-                    pcall(object.raiseActive, object)
-                end
-                return true
+        if type(method) == "function" then
+            if method(object) == false then
+                return false
             end
+            if enabled and type(object.raiseActive) == "function" then
+                object:raiseActive()
+            end
+            return true
         end
     end
-    if physicsFunction == nil then
+    if type(physicsFunction) ~= "function" then
         return false
     end
     local changedNodes = {}
     for _, node in ipairs(cargo.nodes or {}) do
         if physicalCargoNodeExists(node) then
-            local ok = pcall(physicsFunction, node)
-            if not ok then
+            if physicsFunction(node) == false then
                 local rollback = enabled and removeFromPhysics or addToPhysics
-                if rollback ~= nil then
+                if type(rollback) == "function" then
                     for i = #changedNodes, 1, -1 do
-                        pcall(rollback, changedNodes[i])
+                        rollback(changedNodes[i])
                     end
                 end
                 return false
@@ -2656,13 +2655,12 @@ function UFO2000.updatePhysicalCargo(vehicle)
     cargo.networkTimer = (cargo.networkTimer or 0) + 16
     if cargo.networkTimer >= 200 then
         cargo.networkTimer = 0
-        if cargo.object ~= nil and cargo.object.raiseActive ~= nil then
-            pcall(cargo.object.raiseActive, cargo.object)
+        if cargo.object ~= nil and type(cargo.object.raiseActive) == "function" then
+            cargo.object:raiseActive()
         end
         if cargo.object ~= nil and cargo.object.networkTimeInterpolator ~= nil
-            and cargo.object.networkTimeInterpolator.reset ~= nil then
-            pcall(cargo.object.networkTimeInterpolator.reset,
-                cargo.object.networkTimeInterpolator)
+            and type(cargo.object.networkTimeInterpolator.reset) == "function" then
+            cargo.object.networkTimeInterpolator:reset()
         end
     end
 end
@@ -3036,15 +3034,15 @@ function UFO2000.loadModeSounds(vehicle)
         or vehicle.xmlFile == nil then
         return
     end
-    local function load(name)
+    local function loadSoundSample(name)
         return g_soundManager:loadSampleFromXML(vehicle.xmlFile, "vehicle.ufo2000",
             name, vehicle.baseDirectory, vehicle.components, 0,
             AudioGroup.VEHICLE, vehicle.i3dMappings, vehicle)
     end
-    spec.sounds.modeSwitch = load("modeSwitch")
-    spec.sounds.beamLoop = load("beamLoop")
-    spec.sounds.loadLoop = load("loadLoop")
-    spec.sounds.unloadLoop = load("unloadLoop")
+    spec.sounds.modeSwitch = loadSoundSample("modeSwitch")
+    spec.sounds.beamLoop = loadSoundSample("beamLoop")
+    spec.sounds.loadLoop = loadSoundSample("loadLoop")
+    spec.sounds.unloadLoop = loadSoundSample("unloadLoop")
     spec.soundState = {beam = false, load = false, unload = false}
 end
 

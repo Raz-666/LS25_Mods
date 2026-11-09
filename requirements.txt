@@ -1,0 +1,7 @@
+numpy
+Pillow
+soundfile
+lxml
+luaparser
+lupa
+ispc_texcomp==1.0.1

@@ -11,7 +11,7 @@
 
     <storeData>
         <name>$l10n_distillery_name</name>
-        <image>store_distillery.png</image>
+        <image>store_distillery.dds</image>
         <price>185000</price>
         <functions>
             <function>$l10n_distillery_function</function>

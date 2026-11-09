@@ -363,7 +363,7 @@ Alles ist per Python erzeugt, Blender ist nicht nötig:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install numpy pillow soundfile lxml luaparser lupa
+.venv/bin/pip install -r requirements.txt
 .venv/bin/python tools/build_mod.py            # UFO: Modell, Media, Prüfung, ZIP
 .venv/bin/python tools/alien/build.py          # Alien: Modell, Icon, Prüfung, ZIP
 .venv/bin/python tools/ufo/validate.py         # nur prüfen

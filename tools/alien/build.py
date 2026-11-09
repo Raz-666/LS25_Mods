@@ -158,7 +158,7 @@ PLACEABLE_XML = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
         <functions>
             <function>$l10n_function_alien</function>
         </functions>
-        <image>store_alien.png</image>
+        <image>store_alien.dds</image>
         <price>750</price>
         <lifetime>600</lifetime>
         <rotation>0</rotation>
@@ -191,7 +191,7 @@ LEADER_XML = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
         <functions>
             <function>$l10n_function_alien</function>
         </functions>
-        <image>store_alienLeader.png</image>
+        <image>store_alienLeader.dds</image>
         <price>1200</price>
         <lifetime>600</lifetime>
         <rotation>0</rotation>
@@ -224,7 +224,7 @@ ZORP_XML = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
         <functions>
             <function>$l10n_function_alien</function>
         </functions>
-        <image>store_zorp.png</image>
+        <image>store_zorp.dds</image>
         <price>1500</price>
         <lifetime>600</lifetime>
         <rotation>0</rotation>
@@ -249,9 +249,9 @@ ZORP_XML = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 """
 
 MODDESC = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+<modDesc descVersion="116" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
     <author>Arena.ai Agent Mode</author>
-    <version>1.3.0.0</version>
+    <version>1.3.1.0</version>
 
     <title>
         <en>Alien Mascot</en>
@@ -288,6 +288,11 @@ Drei sind in der Kiste:
 
 Kategorie: Deko]]></de>
     </description>
+
+    <changelog>
+        <en><![CDATA[1.3.1.0: Updated for FS25 test version 116; corrected mod metadata and texture packaging.]]></en>
+        <de><![CDATA[1.3.1.0: Für FS25-Testversion 116 aktualisiert; Mod-Metadaten und Texturpakete korrigiert.]]></de>
+    </changelog>
 
     <iconFilename>icon_alien.dds</iconFilename>
     <multiplayer supported="true"/>
@@ -482,17 +487,20 @@ def main():
     icon.save(os.path.join(REPO, "build", "icon_alien.png"))
     subprocess_run([sys.executable, os.path.join(REPO, "tools", "png2dds.py"),
                     os.path.join(REPO, "build", "icon_alien.png"),
-                    os.path.join(MOD, "icon_alien.dds"), "--format", "bc1"])
+                    os.path.join(MOD, "icon_alien.dds"), "--format", "bc1", "--no-mips"])
 
-    shot(os.path.join(MOD, "store_alien.png"), build_scene(),
-         (1.5, 1.55, 2.05), (0, 0.92, 0), fov=40, size=512,
-         bg=(0.95, 0.97, 0.94), alpha=True)
-    shot(os.path.join(MOD, "store_alienLeader.png"), build_scene_leader(),
-         (1.55, 1.95, 2.15), (0, 1.02, 0), fov=40, size=512,
-         bg=(0.95, 0.97, 0.94), alpha=True)
-    shot(os.path.join(MOD, "store_zorp.png"), build_scene_zorp(),
-         (1.60, 1.95, 2.55), (0, 0.95, 0), fov=36, size=512,
-         bg=(0.95, 0.97, 0.94), alpha=True)
+    store_specs = (
+        ("store_alien", build_scene(), (1.5, 1.55, 2.05), (0, 0.92, 0), 40),
+        ("store_alienLeader", build_scene_leader(), (1.55, 1.95, 2.15), (0, 1.02, 0), 40),
+        ("store_zorp", build_scene_zorp(), (1.60, 1.95, 2.55), (0, 0.95, 0), 36),
+    )
+    dds_tool = os.path.join(REPO, "tools", "png2dds.py")
+    for basename, root, eye, target, fov in store_specs:
+        png = os.path.join(REPO, "build", basename + ".png")
+        shot(png, root, eye, target, fov=fov, size=512,
+             bg=(0.95, 0.97, 0.94), alpha=True)
+        subprocess_run([sys.executable, dds_tool, png,
+                        os.path.join(MOD, basename + ".dds"), "--format", "bc7"])
 
     # documentation renders for the German manual
     shot(os.path.join(renders_dir, "alien_mascot.png"), build_scene(),
@@ -503,7 +511,7 @@ def main():
          (0.45, 1.55, 2.60), (0, 0.95, 0), fov=38)
     shot(os.path.join(renders_dir, "alien_zorp.png"), build_scene_zorp(),
          (1.10, 1.35, 2.30), (0, 0.85, 0), fov=38)
-    print("   icon_alien.dds, store_alien.png, store_alienLeader.png, store_zorp.png")
+    print("   icon_alien.dds, store_alien.dds, store_alienLeader.dds, store_zorp.dds")
 
     step("binarize")
     import subprocess
@@ -513,21 +521,24 @@ def main():
                                src_inline, "--out", os.path.join(MOD, out_name + ".i3d")])
         print("   %s.i3d + %s.i3d.shapes" % (out_name, out_name))
 
-    step("validate + zip")
+    step("zip + validate")
     import zipfile
     import subprocess
-    subprocess.call([sys.executable, os.path.join(HERE, "validate.py"),
-                     "--zip", os.path.join(REPO, "dist", "FS25_Alien.zip")] +
-                    (["--xsd", os.environ["FS25_MOD_SCHEMA_DIR"]] if os.environ.get("FS25_MOD_SCHEMA_DIR") else []))
     dist = os.path.join(REPO, "dist")
     os.makedirs(dist, exist_ok=True)
     zpath = os.path.join(dist, "FS25_Alien.zip")
+    subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), MOD], check=True)
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         for root_dir, _dirs, files in os.walk(MOD):
             for name in sorted(files):
+                if name.lower().endswith(".png"):
+                    continue  # source renders are not game assets
                 full = os.path.join(root_dir, name)
                 z.write(full, os.path.relpath(full, MOD))
     print("   %s (%.2f MB)" % (zpath, os.path.getsize(zpath) / 1048576.0))
+    subprocess.run([sys.executable, os.path.join(HERE, "validate.py"), "--zip", zpath] +
+                   (["--xsd", os.environ["FS25_MOD_SCHEMA_DIR"]]
+                    if os.environ.get("FS25_MOD_SCHEMA_DIR") else []), check=True)
     return stats
 
 

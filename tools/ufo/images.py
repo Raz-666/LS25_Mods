@@ -16,9 +16,12 @@ import render  # noqa: E402
 import model  # noqa: E402
 
 
-def _dds(src_png, dst_dds, fmt="bc1", python=sys.executable):
-    subprocess.run([python, os.path.join(REPO, "tools", "png2dds.py"), src_png, dst_dds,
-                    "--format", fmt], check=True, stdout=subprocess.DEVNULL)
+def _dds(src_png, dst_dds, fmt="bc1", python=sys.executable, no_mips=False):
+    cmd = [python, os.path.join(REPO, "tools", "png2dds.py"), src_png, dst_dds,
+           "--format", fmt]
+    if no_mips:
+        cmd.append("--no-mips")
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
 
 
 def _with_shadow(img, cx=0.5, cy=0.92, rx=0.33, ry=0.055, strength=0.35):
@@ -74,18 +77,21 @@ def build_all(python=sys.executable):
     os.makedirs(build, exist_ok=True)
     os.makedirs(docs, exist_ok=True)
 
-    # 1) shop icon (512x512, with mips) - the shape the mod list shows
+    # 1) shop icon (512x512, no mips) - the shape the mod list shows
     icon = render.render(size=512, eye=(6.0, 3.4, 8.8), target=(0, 1.05, 0), fov=36, ss=2)
     icon = render.add_shadow(icon, strength=0.30)
     p = os.path.join(build, "icon_ufo2000.png")
     icon.save(p)
-    _dds(p, os.path.join(mod, "icon_ufo2000.dds"), "bc1", python)
+    _dds(p, os.path.join(mod, "icon_ufo2000.dds"), "bc1", python, no_mips=True)
 
-    # 2) store picture (RGBA png, like the base game store images)
+    # 2) store artwork: keep a temporary PNG in the mod work folder, but ship
+    #    only the alpha-capable BC7 DDS used by the vehicle XML.
     store = render.render(size=512, eye=(6.6, 3.9, 9.4), target=(0, 1.0, 0), fov=34, ss=2,
                           return_alpha=True)
     store = _with_shadow(store, cy=0.90, rx=0.34, ry=0.05, strength=0.30)
-    store.save(os.path.join(mod, "store_ufo.png"))
+    store_png = os.path.join(mod, "store_ufo.png")
+    store.save(store_png)
+    _dds(store_png, os.path.join(mod, "store_ufo.dds"), "bc7", python)
 
     # 3) brand image
     brand = Image.new("RGBA", (512, 256), (0, 0, 0, 0))
@@ -96,7 +102,7 @@ def build_all(python=sys.executable):
     d.text((256, 214), "UFO 2000", anchor="mm", fill=(38, 58, 54, 255))
     p = os.path.join(build, "brand_ufo2000.png")
     brand.save(p)
-    _dds(p, os.path.join(mod, "brand_ufo2000.dds"), "bc1", python)
+    _dds(p, os.path.join(mod, "brand_ufo2000.dds"), "bc7", python, no_mips=True)
 
     # 4) documentation renders
     render.render(size=900, eye=(7.4, 3.6, 9.8), target=(0, 1.25, 0), fov=36, ss=2).save(

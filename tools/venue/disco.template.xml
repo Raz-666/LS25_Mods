@@ -9,7 +9,7 @@
 
     <storeData>
         <name>$l10n_disco_name</name>
-        <image>store_disco.png</image>
+        <image>store_disco.dds</image>
         <price>32000</price>
         <functions>
             <function>$l10n_disco_function</function>

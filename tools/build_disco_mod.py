@@ -34,7 +34,7 @@ sys.path.insert(0, VENUE)
 
 MAP_START = "    <!-- I3D_MAPPINGS -->"
 MAP_END = "    <!-- /I3D_MAPPINGS -->"
-ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".png", ".ogg", ".txt", ".lua")
+ZIP_EXT = (".xml", ".i3d", ".shapes", ".dds", ".ogg", ".txt", ".lua")
 
 ICON_EYE = (14.5, 8.2, 16.5)
 ICON_TARGET = (-0.4, 3.2, 0.0)
@@ -121,11 +121,13 @@ def build_images():
                          ss=2, root=scene())
     p = os.path.join(BUILD, "icon_disco.png")
     icon.save(p)
-    ufo_images._dds(p, os.path.join(MOD, "icon_disco.dds"), "bc1", sys.executable)
+    ufo_images._dds(p, os.path.join(MOD, "icon_disco.dds"), "bc1", sys.executable,
+                    no_mips=True)
 
+    store_png = os.path.join(MOD, "store_disco.png")
     render.render(size=512, eye=ICON_EYE, target=ICON_TARGET, fov=ICON_FOV, ss=2,
-                  return_alpha=True, root=scene()).save(
-        os.path.join(MOD, "store_disco.png"))
+                  return_alpha=True, root=scene()).save(store_png)
+    ufo_images._dds(store_png, os.path.join(MOD, "store_disco.dds"), "bc7", sys.executable)
 
     render.render(size=900, eye=(17.5, 9.5, 18.5), target=(-0.5, 3.2, 0.0),
                   fov=44, ss=2, root=scene()).save(os.path.join(docs, "disco_hero.png"))
@@ -143,6 +145,7 @@ def validate():
 
 def make_zip():
     step("zip")
+    subprocess.run([sys.executable, os.path.join(REPO, "tools", "dedupe_dds.py"), MOD], check=True)
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, "FS25_Disco.zip")
     count = 0

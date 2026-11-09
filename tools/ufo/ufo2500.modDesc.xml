@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<modDesc descVersion="96" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
+<modDesc descVersion="116" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://validation.gdn.giants-software.com/xml/fs25/modDesc.xsd">
     <author>Arena.ai Agent Mode</author>
-    <version>1.0.0.0</version>
+    <version>1.0.1.0</version>
 
     <title>
         <en>UFO 2500 (Console Edition)</en>
@@ -26,10 +26,10 @@ How it works
   craft. Wherever you drive, the base game wheel destruction presses the crop
   down - exactly the way a tractor flattens a field, just 20 m below a UFO.
 * The width of the brush is chosen in the shop (wheel configuration):
-    Pen        0.5 m  - draw thin lines and shapes freehand
-    Ring       1.5 m  - small circles
-    Standard   3.5 m  - the ground ring of the saucer marks this width
-    Harvester  7.5 m  - one pass, whole field gone, like a combine header
+Pen        0.5 m  - draw thin lines and shapes freehand
+Ring       1.5 m  - small circles
+Standard   3.5 m  - the ground ring of the saucer marks this width
+Harvester  7.5 m  - one pass, whole field gone, like a combine header
 * The cockpit has a dashboard, screens, switches and two blinking lights
   (base game beacon lights). The suspension of the hidden wheels makes the
   saucer wobble a little, which sells the hovering.
@@ -73,10 +73,10 @@ So funktioniert es
   Wo du langfährst, drückt die Rad-Beschädigung des Grundspiels das Getreide
   platt - genau wie ein Traktor ein Feld plattfährt, nur 20 m unter einem UFO.
 * Die Breite des Pinsels wählst du im Shop (Radkonfiguration):
-    Stift      0,5 m - dünne Linien und Formen frei zeichnen
-    Ring       1,5 m - kleine Kreise
-    Standard   3,5 m - so groß ist der Bodenring unter dem UFO
-    Mähdrescher 7,5 m - eine Bahn, ganzes Feld weg, wie ein Schneidwerk
+Stift      0,5 m - dünne Linien und Formen frei zeichnen
+Ring       1,5 m - kleine Kreise
+Standard   3,5 m - so groß ist der Bodenring unter dem UFO
+Mähdrescher 7,5 m - eine Bahn, ganzes Feld weg, wie ein Schneidwerk
 * Im Cockpit: Konsole, Bildschirme, Schalter und zwei blinkende Leuchten
   (Rundumlichter des Grundspiels). Die Federung der unsichtbaren Räder lässt
   das UFO leicht wippen - das verkauft das Schweben.
@@ -102,6 +102,11 @@ Preis: 38.000  |  Höchstgeschwindigkeit: 32 km/h  |  Cockpit: 20 m über dem Bo
 Modell, Texturen und Sounds werden von den Skripten in diesem Repository
 erzeugt (tools/ufo/). Es wurden keine Spieldateien kopiert, Marke: Lizard.]]></de>
     </description>
+
+    <changelog>
+        <en><![CDATA[1.0.1.0: Updated for FS25 test version 116; corrected mod metadata and texture packaging.]]></en>
+        <de><![CDATA[1.0.1.0: Für FS25-Testversion 116 aktualisiert; Mod-Metadaten und Texturpakete korrigiert.]]></de>
+    </changelog>
 
     <iconFilename>icon_ufo2500.dds</iconFilename>
     <multiplayer supported="true"/>

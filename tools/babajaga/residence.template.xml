@@ -8,7 +8,7 @@
 
     <storeData>
         <name>$l10n_babajagaHouse_name</name>
-        <image>store_babaJagaHouse.png</image>
+        <image>store_babaJagaHouse.dds</image>
         <price>28500</price>
         <functions>
             <function>$l10n_babajagaHouse_function</function>

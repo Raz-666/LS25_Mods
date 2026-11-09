@@ -370,63 +370,54 @@ function Distillery:onActionSource()
 end
 
 function Distillery:getRadioName()
-	if g_soundPlayer == nil then
+	if g_soundPlayer == nil or type(g_soundPlayer.getChannelName) ~= "function" then
 		return ""
 	end
-	local ok, name = pcall(function()
-		return g_soundPlayer:getChannelName()
-	end)
-	if ok and name ~= nil then
+	local name = g_soundPlayer:getChannelName()
+	if name ~= nil then
 		return name
 	end
 	return ""
 end
 
 function Distillery:startRadio()
-	if g_soundPlayer == nil then
+	if g_soundPlayer == nil or type(g_soundPlayer.getIsPlaying) ~= "function"
+		or type(g_soundPlayer.play) ~= "function" then
 		return
 	end
-	pcall(function()
-		if not g_soundPlayer:getIsPlaying() then
-			g_soundPlayer:play()
-		end
-	end)
+	if not g_soundPlayer:getIsPlaying() then
+		g_soundPlayer:play()
+	end
 end
 
 function Distillery:stopRadio()
-	if g_soundPlayer == nil then
+	if g_soundPlayer == nil or type(g_soundPlayer.getIsPlaying) ~= "function"
+		or type(g_soundPlayer.pause) ~= "function" then
 		return
 	end
-	pcall(function()
-		if g_soundPlayer:getIsPlaying() then
-			g_soundPlayer:pause()
-		end
-	end)
+	if g_soundPlayer:getIsPlaying() then
+		g_soundPlayer:pause()
+	end
 end
 
 -- next station while the radio source is active (local only)
 function Distillery:nextRadio()
-	if g_soundPlayer == nil then
+	if g_soundPlayer == nil or type(g_soundPlayer.nextChannel) ~= "function"
+		or type(g_soundPlayer.play) ~= "function" then
 		return
 	end
-	pcall(function()
-		g_soundPlayer:nextChannel()
-		g_soundPlayer:play()
-	end)
+	g_soundPlayer:nextChannel()
+	g_soundPlayer:play()
 	g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
 		string.format("%s: %s", self:getL10n("l10n_distillery_source_radio"),
 			tostring(self:getRadioName())))
 end
 
 function Distillery:toggleRadioPlaying()
-	if g_soundPlayer == nil then
+	if g_soundPlayer == nil or type(g_soundPlayer.getIsPlaying) ~= "function" then
 		return
 	end
-	local playing = false
-	pcall(function()
-		playing = g_soundPlayer:getIsPlaying()
-	end)
-	if playing then
+	if g_soundPlayer:getIsPlaying() then
 		self:stopRadio()
 	else
 		self:startRadio()

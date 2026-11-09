@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""PNG -> DDS converter for GIANTS Engine (FS25) textures, numpy + Pillow only.
+"""PNG -> DDS converter for GIANTS Engine (FS25) textures, numpy + Pillow (plus ISPC for BC7).
 
-Formats (legacy DX9 headers, the variant GIANTS Editor/Paint.NET/NVTT all read):
+Formats (legacy DX9 headers plus DX10 BC7; all are read by GIANTS Engine):
   bc1   DXT1  opaque RGB (diffuse, specular)
   bc3   DXT5  RGB + smooth alpha (decals, glass)
   bc4   ATI1  single channel (masks)
@@ -9,6 +9,7 @@ Formats (legacy DX9 headers, the variant GIANTS Editor/Paint.NET/NVTT all read):
         GIANTS normal maps are RGB (Texture Tool: "red-green-blue channel contain
         the tangent space normal map"), so normals should be bc1: Z stays in blue
         and the map works whether the shader reads RGB or rebuilds Z from RG.
+  bc7   BC7_UNORM, DX10 header (alpha-capable, high-quality UI/store artwork).
   rgba8 A8R8G8B8 uncompressed; GIANTS logs a "raw format" performance warning
         for these, so only use it for debugging.
 
@@ -23,7 +24,7 @@ refits, tries an exact per-channel fit for near-uniform blocks, and with
 endpoints, which keeps flat normal areas free of 4x4 block offsets.
 
 Usage:
-  png2dds.py in.png out.dds --format bc1|bc3|bc4|bc5|rgba8 [--no-mips]
+  png2dds.py in.png out.dds --format bc1|bc3|bc4|bc5|bc7|rgba8 [--no-mips]
              [--mip-mode auto|srgb|linear|normal] [--alpha-coverage 0.5]
              [--refine] [--no-verify]
 """
@@ -38,9 +39,11 @@ import sys
 import numpy as np
 from PIL import Image
 
-FORMATS = ("bc1", "bc3", "bc4", "bc5", "rgba8")
-_FOURCC = {"bc1": b"DXT1", "bc3": b"DXT5", "bc4": b"ATI1", "bc5": b"ATI2"}
-_BLOCK_BYTES = {"bc1": 8, "bc3": 16, "bc4": 8, "bc5": 16}
+FORMATS = ("bc1", "bc3", "bc4", "bc5", "bc7", "rgba8")
+_FOURCC = {"bc1": b"DXT1", "bc3": b"DXT5", "bc4": b"ATI1", "bc5": b"ATI2", "bc7": b"DX10"}
+_BLOCK_BYTES = {"bc1": 8, "bc3": 16, "bc4": 8, "bc5": 16, "bc7": 16}
+_DXGI_FORMAT_BC7_UNORM = 98
+_D3D10_RESOURCE_DIMENSION_TEXTURE2D = 3
 
 # ----------------------------------------------------------------------------
 # colour space helpers
@@ -469,7 +472,42 @@ def encode_rgba8(img):
     return a[:, :, [2, 1, 0, 3]].tobytes()  # A8R8G8B8 = BGRA in memory
 
 
-_ENCODERS = {"bc1": encode_bc1, "bc3": encode_bc3, "bc4": encode_bc4, "bc5": encode_bc5, "rgba8": encode_rgba8}
+def encode_bc7(img):
+    """Encode RGBA pixels as BC7_UNORM blocks using ISPC Texture Compressor."""
+    try:
+        import ispc_texcomp
+    except ImportError as exc:
+        raise RuntimeError("BC7 output requires `pip install ispc_texcomp==1.0.1`") from exc
+
+    a = np.clip(np.rint(np.asarray(img, dtype=np.float64)), 0, 255).astype(np.uint8)
+    if a.ndim == 2:
+        a = np.repeat(a[:, :, None], 3, axis=2)
+    if a.shape[2] == 1:
+        a = np.repeat(a, 3, axis=2)
+    if a.shape[2] == 3:
+        a = np.concatenate([a, np.full(a.shape[:2] + (1,), 255, np.uint8)], axis=2)
+    a = np.ascontiguousarray(a[:, :, :4])
+    h, w = a.shape[:2]
+    # The ISPC encoder consumes complete 4x4 blocks. DDS stores edge blocks
+    # at their logical dimensions, so replicate the last row/column for small
+    # mip levels and encode the padded block.
+    padded_w = max(4, (w + 3) & ~3)
+    padded_h = max(4, (h + 3) & ~3)
+    if padded_w != w or padded_h != h:
+        a = np.pad(a, ((0, padded_h - h), (0, padded_w - w), (0, 0)), mode="edge")
+    surface = ispc_texcomp.RGBASurface(a.tobytes(), padded_w, padded_h, padded_w * 4)
+    settings = ispc_texcomp.BC7EncSettings.from_profile("alpha_fast")
+    return ispc_texcomp.compress_blocks_bc7(surface, settings)
+
+
+_ENCODERS = {
+    "bc1": encode_bc1,
+    "bc3": encode_bc3,
+    "bc4": encode_bc4,
+    "bc5": encode_bc5,
+    "bc7": encode_bc7,
+    "rgba8": encode_rgba8,
+}
 
 
 # ----------------------------------------------------------------------------
@@ -505,6 +543,12 @@ def dds_header(fmt, w, h, mip_count):
     hdr = struct.pack("<IIIIIII", 124, flags, h, w, pitch, 0, mip_count if mip_count > 1 else 0)
     hdr += b"\0" * 44 + pf + struct.pack("<IIIII", caps, 0, 0, 0, 0)
     assert len(hdr) == 124
+    if fmt == "bc7":
+        # DX10 extended header: BC7_UNORM, a 2D texture, one array slice,
+        # straight alpha.  BC7 has no legacy FourCC equivalent.
+        dx10 = struct.pack("<5I", _DXGI_FORMAT_BC7_UNORM,
+                           _D3D10_RESOURCE_DIMENSION_TEXTURE2D, 0, 1, 1)
+        return b"DDS " + hdr + dx10
     return b"DDS " + hdr
 
 
@@ -568,30 +612,55 @@ def _decode_bc4_blocks(raw):
     return np.take_along_axis(pal, idx, axis=1)
 
 
-def read_dds(path):
-    """Return (fmt, [levels]) with levels as uint8 HxWxC arrays."""
+def _dds_layout(path):
+    """Read and validate the DDS container and return its raw layout."""
     with open(path, "rb") as f:
         data = f.read()
-    if data[:4] != b"DDS ":
-        raise ValueError("not a DDS file")
-    _, flags, h, w, _, _, mips = struct.unpack("<IIIIIII", data[4:32])
+    if len(data) < 128 or data[:4] != b"DDS ":
+        raise ValueError("not a complete DDS file")
+    _, _flags, h, w, _pitch, _depth, mip_count = struct.unpack("<IIIIIII", data[4:32])
     pf_flags, fourcc, bits = struct.unpack("<I4sI", data[80:92])
-    mips = max(1, mips)
+    mip_count = max(1, mip_count)
+    offset = 128
     if pf_flags & DDPF_FOURCC:
-        fmt = {v: k for k, v in _FOURCC.items()}.get(fourcc)
-        if fmt is None:
-            raise ValueError(f"unsupported fourcc {fourcc!r}")
+        if fourcc == b"DX10":
+            if len(data) < 148:
+                raise ValueError("truncated DDS DX10 header")
+            dxgi, dimension, _misc, array_size, _misc2 = struct.unpack("<5I", data[128:148])
+            if (dxgi != _DXGI_FORMAT_BC7_UNORM
+                    or dimension != _D3D10_RESOURCE_DIMENSION_TEXTURE2D or array_size != 1):
+                raise ValueError("unsupported DDS DX10 format/resource")
+            fmt, offset = "bc7", 148
+        else:
+            fmt = {v: k for k, v in _FOURCC.items() if k != "bc7"}.get(fourcc)
+            if fmt is None:
+                raise ValueError(f"unsupported fourcc {fourcc!r}")
     elif bits == 32:
         fmt = "rgba8"
     else:
         raise ValueError("unsupported pixel format")
-    off = 128
+
+    expected = offset
+    lw, lh = w, h
+    for _ in range(mip_count):
+        expected += _level_size(fmt, lw, lh)
+        lw, lh = max(1, lw // 2), max(1, lh // 2)
+    if expected != len(data):
+        raise ValueError(f"DDS size mismatch: expected {expected} bytes, got {len(data)}")
+    return data, fmt, w, h, mip_count, offset
+
+
+def read_dds(path):
+    """Return (fmt, [levels]) with levels as uint8 HxWxC arrays."""
+    data, fmt, w, h, mip_count, offset = _dds_layout(path)
+    if fmt == "bc7":
+        raise ValueError("BC7 container is valid, but this utility has no BC7 pixel decoder")
     levels = []
     lw, lh = w, h
-    for _ in range(mips):
+    for _ in range(mip_count):
         size = _level_size(fmt, lw, lh)
-        chunk = np.frombuffer(data[off:off + size], dtype=np.uint8)
-        off += size
+        chunk = np.frombuffer(data[offset:offset + size], dtype=np.uint8)
+        offset += size
         if fmt == "rgba8":
             img = chunk.reshape(lh, lw, 4)[:, :, [2, 1, 0, 3]]
         else:
@@ -611,8 +680,6 @@ def read_dds(path):
                 img = _from_blocks(np.stack([r, g], axis=2), lh, lw)
         levels.append(np.ascontiguousarray(img).astype(np.uint8))
         lw, lh = max(1, lw // 2), max(1, lh // 2)
-    if off != len(data):
-        raise ValueError(f"size mismatch: parsed {off} of {len(data)} bytes")
     return fmt, levels
 
 
@@ -713,7 +780,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     im = Image.open(args.input)
-    if args.format in ("bc3", "rgba8"):
+    if args.format in ("bc3", "bc7", "rgba8"):
         im = im.convert("RGBA")
     elif args.format == "bc4":
         im = im.convert("L")
@@ -731,9 +798,15 @@ def main(argv=None):
     print(f"{args.output}: {args.format} {img.shape[1]}x{img.shape[0]} mips={len(levels)} "
           f"mip-mode={mode} refine={refine} bytes={size}")
     if not args.no_verify:
-        r = verify(args.output, levels, args.format, normal=mode == "normal")
-        print("  verify: " + ", ".join(f"{k}={v:.2f}" if isinstance(v, float) else f"{k}={v}"
-                                        for k, v in r.items()))
+        if args.format == "bc7":
+            _data, fmt, width, height, mip_count, _offset = _dds_layout(args.output)
+            if (fmt, width, height, mip_count) != ("bc7", img.shape[1], img.shape[0], len(levels)):
+                raise ValueError("BC7 DDS header does not match the encoded image/mip chain")
+            print(f"  verify: BC7_UNORM container OK ({width}x{height}, {mip_count} mip(s))")
+        else:
+            r = verify(args.output, levels, args.format, normal=mode == "normal")
+            print("  verify: " + ", ".join(f"{k}={v:.2f}" if isinstance(v, float) else f"{k}={v}"
+                                            for k, v in r.items()))
     return 0
 
 

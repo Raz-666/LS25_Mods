@@ -86,7 +86,7 @@ def make_store_image(points, labels, frames, track_root):
     car.attrs["translation"] = "0 2.5 8.0"
     hero.add(car)
 
-    png = MOD_DIR / "store_rollercoaster.png"
+    png = BUILD_ROOT / "store_rollercoaster.png"
     docs_render = ROOT / "docs" / "renders" / "hohensturm_coaster_hero.png"
     docs_render.parent.mkdir(parents=True, exist_ok=True)
     # The viewpoint shows the full 1.1 km circuit, with the high loops and
@@ -120,7 +120,9 @@ def make_store_image(points, labels, frames, track_root):
     icon_png = BUILD_ROOT / "icon_rollercoaster.png"
     icon = image.copy().resize((512, 512))
     icon.save(icon_png)
-    images._dds(str(icon_png), str(MOD_DIR / "icon_rollercoaster.dds"), "bc1", sys.executable)
+    images._dds(str(png), str(MOD_DIR / "store_rollercoaster.dds"), "bc7", sys.executable)
+    images._dds(str(icon_png), str(MOD_DIR / "icon_rollercoaster.dds"), "bc1", sys.executable,
+                no_mips=True)
 
 
 def write_mod_xml(track_mappings: str, car_mappings: str) -> None:
@@ -259,7 +261,7 @@ def validate_mod(track_mappings: str, car_mappings: str, points, labels, frames,
     assert track_shapes.is_file() and track_shapes.stat().st_size > 1024
     assert car_shapes.is_file() and car_shapes.stat().st_size > 1024
     assert (MOD_DIR / "CoasterRoll.lua").is_file()
-    assert (MOD_DIR / "store_rollercoaster.png").is_file()
+    assert (MOD_DIR / "store_rollercoaster.dds").is_file()
     assert (MOD_DIR / "icon_rollercoaster.dds").is_file()
     for filename in ("coasterIdle.ogg", "coasterWhine.ogg", "coasterAirRush.ogg",
                      "coasterStart.ogg", "coasterStop.ogg"):
@@ -273,12 +275,13 @@ def validate_mod(track_mappings: str, car_mappings: str, points, labels, frames,
 
 
 def make_zip() -> None:
+    subprocess.run([sys.executable, str(ROOT / "tools" / "dedupe_dds.py"), str(MOD_DIR)], check=True)
     DIST_ZIP.parent.mkdir(parents=True, exist_ok=True)
     if DIST_ZIP.exists():
         DIST_ZIP.unlink()
     with zipfile.ZipFile(DIST_ZIP, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=8) as archive:
         for path in sorted(MOD_DIR.rglob("*")):
-            if path.is_file():
+            if path.is_file() and path.suffix.lower() != ".png":
                 archive.write(path, path.relative_to(MOD_DIR).as_posix())
     say("wrote %s (%0.2f MiB)" % (DIST_ZIP.relative_to(ROOT), DIST_ZIP.stat().st_size / 1024 / 1024))
 
